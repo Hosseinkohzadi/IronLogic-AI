@@ -1,0 +1,5 @@
+<SessionState ContinuousTestingMode="0" IsActive="True" Name="HevyCsvParserServiceTests" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session">
+  <TestAncestor>
+    <TestId>xUnit::D0942283-E924-BF79-6E3E-214466035253::net10.0::IronLogic.Tests.HevyCsvParserServiceTests</TestId>
+  </TestAncestor>
+</SessionState>

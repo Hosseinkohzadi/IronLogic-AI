@@ -11,21 +11,24 @@ public class HevyDataMapper : IHevyDataMapper
     public List<WorkoutSession> MapToSessions(IEnumerable<ExerciseRecord> flatRecords)
     {
         ArgumentNullException.ThrowIfNull(flatRecords);
-        var records = flatRecords.ToList();
-        if (records.Count == 0)
-            return [];
 
-        return records
-            .GroupBy(record => new { record.Date, record.WorkoutName })
+        if (!flatRecords.Any())
+            return new List<WorkoutSession>();
+
+        return flatRecords
+            .Where(r => r.Date.HasValue)
+            .GroupBy(record => new { record.Date!.Value, record.WorkoutName })
             .Select(sessionGroup => new WorkoutSession
             {
-                Date = sessionGroup.Key.Date,
+                Date = sessionGroup.Key.Value,
                 Name = sessionGroup.Key.WorkoutName,
+
                 Exercises = sessionGroup
                     .GroupBy(record => record.ExerciseName)
                     .Select(exerciseGroup => new WorkoutExercise
                     {
                         Name = exerciseGroup.Key,
+
                         Sets = exerciseGroup
                             .Select(record => new ExerciseSet
                             {

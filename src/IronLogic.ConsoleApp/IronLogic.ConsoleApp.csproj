@@ -1,6 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\IronLogic.Application\IronLogic.Application.csproj" />
     <ProjectReference Include="..\IronLogic.Infrastructure\IronLogic.Infrastructure.csproj" />
   </ItemGroup>

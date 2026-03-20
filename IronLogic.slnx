@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/IronLogic.Application/IronLogic.Application.csproj" />
+    <Project Path="src/IronLogic.ConsoleApp/IronLogic.ConsoleApp.csproj" />
+    <Project Path="src/IronLogic.Domain/IronLogic.Domain.csproj" />
+    <Project Path="src/IronLogic.Infrastructure/IronLogic.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/IronLogic.Tests/IronLogic.Tests.csproj" />
+  </Folder>
+</Solution>

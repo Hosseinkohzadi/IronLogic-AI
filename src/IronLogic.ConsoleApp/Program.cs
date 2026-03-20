@@ -11,8 +11,7 @@ var provider = services.BuildServiceProvider();
 
 Console.WriteLine("--- IronLogic AI: CSV to Hierarchy Test ---");
 
-// Insert your actual CSV path here
-var filePath = @"C:\Path\To\Your\hevy_export.csv";
+var filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "workout_data.csv");
 var parser = provider.GetRequiredService<IHevyParserService>();
 var mapper = provider.GetRequiredService<IHevyDataMapper>();
 

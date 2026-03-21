@@ -1,0 +1,45 @@
+﻿using IronLogic.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace IronLogic.Infrastructure.Data;
+
+public class AppDbContext : DbContext
+{
+    // 1. Constructor for Dependency Injection (The standard way)
+    public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
+    {
+    }
+
+    // 2. Parameterless constructor (Needed by EF Core Migrations Tooling)
+    public AppDbContext()
+    {
+    }
+
+    public DbSet<WorkoutSession> Sessions { get; set; }
+    public DbSet<WorkoutExercise> Exercises { get; set; }
+    public DbSet<ExerciseSet> Sets { get; set; }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        // Only configure here if it wasn't already configured in Program.cs
+        // This prevents the "pooling" and configuration conflict errors!
+        if (optionsBuilder.IsConfigured)
+            return;
+
+        var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ironlogic.db");
+        optionsBuilder.UseSqlite($"Data Source={dbPath}");
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<WorkoutSession>()
+            .HasMany(s => s.Exercises)
+            .WithOne()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<WorkoutExercise>()
+            .HasMany(e => e.Sets)
+            .WithOne()
+            .OnDelete(DeleteBehavior.Cascade);
+    }
+}

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace IronLogic.Domain.Entities;
+﻿namespace IronLogic.Domain.Entities;
 
 /// <summary>
 /// Represents a single flat record (one row) directly parsed from the Hevy CSV export.

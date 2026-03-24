@@ -58,3 +58,6 @@ app.MapControllers();
 app.MapGet("/api/health", () => "IronLogic API is running perfectly! ??");
 
 app.Run();
+
+// Make the implicit Program class public so integration tests can reference it via WebApplicationFactory<Program>
+public partial class Program;

@@ -1,9 +1,7 @@
 ﻿using IronLogic.Application.Interfaces;
 using IronLogic.Application.Mappers;
-using IronLogic.Application.Services;
 using IronLogic.Infrastructure;
 using IronLogic.Infrastructure.Data;
-using IronLogic.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -61,31 +59,6 @@ try
         var existingCount = dbContext.Sessions.Count();
         Console.WriteLine($"⏩ Database already contains {existingCount} sessions. Skipping insert.");
     }
-
-    // --- Phase 4: The Analyzer (Testing the Database) ---
-    Console.WriteLine("\n--- IronLogic AI: Data Analysis ---");
-    var analyzer = new WorkoutAnalysisService(dbContext);
-
-    var maxBench = analyzer.GetMaxWeightForExercise("Bench Press");
-    var topExercisesList = analyzer.GetTopExercises();
-    var last30DaysVolume = analyzer.GetTotalVolumeInDateRange(DateTime.Now.AddDays(-30), DateTime.Now);
-
-    Console.WriteLine($"🏆 Max Bench Press: {maxBench} lbs");
-    Console.WriteLine($"📈 Total Volume (30 Days): {last30DaysVolume} lbs");
-
-    // --- Phase 5: The Simulated AI Coach ---
-    Console.WriteLine("\n--- 🤖 IronLogic AI Coach is thinking... ---");
-
-    // Initialize our rule-based mock service
-    var aiCoach = new IronLogicCoachService();
-
-    // Convert the list of top exercises into a single formatted string
-    var exercisesText = string.Join("\n", topExercisesList.Select(e => $"  - {e}"));
-
-    // Get the dynamic advice
-    var aiAdvice = await aiCoach.AnalyzeWorkoutStatsAsync(maxBench, last30DaysVolume, exercisesText);
-
-    Console.WriteLine(aiAdvice);
 }
 catch (Exception ex)
 {

@@ -1,6 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.35.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Core" Version="1.74.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\IronLogic.Domain\IronLogic.Domain.csproj" />
   </ItemGroup>
 

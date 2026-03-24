@@ -18,6 +18,7 @@ public class AppDbContext : DbContext
     public DbSet<WorkoutSession> Sessions { get; set; }
     public DbSet<WorkoutExercise> Exercises { get; set; }
     public DbSet<ExerciseSet> Sets { get; set; }
+    public DbSet<DailyWeight> DailyWeights { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -41,5 +42,11 @@ public class AppDbContext : DbContext
             .HasMany(e => e.Sets)
             .WithOne()
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DailyWeight>(entity =>
+        {
+            entity.Property(d => d.Weight).IsRequired();
+            entity.Property(d => d.Note).HasMaxLength(200);
+        });
     }
 }

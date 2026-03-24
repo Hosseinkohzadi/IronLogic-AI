@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Text;
 using CsvHelper;
 using CsvHelper.Configuration;
 using IronLogic.Application.Interfaces;
@@ -21,7 +22,7 @@ public class HevyCsvParserService : IHevyParserService
             MissingFieldFound = null
         };
 
-        using var reader = new StreamReader(filePath, System.Text.Encoding.UTF8);
+        using var reader = new StreamReader(filePath, Encoding.UTF8);
         using var csv = new CsvReader(reader, config);
 
         csv.Context.RegisterClassMap<ExerciseRecordMap>();

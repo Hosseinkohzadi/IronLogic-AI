@@ -9,11 +9,11 @@ using IronLogic.Tests.Infrastructure;
 namespace IronLogic.Tests;
 
 /// <summary>
-/// Integration tests for POST /api/v1/progress/measurements (MuscleMeasurement endpoint).
-/// Uses WebApplicationFactory with an EF Core InMemory database.
-/// Test cases are derived from the OpenAPI specification (openapi.yaml).
-/// Special focus on Waist and Chest validation ranges and their persisted ratios,
-/// which are critical metrics for Classic Physique bodybuilding.
+///     Integration tests for POST /api/v1/progress/measurements (MuscleMeasurement endpoint).
+///     Uses WebApplicationFactory with an EF Core InMemory database.
+///     Test cases are derived from the OpenAPI specification (openapi.yaml).
+///     Special focus on Waist and Chest validation ranges and their persisted ratios,
+///     which are critical metrics for Classic Physique bodybuilding.
 /// </summary>
 public class MuscleMeasurementIntegrationTests(IronLogicWebApplicationFactory factory)
     : IClassFixture<IronLogicWebApplicationFactory>, IDisposable
@@ -82,7 +82,7 @@ public class MuscleMeasurementIntegrationTests(IronLogicWebApplicationFactory fa
 
         // Assert
         body.Should().NotBeNull();
-        body!.Id.Should().NotBeEmpty();
+        body.Id.Should().NotBeEmpty();
         body.Date.Should().Be(new DateTime(2026, 3, 24));
         body.Neck.Should().Be(40.0f);
         body.Chest.Should().Be(115.0f);
@@ -130,7 +130,7 @@ public class MuscleMeasurementIntegrationTests(IronLogicWebApplicationFactory fa
 
         // Assert
         body.Should().NotBeNull();
-        body!.BicepsLeft.Should().BeNull();
+        body.BicepsLeft.Should().BeNull();
         body.BicepsRight.Should().BeNull();
         body.ThighLeft.Should().BeNull();
         body.ThighRight.Should().BeNull();
@@ -169,7 +169,7 @@ public class MuscleMeasurementIntegrationTests(IronLogicWebApplicationFactory fa
         var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
 
         body.Should().NotBeNull();
-        body!.Waist.Should().Be(40.0f);
+        body.Waist.Should().Be(40.0f);
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public class MuscleMeasurementIntegrationTests(IronLogicWebApplicationFactory fa
         var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
 
         body.Should().NotBeNull();
-        body!.Waist.Should().Be(150.0f);
+        body.Waist.Should().Be(150.0f);
     }
 
     // =====================================================================
@@ -246,7 +246,7 @@ public class MuscleMeasurementIntegrationTests(IronLogicWebApplicationFactory fa
         var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
 
         body.Should().NotBeNull();
-        body!.Chest.Should().Be(50.0f);
+        body.Chest.Should().Be(50.0f);
     }
 
     [Fact]
@@ -258,7 +258,7 @@ public class MuscleMeasurementIntegrationTests(IronLogicWebApplicationFactory fa
         var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
 
         body.Should().NotBeNull();
-        body!.Chest.Should().Be(180.0f);
+        body.Chest.Should().Be(180.0f);
     }
 
     // =====================================================================
@@ -303,8 +303,8 @@ public class MuscleMeasurementIntegrationTests(IronLogicWebApplicationFactory fa
         {
             date = "2026-03-24",
             neck = 43.0f,
-            chest = 117.0f,  // ~46 inches
-            waist = 73.5f    // ~29 inches
+            chest = 117.0f, // ~46 inches
+            waist = 73.5f // ~29 inches
         };
 
         // Act
@@ -314,7 +314,7 @@ public class MuscleMeasurementIntegrationTests(IronLogicWebApplicationFactory fa
         // Assert - values are persisted accurately for downstream ratio calculation
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         body.Should().NotBeNull();
-        body!.Chest.Should().Be(117.0f);
+        body.Chest.Should().Be(117.0f);
         body.Waist.Should().Be(73.5f);
 
         var chestToWaistRatio = body.Chest / body.Waist;
@@ -340,7 +340,7 @@ public class MuscleMeasurementIntegrationTests(IronLogicWebApplicationFactory fa
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         body.Should().NotBeNull();
-        body!.Chest.Should().Be(140.0f);
+        body.Chest.Should().Be(140.0f);
         body.Waist.Should().Be(75.0f);
 
         var ratio = body.Chest / body.Waist;
@@ -366,7 +366,7 @@ public class MuscleMeasurementIntegrationTests(IronLogicWebApplicationFactory fa
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
         body.Should().NotBeNull();
-        body!.Chest.Should().Be(110.0f);
+        body.Chest.Should().Be(110.0f);
         body.Waist.Should().Be(100.0f);
 
         var ratio = body.Chest / body.Waist;

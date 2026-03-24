@@ -10,8 +10,8 @@ namespace IronLogic.Tests;
 
 public class WorkoutControllerTests : IDisposable
 {
-    private readonly IWorkoutService _workoutService = Substitute.For<IWorkoutService>();
     private readonly WorkoutController _sut;
+    private readonly IWorkoutService _workoutService = Substitute.For<IWorkoutService>();
 
     public WorkoutControllerTests()
     {

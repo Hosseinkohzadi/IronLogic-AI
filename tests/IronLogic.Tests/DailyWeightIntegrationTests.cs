@@ -9,9 +9,9 @@ using IronLogic.Tests.Infrastructure;
 namespace IronLogic.Tests;
 
 /// <summary>
-/// Integration tests for POST /api/v1/progress/weight (DailyWeight endpoint).
-/// Uses WebApplicationFactory with an EF Core InMemory database.
-/// Test cases are derived from the OpenAPI specification (openapi.yaml).
+///     Integration tests for POST /api/v1/progress/weight (DailyWeight endpoint).
+///     Uses WebApplicationFactory with an EF Core InMemory database.
+///     Test cases are derived from the OpenAPI specification (openapi.yaml).
 /// </summary>
 public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplicationFactory>, IDisposable
 {
@@ -64,7 +64,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
 
         // Assert
         body.Should().NotBeNull();
-        body!.Id.Should().NotBeEmpty();
+        body.Id.Should().NotBeEmpty();
         body.Weight.Should().Be(92.0f);
         body.Date.Should().Be(new DateTime(2026, 3, 24));
         body.Note.Should().Be("Post-refeed");
@@ -95,7 +95,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
 
         // Assert
         body.Should().NotBeNull();
-        body!.Note.Should().BeNull();
+        body.Note.Should().BeNull();
     }
 
     // =====================================================================

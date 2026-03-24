@@ -1,6 +1,7 @@
 using IronLogic.Application.DTOs;
 using IronLogic.Application.Interfaces;
 using IronLogic.Domain.Entities;
+using IronLogic.Domain.Interfaces;
 
 namespace IronLogic.Infrastructure.Services;
 
@@ -34,7 +35,9 @@ public class WorkoutService(IWorkoutSessionRepository repository) : IWorkoutServ
             TotalSessions = allSessions.Count,
             TotalExercises = allExercises.Count,
             TotalSets = allSets.Count,
-            TotalVolume = currentMonthSets.Sum(s => (s.Weight ?? 0) * (s.Reps ?? 0)) // Volume = Weight * Reps (current month only)
+            TotalVolume =
+                currentMonthSets.Sum(s =>
+                    (s.Weight ?? 0) * (s.Reps ?? 0)) // Volume = Weight * Reps (current month only)
         };
     }
 }

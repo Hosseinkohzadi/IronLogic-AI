@@ -7,8 +7,8 @@ using Microsoft.Extensions.DependencyInjection;
 namespace IronLogic.Tests.Infrastructure;
 
 /// <summary>
-/// Custom WebApplicationFactory that replaces the real SQLite database
-/// with an EF Core InMemory database for isolated integration tests.
+///     Custom WebApplicationFactory that replaces the real SQLite database
+///     with an EF Core InMemory database for isolated integration tests.
 /// </summary>
 public class IronLogicWebApplicationFactory : WebApplicationFactory<Program>
 {
@@ -32,13 +32,10 @@ public class IronLogicWebApplicationFactory : WebApplicationFactory<Program>
                      d.ServiceType.FullName.Contains(nameof(AppDbContext))))
                 .ToList();
 
-            foreach (var d in toRemove)
-            {
-                services.Remove(d);
-            }
+            foreach (var d in toRemove) services.Remove(d);
 
             // Re-register with InMemory provider (non-pooled)
-            var dbName = "IronLogicTestDb_" + Guid.NewGuid().ToString();
+            var dbName = "IronLogicTestDb_" + Guid.NewGuid();
 
             services.AddDbContext<AppDbContext>(options =>
                 options.UseInMemoryDatabase(dbName));

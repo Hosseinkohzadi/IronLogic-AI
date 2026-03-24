@@ -1,6 +1,7 @@
 using IronLogic.Application.Interfaces;
 using IronLogic.Application.Mappers;
 using IronLogic.Application.Services;
+using IronLogic.Domain.Interfaces;
 using IronLogic.Infrastructure;
 using IronLogic.Infrastructure.Data;
 using IronLogic.Infrastructure.Repositories;
@@ -19,12 +20,12 @@ builder.Services.AddOpenApiDocument(config =>
     config.Version = "v1";
 });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? "Data Source=ironlogic.db";
 
 builder.Services.AddDbContextPool<AppDbContext>(options =>
     options.UseSqlite(connectionString)
-           .EnableSensitiveDataLogging(false));
+        .EnableSensitiveDataLogging(false));
 
 builder.Services.AddSingleton<IHevyParserService, HevyCsvParserService>();
 builder.Services.AddSingleton<IHevyDataMapper, HevyDataMapper>();

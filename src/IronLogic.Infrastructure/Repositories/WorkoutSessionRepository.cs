@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 namespace IronLogic.Infrastructure.Repositories;
 
 /// <summary>
-/// EF Core implementation of <see cref="IWorkoutSessionRepository"/>.
-/// Encapsulates all WorkoutSession data access including eager loading of the full aggregate.
+///     EF Core implementation of <see cref="IWorkoutSessionRepository" />.
+///     Encapsulates all WorkoutSession data access including eager loading of the full aggregate.
 /// </summary>
 public class WorkoutSessionRepository(AppDbContext dbContext) : IWorkoutSessionRepository
 {
@@ -15,7 +15,7 @@ public class WorkoutSessionRepository(AppDbContext dbContext) : IWorkoutSessionR
     {
         return await dbContext.Sessions
             .Include(s => s.Exercises)
-                .ThenInclude(e => e.Sets)
+            .ThenInclude(e => e.Sets)
             .OrderByDescending(s => s.Date)
             .ToListAsync();
     }
@@ -24,7 +24,7 @@ public class WorkoutSessionRepository(AppDbContext dbContext) : IWorkoutSessionR
     {
         return await dbContext.Sessions
             .Include(s => s.Exercises)
-                .ThenInclude(e => e.Sets)
+            .ThenInclude(e => e.Sets)
             .FirstOrDefaultAsync(s => s.Id == id);
     }
 
@@ -52,16 +52,17 @@ public class WorkoutSessionRepository(AppDbContext dbContext) : IWorkoutSessionR
     {
         return await dbContext.Sessions
             .Include(s => s.Exercises)
-                .ThenInclude(e => e.Sets)
+            .ThenInclude(e => e.Sets)
             .OrderByDescending(s => s.Date)
             .ToListAsync();
     }
 
-    public async Task<List<WorkoutSession>> GetByDateRangeWithExercisesAndSetsAsync(DateTime startDate, DateTime endDate)
+    public async Task<List<WorkoutSession>> GetByDateRangeWithExercisesAndSetsAsync(DateTime startDate,
+        DateTime endDate)
     {
         return await dbContext.Sessions
             .Include(s => s.Exercises)
-                .ThenInclude(e => e.Sets)
+            .ThenInclude(e => e.Sets)
             .Where(s => s.Date >= startDate && s.Date <= endDate)
             .OrderByDescending(s => s.Date)
             .ToListAsync();

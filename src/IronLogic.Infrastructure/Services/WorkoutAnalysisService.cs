@@ -9,7 +9,7 @@ public class WorkoutAnalysisService(AppDbContext dbContext)
         var maxWeight = dbContext.Exercises
             .Where(e => e.Name == exerciseName)
             .SelectMany(e => e.Sets)
-            .Max(s => (double?)s.Weight) ?? 0;
+            .Max(s => s.Weight) ?? 0;
 
         return maxWeight;
     }

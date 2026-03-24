@@ -9,7 +9,7 @@ namespace IronLogic.Api.Controllers;
 public class WorkoutController(IWorkoutService workoutService) : ControllerBase
 {
     /// <summary>
-    /// Get all workout sessions with exercises and sets.
+    ///     Get all workout sessions with exercises and sets.
     /// </summary>
     [HttpGet("sessions")]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -21,7 +21,7 @@ public class WorkoutController(IWorkoutService workoutService) : ControllerBase
     }
 
     /// <summary>
-    /// Get aggregate workout statistics. Volume = Weight * Reps.
+    ///     Get aggregate workout statistics. Volume = Weight * Reps.
     /// </summary>
     [HttpGet("stats")]
     [ProducesResponseType(StatusCodes.Status200OK)]

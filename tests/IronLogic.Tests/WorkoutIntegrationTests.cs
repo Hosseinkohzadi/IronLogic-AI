@@ -11,9 +11,9 @@ using Microsoft.Extensions.DependencyInjection;
 namespace IronLogic.Tests;
 
 /// <summary>
-/// Integration tests for GET /api/v1/workouts/sessions and GET /api/v1/workouts/stats.
-/// Uses WebApplicationFactory with an EF Core InMemory database.
-/// Volume is defined as Weight * Reps, scoped to the current calendar month.
+///     Integration tests for GET /api/v1/workouts/sessions and GET /api/v1/workouts/stats.
+///     Uses WebApplicationFactory with an EF Core InMemory database.
+///     Volume is defined as Weight * Reps, scoped to the current calendar month.
 /// </summary>
 public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
     : IClassFixture<IronLogicWebApplicationFactory>, IDisposable
@@ -35,8 +35,8 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
     }
 
     /// <summary>
-    /// Seeds the InMemory database with workout data for tests that need it.
-    /// All seed data uses the current month to ensure volume tests pass.
+    ///     Seeds the InMemory database with workout data for tests that need it.
+    ///     All seed data uses the current month to ensure volume tests pass.
     /// </summary>
     private async Task SeedWorkoutDataAsync()
     {
@@ -82,8 +82,8 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
     }
 
     /// <summary>
-    /// Seeds sessions across two months: one in the current month, one in the previous month.
-    /// Used to verify that volume is scoped to the current month only.
+    ///     Seeds sessions across two months: one in the current month, one in the previous month.
+    ///     Used to verify that volume is scoped to the current month only.
     /// </summary>
     private async Task SeedMultiMonthWorkoutDataAsync()
     {
@@ -169,7 +169,7 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
         var sessions = await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions);
 
         sessions.Should().NotBeNull();
-        sessions!.Should().Contain(s => s.Name == "Push Day");
+        sessions.Should().Contain(s => s.Name == "Push Day");
     }
 
     [Fact]
@@ -181,7 +181,7 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
         var sessions = await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions);
 
         var pushDay = sessions!.First(s => s.Name == "Push Day");
-        pushDay.Exercises.Should().HaveCountGreaterOrEqualTo(2);
+        pushDay.Exercises.Should().HaveCountGreaterThanOrEqualTo(2);
         pushDay.Exercises.Should().Contain(e => e.Name == "Bench Press");
         pushDay.Exercises.Should().Contain(e => e.Name == "Overhead Press");
     }
@@ -199,7 +199,7 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
 
         var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions);
         stats.Should().NotBeNull();
-        stats!.TotalVolume.Should().Be(0);
+        stats.TotalVolume.Should().Be(0);
     }
 
     [Fact]
@@ -221,7 +221,7 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
         var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions);
 
         stats.Should().NotBeNull();
-        stats!.TotalSessions.Should().BeGreaterOrEqualTo(1);
+        stats.TotalSessions.Should().BeGreaterThanOrEqualTo(1);
     }
 
     [Fact]
@@ -233,7 +233,7 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
         var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions);
 
         stats.Should().NotBeNull();
-        stats!.TotalExercises.Should().BeGreaterOrEqualTo(2);
+        stats.TotalExercises.Should().BeGreaterThanOrEqualTo(2);
     }
 
     [Fact]
@@ -245,7 +245,7 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
         var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions);
 
         stats.Should().NotBeNull();
-        stats!.TotalSets.Should().BeGreaterOrEqualTo(5);
+        stats.TotalSets.Should().BeGreaterThanOrEqualTo(5);
     }
 
     [Fact]
@@ -261,7 +261,7 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
         // OHP:   (40*12) + (45*10)          = 480 + 450       = 930
         // Total = 2950
         stats.Should().NotBeNull();
-        stats!.TotalVolume.Should().BeGreaterOrEqualTo(2950);
+        stats.TotalVolume.Should().BeGreaterThanOrEqualTo(2950);
     }
 
     // =====================================================================
@@ -279,7 +279,7 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
         stats.Should().NotBeNull();
 
         // Total counts include all months
-        stats!.TotalSessions.Should().Be(2);
+        stats.TotalSessions.Should().Be(2);
 
         // Volume should only include current month session: 80 * 10 = 800
         // Previous month Deadlift (140 * 5 = 700) must be excluded

@@ -1,14 +1,14 @@
 using FluentAssertions;
-using IronLogic.Application.Interfaces;
 using IronLogic.Domain.Entities;
+using IronLogic.Domain.Interfaces;
 using IronLogic.Infrastructure.Services;
 using NSubstitute;
 
 namespace IronLogic.Tests;
 
 /// <summary>
-/// Unit tests for WorkoutService.
-/// Verifies repository delegation and that TotalVolume is scoped to the current calendar month.
+///     Unit tests for WorkoutService.
+///     Verifies repository delegation and that TotalVolume is scoped to the current calendar month.
 /// </summary>
 public class WorkoutServiceTests : IDisposable
 {
@@ -192,7 +192,8 @@ public class WorkoutServiceTests : IDisposable
         };
 
         _repository.GetAllWithExercisesAndSetsAsync().Returns(allSessions);
-        _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>()).Returns(currentMonthSessions);
+        _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>())
+            .Returns(currentMonthSessions);
 
         var stats = await _sut.GetStatsAsync();
 
@@ -261,7 +262,8 @@ public class WorkoutServiceTests : IDisposable
         };
 
         _repository.GetAllWithExercisesAndSetsAsync().Returns(currentMonthSessions);
-        _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>()).Returns(currentMonthSessions);
+        _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>())
+            .Returns(currentMonthSessions);
 
         var stats = await _sut.GetStatsAsync();
 
@@ -310,7 +312,8 @@ public class WorkoutServiceTests : IDisposable
         };
 
         _repository.GetAllWithExercisesAndSetsAsync().Returns(currentMonthSessions);
-        _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>()).Returns(currentMonthSessions);
+        _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>())
+            .Returns(currentMonthSessions);
 
         var stats = await _sut.GetStatsAsync();
 

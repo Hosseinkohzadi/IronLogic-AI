@@ -12,7 +12,7 @@ public class ProgressController(
     IMuscleMeasurementService muscleMeasurementService) : ControllerBase
 {
     /// <summary>
-    /// Log daily weight.
+    ///     Log daily weight.
     /// </summary>
     [HttpPost("weight")]
     [ProducesResponseType(StatusCodes.Status201Created)]
@@ -25,7 +25,7 @@ public class ProgressController(
     }
 
     /// <summary>
-    /// Log muscle measurements.
+    ///     Log muscle measurements.
     /// </summary>
     [HttpPost("measurements")]
     [ProducesResponseType(StatusCodes.Status201Created)]

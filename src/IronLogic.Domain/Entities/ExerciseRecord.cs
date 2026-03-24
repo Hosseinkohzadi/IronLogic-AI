@@ -1,8 +1,8 @@
 ﻿namespace IronLogic.Domain.Entities;
 
 /// <summary>
-/// Represents a single flat record (one row) directly parsed from the Hevy CSV export.
-/// This acts as a Data Transfer Object (DTO) before mapping to the hierarchical domain entities.
+///     Represents a single flat record (one row) directly parsed from the Hevy CSV export.
+///     This acts as a Data Transfer Object (DTO) before mapping to the hierarchical domain entities.
 /// </summary>
 public class ExerciseRecord
 {

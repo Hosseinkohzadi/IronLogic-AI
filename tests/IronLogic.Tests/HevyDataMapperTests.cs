@@ -25,16 +25,56 @@ public class HevyDataMapperTests : IDisposable
 
         return
         [
-            new ExerciseRecord { Date = pushDate, WorkoutName = "Push Day", ExerciseName = "Bench Press",    SetOrder = 1, Weight = 80,  Reps = 10, RPE = 7  },
-            new ExerciseRecord { Date = pushDate, WorkoutName = "Push Day", ExerciseName = "Bench Press",    SetOrder = 2, Weight = 85,  Reps = 8,  RPE = 8  },
-            new ExerciseRecord { Date = pushDate, WorkoutName = "Push Day", ExerciseName = "Bench Press",    SetOrder = 3, Weight = 90,  Reps = 6,  RPE = 9  },
-            new ExerciseRecord { Date = pushDate, WorkoutName = "Push Day", ExerciseName = "Overhead Press", SetOrder = 1, Weight = 40,  Reps = 12, RPE = 6  },
-            new ExerciseRecord { Date = pushDate, WorkoutName = "Push Day", ExerciseName = "Overhead Press", SetOrder = 2, Weight = 45,  Reps = 10, RPE = 7  },
-            new ExerciseRecord { Date = pullDate, WorkoutName = "Pull Day", ExerciseName = "Barbell Row",    SetOrder = 1, Weight = 70,  Reps = 10, RPE = 7  },
-            new ExerciseRecord { Date = pullDate, WorkoutName = "Pull Day", ExerciseName = "Barbell Row",    SetOrder = 2, Weight = 75,  Reps = 8,  RPE = 8  },
-            new ExerciseRecord { Date = pullDate, WorkoutName = "Pull Day", ExerciseName = "Deadlift",       SetOrder = 1, Weight = 120, Reps = 5,  RPE = 8  },
-            new ExerciseRecord { Date = pullDate, WorkoutName = "Pull Day", ExerciseName = "Deadlift",       SetOrder = 2, Weight = 130, Reps = 4,  RPE = 9  },
-            new ExerciseRecord { Date = pullDate, WorkoutName = "Pull Day", ExerciseName = "Deadlift",       SetOrder = 3, Weight = 140, Reps = 3,  RPE = 10 },
+            new ExerciseRecord
+            {
+                Date = pushDate, WorkoutName = "Push Day", ExerciseName = "Bench Press", SetOrder = 1, Weight = 80,
+                Reps = 10, RPE = 7
+            },
+            new ExerciseRecord
+            {
+                Date = pushDate, WorkoutName = "Push Day", ExerciseName = "Bench Press", SetOrder = 2, Weight = 85,
+                Reps = 8, RPE = 8
+            },
+            new ExerciseRecord
+            {
+                Date = pushDate, WorkoutName = "Push Day", ExerciseName = "Bench Press", SetOrder = 3, Weight = 90,
+                Reps = 6, RPE = 9
+            },
+            new ExerciseRecord
+            {
+                Date = pushDate, WorkoutName = "Push Day", ExerciseName = "Overhead Press", SetOrder = 1, Weight = 40,
+                Reps = 12, RPE = 6
+            },
+            new ExerciseRecord
+            {
+                Date = pushDate, WorkoutName = "Push Day", ExerciseName = "Overhead Press", SetOrder = 2, Weight = 45,
+                Reps = 10, RPE = 7
+            },
+            new ExerciseRecord
+            {
+                Date = pullDate, WorkoutName = "Pull Day", ExerciseName = "Barbell Row", SetOrder = 1, Weight = 70,
+                Reps = 10, RPE = 7
+            },
+            new ExerciseRecord
+            {
+                Date = pullDate, WorkoutName = "Pull Day", ExerciseName = "Barbell Row", SetOrder = 2, Weight = 75,
+                Reps = 8, RPE = 8
+            },
+            new ExerciseRecord
+            {
+                Date = pullDate, WorkoutName = "Pull Day", ExerciseName = "Deadlift", SetOrder = 1, Weight = 120,
+                Reps = 5, RPE = 8
+            },
+            new ExerciseRecord
+            {
+                Date = pullDate, WorkoutName = "Pull Day", ExerciseName = "Deadlift", SetOrder = 2, Weight = 130,
+                Reps = 4, RPE = 9
+            },
+            new ExerciseRecord
+            {
+                Date = pullDate, WorkoutName = "Pull Day", ExerciseName = "Deadlift", SetOrder = 3, Weight = 140,
+                Reps = 3, RPE = 10
+            }
         ];
     }
 
@@ -184,9 +224,18 @@ public class HevyDataMapperTests : IDisposable
         var date = new DateTime(2024, 8, 1);
         var unorderedRecords = new List<ExerciseRecord>
         {
-            new() { Date = date, WorkoutName = "Test", ExerciseName = "Curl", SetOrder = 3, Weight = 15, Reps = 8,  RPE = 8 },
-            new() { Date = date, WorkoutName = "Test", ExerciseName = "Curl", SetOrder = 1, Weight = 10, Reps = 12, RPE = 6 },
-            new() { Date = date, WorkoutName = "Test", ExerciseName = "Curl", SetOrder = 2, Weight = 12, Reps = 10, RPE = 7 },
+            new()
+            {
+                Date = date, WorkoutName = "Test", ExerciseName = "Curl", SetOrder = 3, Weight = 15, Reps = 8, RPE = 8
+            },
+            new()
+            {
+                Date = date, WorkoutName = "Test", ExerciseName = "Curl", SetOrder = 1, Weight = 10, Reps = 12, RPE = 6
+            },
+            new()
+            {
+                Date = date, WorkoutName = "Test", ExerciseName = "Curl", SetOrder = 2, Weight = 12, Reps = 10, RPE = 7
+            }
         };
 
         var result = _sut.MapToSessions(unorderedRecords);

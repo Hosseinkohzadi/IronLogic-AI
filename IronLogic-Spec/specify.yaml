@@ -1,0 +1,16 @@
+# specify.yaml
+project:
+  name: IronLogic AI
+  language: csharp
+  framework: net9.0 # یا نسخه‌ای که استفاده می‌کنی
+  structure: clean-architecture
+  
+specifications:
+  - path: openapi.yaml
+    type: openapi
+
+generators:
+  - name: csharp-controllers
+    output: ../src/IronLogic.Api/Controllers
+  - name: csharp-models
+    output: ../src/IronLogic.Application/DTOs

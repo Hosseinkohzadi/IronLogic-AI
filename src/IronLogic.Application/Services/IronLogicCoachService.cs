@@ -10,13 +10,11 @@ public class IronLogicCoachService
     /// <param name="monthlyVolume">Optional monthly training volume in pounds.</param>
     /// <param name="formattedTopExercises">A formatted string describing the user's top exercises.</param>
     /// <param name="userName">Optional username shown in the response. Defaults to "Athlete".</param>
-    public async Task<string> AnalyzeWorkoutStatsAsync(double maxBench, double? monthlyVolume, string formattedTopExercises, string userName = "Athlete")
+    public async Task<string> AnalyzeWorkoutStatsAsync(double maxBench, double? monthlyVolume,
+        string formattedTopExercises, string userName = "Athlete")
     {
         // Normalize userName to avoid empty or whitespace values
-        if (string.IsNullOrWhiteSpace(userName))
-        {
-            userName = "Athlete";
-        }
+        if (string.IsNullOrWhiteSpace(userName)) userName = "Athlete";
 
         // Simulate the delay of an AI thinking process (1.5 seconds)
         await Task.Delay(1500);

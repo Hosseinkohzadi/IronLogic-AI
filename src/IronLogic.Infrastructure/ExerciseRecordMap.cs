@@ -4,7 +4,7 @@ using IronLogic.Domain.Entities;
 namespace IronLogic.Infrastructure;
 
 /// <summary>
-/// CSV mapping configuration for <see cref="ExerciseRecord"/>, defining column names and format options.
+///     CSV mapping configuration for <see cref="ExerciseRecord" />, defining column names and format options.
 /// </summary>
 public sealed class ExerciseRecordMap : ClassMap<ExerciseRecord>
 {

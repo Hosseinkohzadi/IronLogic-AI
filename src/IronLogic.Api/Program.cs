@@ -1,8 +1,10 @@
-﻿using IronLogic.Application.Interfaces;
+using IronLogic.Application.Interfaces;
 using IronLogic.Application.Mappers;
 using IronLogic.Application.Services;
+using IronLogic.Domain.Interfaces;
 using IronLogic.Infrastructure;
 using IronLogic.Infrastructure.Data;
+using IronLogic.Infrastructure.Repositories;
 using IronLogic.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -18,18 +20,22 @@ builder.Services.AddOpenApiDocument(config =>
     config.Version = "v1";
 });
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") 
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
                        ?? "Data Source=ironlogic.db";
 
 builder.Services.AddDbContextPool<AppDbContext>(options =>
     options.UseSqlite(connectionString)
-           .EnableSensitiveDataLogging(false));
+        .EnableSensitiveDataLogging(false));
 
 builder.Services.AddSingleton<IHevyParserService, HevyCsvParserService>();
 builder.Services.AddSingleton<IHevyDataMapper, HevyDataMapper>();
 
 builder.Services.AddScoped<WorkoutAnalysisService>();
 builder.Services.AddScoped<IronLogicCoachService>();
+builder.Services.AddScoped<IDailyWeightService, DailyWeightService>();
+builder.Services.AddScoped<IMuscleMeasurementService, MuscleMeasurementService>();
+builder.Services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();
+builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 
 // -----------------------------------------------------------
 
@@ -53,6 +59,9 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-app.MapGet("/api/health", () => "IronLogic API is running perfectly! 🚀");
+app.MapGet("/api/health", () => "IronLogic API is running perfectly! ??");
 
 app.Run();
+
+// Make the implicit Program class public so integration tests can reference it via WebApplicationFactory<Program>
+public partial class Program;

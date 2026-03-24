@@ -1,14 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.5">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\IronLogic.Application\IronLogic.Application.csproj" />
     <ProjectReference Include="..\IronLogic.Infrastructure\IronLogic.Infrastructure.csproj" />
   </ItemGroup>

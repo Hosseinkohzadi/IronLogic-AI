@@ -1,4 +1,4 @@
-﻿using IronLogic.Application.Interfaces;
+using IronLogic.Application.Interfaces;
 using IronLogic.Application.Mappers;
 using IronLogic.Application.Services;
 using IronLogic.Infrastructure;
@@ -31,6 +31,7 @@ builder.Services.AddSingleton<IHevyDataMapper, HevyDataMapper>();
 builder.Services.AddScoped<WorkoutAnalysisService>();
 builder.Services.AddScoped<IronLogicCoachService>();
 builder.Services.AddScoped<IDailyWeightService, DailyWeightService>();
+builder.Services.AddScoped<IMuscleMeasurementService, MuscleMeasurementService>();
 
 // -----------------------------------------------------------
 
@@ -54,6 +55,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 
-app.MapGet("/api/health", () => "IronLogic API is running perfectly! 🚀");
+app.MapGet("/api/health", () => "IronLogic API is running perfectly! ??");
 
 app.Run();

@@ -12,11 +12,12 @@ namespace IronLogic.Tests;
 public class ProgressControllerTests : IDisposable
 {
     private readonly IDailyWeightService _dailyWeightService = Substitute.For<IDailyWeightService>();
+    private readonly IMuscleMeasurementService _muscleMeasurementService = Substitute.For<IMuscleMeasurementService>();
     private readonly ProgressController _sut;
 
     public ProgressControllerTests()
     {
-        _sut = new ProgressController(_dailyWeightService);
+        _sut = new ProgressController(_dailyWeightService, _muscleMeasurementService);
     }
 
     public void Dispose()
@@ -436,6 +437,136 @@ public class ProgressControllerTests : IDisposable
             BicepsRight = null,
             ThighLeft = null,
             ThighRight = null
+        };
+
+        var errors = ValidateModel(request);
+
+        errors.Should().BeEmpty();
+    }
+
+    // =====================================================================
+    //  LogMeasurements – Controller Action Tests
+    // =====================================================================
+
+    [Fact]
+    public async Task LogMeasurements_ValidRequest_Returns201Created()
+    {
+        var request = new MuscleMeasurementRequest
+        {
+            Date = new DateTime(2026, 3, 24),
+            Neck = 40f,
+            Chest = 110f,
+            Waist = 82f,
+            BicepsLeft = 38f,
+            BicepsRight = 39f,
+            ThighLeft = 60f,
+            ThighRight = 61f
+        };
+
+        var expectedEntry = new MuscleMeasurement
+        {
+            Date = request.Date,
+            Neck = request.Neck,
+            Chest = request.Chest,
+            Waist = request.Waist,
+            BicepsLeft = request.BicepsLeft,
+            BicepsRight = request.BicepsRight,
+            ThighLeft = request.ThighLeft,
+            ThighRight = request.ThighRight
+        };
+
+        _muscleMeasurementService
+            .LogMeasurementAsync(request)
+            .Returns(expectedEntry);
+
+        var result = await _sut.LogMeasurements(request);
+
+        var createdResult = result.Should().BeOfType<CreatedResult>().Subject;
+        createdResult.StatusCode.Should().Be(201);
+    }
+
+    [Fact]
+    public async Task LogMeasurements_ValidRequest_ReturnsLoggedEntryInBody()
+    {
+        var request = new MuscleMeasurementRequest
+        {
+            Date = new DateTime(2026, 3, 24),
+            Neck = 40f,
+            Chest = 110f,
+            Waist = 82f
+        };
+
+        var expectedEntry = new MuscleMeasurement
+        {
+            Date = request.Date,
+            Neck = request.Neck,
+            Chest = request.Chest,
+            Waist = request.Waist
+        };
+
+        _muscleMeasurementService
+            .LogMeasurementAsync(request)
+            .Returns(expectedEntry);
+
+        var result = await _sut.LogMeasurements(request);
+
+        var createdResult = result.Should().BeOfType<CreatedResult>().Subject;
+        var body = createdResult.Value.Should().BeOfType<MuscleMeasurement>().Subject;
+        body.Neck.Should().Be(40f);
+        body.Chest.Should().Be(110f);
+        body.Waist.Should().Be(82f);
+    }
+
+    [Fact]
+    public async Task LogMeasurements_ValidRequest_CallsServiceExactlyOnce()
+    {
+        var request = new MuscleMeasurementRequest
+        {
+            Date = new DateTime(2026, 3, 24),
+            Neck = 40f,
+            Chest = 110f,
+            Waist = 82f
+        };
+
+        _muscleMeasurementService
+            .LogMeasurementAsync(request)
+            .Returns(new MuscleMeasurement());
+
+        await _sut.LogMeasurements(request);
+
+        await _muscleMeasurementService.Received(1).LogMeasurementAsync(request);
+    }
+
+    // =====================================================================
+    //  MuscleMeasurementRequest – Future Date Validation (Business Rule)
+    // =====================================================================
+
+    [Fact]
+    public void MuscleMeasurementRequest_FutureDate_FailsValidation()
+    {
+        var request = new MuscleMeasurementRequest
+        {
+            Date = DateTime.UtcNow.Date.AddDays(1),
+            Neck = 38f,
+            Chest = 105f,
+            Waist = 80f
+        };
+
+        var errors = ValidateModel(request);
+
+        errors.Should().ContainSingle()
+            .Which.ErrorMessage.Should().Contain("Date cannot be in the future");
+    }
+
+    [Fact]
+    public void MuscleMeasurementRequest_TodayDate_PassesValidation()
+    {
+        var request = new MuscleMeasurementRequest
+        {
+            Date = DateTime.UtcNow.Date,
+            Neck = 38f,
+            Chest = 105f,
+            Waist = 80f
         };
 
         var errors = ValidateModel(request);

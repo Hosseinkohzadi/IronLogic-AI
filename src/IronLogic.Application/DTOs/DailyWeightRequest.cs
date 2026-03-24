@@ -13,7 +13,7 @@ public class DailyWeightRequest
     public DateTime Date { get; set; }
 
     [Required]
-    [Range(40, 200, ErrorMessage = "Weight must be between 40 and 200 kg.")]
+    [Range(40.0, 200.0, ErrorMessage = "Weight must be between 40 and 200 kg.")]
     public float Weight { get; set; }
 
     [MaxLength(200)]

@@ -19,6 +19,7 @@ public class AppDbContext : DbContext
     public DbSet<WorkoutExercise> Exercises { get; set; }
     public DbSet<ExerciseSet> Sets { get; set; }
     public DbSet<DailyWeight> DailyWeights { get; set; }
+    public DbSet<MuscleMeasurement> MuscleMeasurements { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
@@ -47,6 +48,13 @@ public class AppDbContext : DbContext
         {
             entity.Property(d => d.Weight).IsRequired();
             entity.Property(d => d.Note).HasMaxLength(200);
+        });
+
+        modelBuilder.Entity<MuscleMeasurement>(entity =>
+        {
+            entity.Property(m => m.Neck).IsRequired();
+            entity.Property(m => m.Chest).IsRequired();
+            entity.Property(m => m.Waist).IsRequired();
         });
     }
 }

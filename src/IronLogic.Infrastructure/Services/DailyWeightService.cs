@@ -1,8 +1,9 @@
 using IronLogic.Application.DTOs;
 using IronLogic.Application.Interfaces;
 using IronLogic.Domain.Entities;
+using IronLogic.Infrastructure.Data;
 
-namespace IronLogic.Application.Services;
+namespace IronLogic.Infrastructure.Services;
 
 public class DailyWeightService(AppDbContext dbContext) : IDailyWeightService
 {

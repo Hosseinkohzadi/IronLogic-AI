@@ -3,6 +3,7 @@ using IronLogic.Application.Mappers;
 using IronLogic.Application.Services;
 using IronLogic.Infrastructure;
 using IronLogic.Infrastructure.Data;
+using IronLogic.Infrastructure.Repositories;
 using IronLogic.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -32,6 +33,8 @@ builder.Services.AddScoped<WorkoutAnalysisService>();
 builder.Services.AddScoped<IronLogicCoachService>();
 builder.Services.AddScoped<IDailyWeightService, DailyWeightService>();
 builder.Services.AddScoped<IMuscleMeasurementService, MuscleMeasurementService>();
+builder.Services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();
+builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 
 // -----------------------------------------------------------
 

@@ -5,13 +5,50 @@ using IronLogic.Domain.Interfaces;
 
 namespace IronLogic.Infrastructure.Services;
 
+/// <summary>
+/// Provides workout-related operations such as retrieving stored workout sessions
+/// and computing aggregate statistics (including current-month volume).
+/// </summary>
+/// <param name="repository">The repository used to read workout sessions, exercises and sets.</param>
 public class WorkoutService(IWorkoutSessionRepository repository) : IWorkoutService
 {
+    /// <summary>
+    /// Retrieves all workout sessions including their exercises and sets.
+    /// </summary>
+    /// <remarks>
+    /// This method delegates to the injected <paramref name="repository"/> and returns
+    /// hydrated <see cref="WorkoutSession"/> instances with their nested exercises and sets.
+    /// Any exception thrown by the repository (for example, database access errors) will
+    /// propagate to the caller.
+    /// </remarks>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains a list
+    /// of <see cref="WorkoutSession"/> objects. The list may be empty if no sessions exist.
+    /// </returns>
     public async Task<List<WorkoutSession>> GetSessionsAsync()
     {
         return await repository.GetAllWithExercisesAndSetsAsync();
     }
 
+    /// <summary>
+    /// Computes aggregate workout statistics for all time and the total training volume for the current month.
+    /// </summary>
+    /// <remarks>
+    /// The returned <see cref="WorkoutStatsResponse"/> contains:
+    /// - <see cref="WorkoutStatsResponse.TotalSessions"/> : total number of sessions across all time.
+    /// - <see cref="WorkoutStatsResponse.TotalExercises"/> : total number of exercises across all sessions.
+    /// - <see cref="WorkoutStatsResponse.TotalSets"/> : total number of sets across all exercises.
+    /// - <see cref="WorkoutStatsResponse.TotalVolume"/> : summed volume for the current UTC month when volume for a set
+    ///   is calculated as (<c>Weight</c> ?? 0) * (<c>Reps</c> ?? 0).
+    ///
+    /// The current month is computed using UTC (DateTime.UtcNow). This method queries the repository twice:
+    /// 1) to obtain all sessions for global totals and 2) to obtain sessions in the current month for volume calculation.
+    /// Any exceptions from repository calls will propagate to the caller.
+    /// </remarks>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result is a populated
+    /// <see cref="WorkoutStatsResponse"/> instance.
+    /// </returns>
     public async Task<WorkoutStatsResponse> GetStatsAsync()
     {
         var allSessions = await repository.GetAllWithExercisesAndSetsAsync();

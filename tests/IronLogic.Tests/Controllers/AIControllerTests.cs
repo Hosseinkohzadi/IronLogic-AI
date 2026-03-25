@@ -1,4 +1,5 @@
 using IronLogic.Api.Controllers;
+using IronLogic.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -14,21 +15,25 @@ public class AIControllerTests
         // Arrange
         var mockChatService = new Mock<IChatCompletionService>();
 
-        // Return an empty, non-null IReadOnlyList<ChatMessageContent>
+        // Mock the actual interface method, not the extension method.
+        // The extension method GetChatMessageContentsAsync(string) internally calls this.
         IReadOnlyList<ChatMessageContent> expectedContents = [];
         mockChatService
-            .Setup(s => s.GetChatMessageContentsAsync(It.IsAny<string>()))
-            .Returns(Task.FromResult(expectedContents));
+            .Setup(s => s.GetChatMessageContentsAsync(
+                It.IsAny<ChatHistory>(),
+                It.IsAny<PromptExecutionSettings>(),
+                It.IsAny<Kernel>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedContents);
 
-        // BodybuildingCoachPlugin is only used when measurement/recent weights are provided.
-        var mockPlugin = new Mock<object>().Object;
+        // BodybuildingCoachPlugin is a concrete class — use a real instance.
+        // It is only invoked when measurement/recent weights are provided.
+        var plugin = new BodybuildingCoachPlugin();
 
-        // Create controller instance
         var controller = new ChatController(
             kernel: null!,
             chatCompletionService: mockChatService.Object,
-            bodybuildingPlugin: (dynamic)mockPlugin
-        );
+            bodybuildingPlugin: plugin);
 
         var request = new ChatController.AskRequest
         {
@@ -43,11 +48,14 @@ public class AIControllerTests
         var ok = result as OkObjectResult;
         ok!.StatusCode.Should().Be(200);
 
-        // The response is an anonymous object: { answer = IReadOnlyList<ChatMessageContent>, tools = List<string> }
+        // The response is an anonymous object from another assembly.
+        // Anonymous types are internal, so dynamic binding fails across assemblies.
+        // Use reflection to read the properties instead.
         ok.Value.Should().NotBeNull();
-        dynamic obj = ok.Value!;
-        var answer = obj.answer as IReadOnlyList<ChatMessageContent>;
-        var tools = obj.tools as IReadOnlyList<string>;
+        var responseType = ok.Value!.GetType();
+
+        var answer = responseType.GetProperty("answer")?.GetValue(ok.Value) as IReadOnlyList<ChatMessageContent>;
+        var tools = responseType.GetProperty("tools")?.GetValue(ok.Value) as IReadOnlyList<string>;
 
         answer.Should().NotBeNull();
         answer.Should().BeEmpty(); // our mock returned an empty list

@@ -47,6 +47,9 @@ builder.Services.AddScoped<IWorkoutProvider, MockHevyWorkoutProvider>();
 // Register workout analytics service
 builder.Services.AddScoped<IWorkoutAnalyticsService, WorkoutAnalyticsService>();
 
+// Register body metrics provider
+builder.Services.AddScoped<IBodyMetricsProvider, BodyMetricsProvider>();
+
 // Register Kernel (concrete) for Semantic Kernel usage across services/controllers.
 // NOTE: If you want to configure a chat provider (OpenAI, AzureOpenAI, etc.) add provider configuration
 // using the Kernel builder here (example the project owner suggested:

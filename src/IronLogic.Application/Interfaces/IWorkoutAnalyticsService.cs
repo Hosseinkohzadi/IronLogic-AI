@@ -4,12 +4,13 @@ namespace IronLogic.Application.Interfaces;
 
 /// <summary>
 ///     Analytics helpers for workout sessions and exercises.
-///     Output from these methods feeds into coaching and stats endpoints.
+///     Output from these methods feeds into <see cref="ICoachService"/> to generate
+///     bodybuilding advice for Classic Physique athletes.
 /// </summary>
 public interface IWorkoutAnalyticsService
 {
     /// <summary>
-    ///     Calculates the total session volume as the sum of (weight × reps) across all sets and exercises.
+    ///     Calculates the total session volume as the sum of (weight Ã— reps) across all sets and exercises.
     ///     Returns 0 when the session or numeric values are missing.
     /// </summary>
     double CalculateTotalVolume(HevyWorkoutSessionDto session);
@@ -21,7 +22,7 @@ public interface IWorkoutAnalyticsService
     int CalculateTotalReps(HevyWorkoutSessionDto session);
 
     /// <summary>
-    ///     Returns volume (weight × reps) broken down by exercise name.
+    ///     Returns volume (weight Ã— reps) broken down by exercise name.
     ///     Treats null weights/reps as 0.
     /// </summary>
     Dictionary<string, double> CalculateVolumePerExercise(HevyWorkoutSessionDto session);
@@ -33,14 +34,14 @@ public interface IWorkoutAnalyticsService
     double GetIntensityScore(HevyWorkoutSessionDto session);
 
     /// <summary>
-    ///     Returns the exercise with the highest total volume (weight × reps) in the session,
+    ///     Returns the exercise with the highest total volume (weight Ã— reps) in the session,
     ///     or <c>null</c> when the session contains no exercises or all volumes are zero.
     /// </summary>
     HevyExerciseDto? GetTopExercise(HevyWorkoutSessionDto session);
 
     /// <summary>
     ///     Returns true when the provided exercise contains a set whose single-set volume
-    ///     (weight × reps) exceeds any historical single-set volume for the same exercise name.
+    ///     (weight Ã— reps) exceeds any historical single-set volume for the same exercise name.
     ///     Handles null weights/reps safely (treated as 0).
     ///     If no history exists for the exercise, a non-zero current set will be considered a PR.
     /// </summary>

@@ -5,6 +5,8 @@ namespace IronLogic.Application.Services;
 
 /// <summary>
 ///     Provides common analytics operations for workout sessions and exercises.
+///     Results are consumed by <see cref="CoachService" /> to generate tailored
+///     Classic Physique coaching advice.
 /// </summary>
 public class WorkoutAnalyticsService : IWorkoutAnalyticsService
 {
@@ -41,7 +43,7 @@ public class WorkoutAnalyticsService : IWorkoutAnalyticsService
             .ToDictionary(
                 g => g.Key,
                 g => g.SelectMany(e => e.Sets ?? Enumerable.Empty<HevySetDto>())
-                      .Sum(s => (s?.Weight ?? 0.0) * (s?.Reps ?? 0)),
+                    .Sum(s => (s?.Weight ?? 0.0) * (s?.Reps ?? 0)),
                 StringComparer.OrdinalIgnoreCase);
     }
 
@@ -71,11 +73,11 @@ public class WorkoutAnalyticsService : IWorkoutAnalyticsService
                 .Select(s => (s?.Weight ?? 0.0) * (s?.Reps ?? 0))
                 .Sum() ?? 0.0;
 
-            if (volume > topVolume)
-            {
-                topVolume = volume;
-                top = exercise;
-            }
+            if (!(volume > topVolume))
+                continue;
+
+            topVolume = volume;
+            top = exercise;
         }
 
         return top;
@@ -92,25 +94,21 @@ public class WorkoutAnalyticsService : IWorkoutAnalyticsService
             .Max() ?? 0.0;
 
         var historicalMax = 0.0;
-        if (history != null)
+        if (history == null)
+            return currentMax > historicalMax;
+        {
             foreach (var session in history)
             {
                 if (session?.Exercises == null) continue;
 
-                foreach (var ex in session.Exercises)
-                {
-                    if (ex is null) continue;
-                    if (!string.Equals(ex.Name, currentExercise.Name, StringComparison.OrdinalIgnoreCase))
-                        continue;
-
-                    var exMax = ex.Sets?
-                        .Select(s => (s?.Weight ?? 0.0) * (s?.Reps ?? 0))
-                        .DefaultIfEmpty(0.0)
-                        .Max() ?? 0.0;
-
-                    if (exMax > historicalMax) historicalMax = exMax;
-                }
+                historicalMax = (from ex in session.Exercises.OfType<HevyExerciseDto>()
+                        where string.Equals(ex.Name, currentExercise.Name, StringComparison.OrdinalIgnoreCase)
+                        select ex.Sets?.Select(s => (s?.Weight ?? 0.0) * (s?.Reps ?? 0))
+                            .DefaultIfEmpty(0.0)
+                            .Max() ?? 0.0).Prepend(historicalMax)
+                    .Max();
             }
+        }
 
         return currentMax > historicalMax;
     }

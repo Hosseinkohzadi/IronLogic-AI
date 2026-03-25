@@ -53,7 +53,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -76,8 +76,8 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
-        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
+        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
 
         // Assert
         body.Should().NotBeNull();
@@ -105,7 +105,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -124,8 +124,8 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
-        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
+        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
 
         // Assert
         body.Should().NotBeNull();
@@ -144,7 +144,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 35.0f, chest = 100.0f, waist = 40.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
@@ -154,7 +154,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 35.0f, chest = 100.0f, waist = 150.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
@@ -164,8 +164,8 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 35.0f, chest = 100.0f, waist = 40.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
-        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
+        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
 
         body.Should().NotBeNull();
         body.Waist.Should().Be(40.0f);
@@ -176,8 +176,8 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 35.0f, chest = 100.0f, waist = 150.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
-        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
+        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
 
         body.Should().NotBeNull();
         body.Waist.Should().Be(150.0f);
@@ -195,7 +195,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 35.0f, chest = 100.0f, waist };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -207,7 +207,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 35.0f, chest = 100.0f, waist };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -221,7 +221,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 35.0f, chest = 50.0f, waist = 80.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
@@ -231,7 +231,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 35.0f, chest = 180.0f, waist = 80.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
@@ -241,8 +241,8 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 35.0f, chest = 50.0f, waist = 80.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
-        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
+        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
 
         body.Should().NotBeNull();
         body.Chest.Should().Be(50.0f);
@@ -253,8 +253,8 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 35.0f, chest = 180.0f, waist = 80.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
-        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
+        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
 
         body.Should().NotBeNull();
         body.Chest.Should().Be(180.0f);
@@ -272,7 +272,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 35.0f, chest, waist = 80.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -284,7 +284,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 35.0f, chest, waist = 80.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -307,8 +307,8 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
-        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
+        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
 
         // Assert - values are persisted accurately for downstream ratio calculation
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -333,8 +333,8 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
-        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
+        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -359,8 +359,8 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
-        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
+        var body = await response.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -381,7 +381,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 20.0f, chest = 100.0f, waist = 80.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
@@ -391,7 +391,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 60.0f, chest = 100.0f, waist = 80.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
@@ -407,7 +407,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck, chest = 100.0f, waist = 80.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -419,7 +419,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck, chest = 100.0f, waist = 80.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -433,7 +433,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", chest = 110.0f, waist = 80.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -443,7 +443,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 38.0f, waist = 80.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -453,7 +453,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var payload = new { date = "2026-03-24", neck = 38.0f, chest = 110.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -463,7 +463,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var content = new StringContent("{}", Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync(Endpoint, content);
+        var response = await _client.PostAsync(Endpoint, content, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -478,7 +478,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
         var json = """{ "date": "not-a-date", "neck": 38.0, "chest": 110.0, "waist": 80.0 }""";
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync(Endpoint, content);
+        var response = await _client.PostAsync(Endpoint, content, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -489,7 +489,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
         var futureDate = DateTime.UtcNow.Date.AddDays(5).ToString("yyyy-MM-dd");
         var payload = new { date = futureDate, neck = 38.0f, chest = 110.0f, waist = 80.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -503,7 +503,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
     {
         var content = new StringContent("{ broken json }", Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync(Endpoint, content);
+        var response = await _client.PostAsync(Endpoint, content, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -518,8 +518,8 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
         var payload1 = new { date = "2026-03-20", neck = 38.0f, chest = 110.0f, waist = 80.0f };
         var payload2 = new { date = "2026-03-21", neck = 38.5f, chest = 111.0f, waist = 79.5f };
 
-        var response1 = await _client.PostAsJsonAsync(Endpoint, payload1, JsonOptions);
-        var response2 = await _client.PostAsJsonAsync(Endpoint, payload2, JsonOptions);
+        var response1 = await _client.PostAsJsonAsync(Endpoint, payload1, JsonOptions, CancellationToken.None);
+        var response2 = await _client.PostAsJsonAsync(Endpoint, payload2, JsonOptions, CancellationToken.None);
 
         response1.StatusCode.Should().Be(HttpStatusCode.Created);
         response2.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -531,11 +531,11 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
         var payload1 = new { date = "2026-03-22", neck = 38.0f, chest = 110.0f, waist = 80.0f };
         var payload2 = new { date = "2026-03-23", neck = 38.0f, chest = 112.0f, waist = 79.0f };
 
-        var response1 = await _client.PostAsJsonAsync(Endpoint, payload1, JsonOptions);
-        var response2 = await _client.PostAsJsonAsync(Endpoint, payload2, JsonOptions);
+        var response1 = await _client.PostAsJsonAsync(Endpoint, payload1, JsonOptions, CancellationToken.None);
+        var response2 = await _client.PostAsJsonAsync(Endpoint, payload2, JsonOptions, CancellationToken.None);
 
-        var body1 = await response1.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
-        var body2 = await response2.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
+        var body1 = await response1.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
+        var body2 = await response2.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
 
         body1!.Id.Should().NotBe(body2!.Id);
     }
@@ -548,11 +548,11 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
         var offseasonPayload = new { date = "2026-03-21", neck = 44.0f, chest = 125.0f, waist = 95.0f };
 
         // Act
-        var contestResponse = await _client.PostAsJsonAsync(Endpoint, contestPayload, JsonOptions);
-        var offseasonResponse = await _client.PostAsJsonAsync(Endpoint, offseasonPayload, JsonOptions);
+        var contestResponse = await _client.PostAsJsonAsync(Endpoint, contestPayload, JsonOptions, CancellationToken.None);
+        var offseasonResponse = await _client.PostAsJsonAsync(Endpoint, offseasonPayload, JsonOptions, CancellationToken.None);
 
-        var contestBody = await contestResponse.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
-        var offseasonBody = await offseasonResponse.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions);
+        var contestBody = await contestResponse.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
+        var offseasonBody = await offseasonResponse.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
 
         // Assert - each entry persists its own distinct chest/waist values
         contestBody!.Chest.Should().Be(120.0f);
@@ -576,7 +576,7 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
         // neck below 20, chest below 50, waist above 150
         var payload = new { date = "2026-03-24", neck = 10.0f, chest = 30.0f, waist = 200.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }

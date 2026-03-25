@@ -6,6 +6,7 @@ using IronLogic.Infrastructure;
 using IronLogic.Infrastructure.Data;
 using IronLogic.Infrastructure.Repositories;
 using IronLogic.Infrastructure.Services;
+using IronLogic.Infrastructure.ExternalServices;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.SemanticKernel;
 
@@ -39,6 +40,9 @@ builder.Services.AddScoped<IDailyWeightService, DailyWeightService>();
 builder.Services.AddScoped<IMuscleMeasurementService, MuscleMeasurementService>();
 builder.Services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();
 builder.Services.AddScoped<IWorkoutService, WorkoutService>();
+
+// Register the workout provider (mock implementation for now)
+builder.Services.AddScoped<IWorkoutProvider, MockHevyWorkoutProvider>();
 
 // Register Kernel (concrete) for Semantic Kernel usage across services/controllers.
 // NOTE: If you want to configure a chat provider (OpenAI, AzureOpenAI, etc.) add provider configuration

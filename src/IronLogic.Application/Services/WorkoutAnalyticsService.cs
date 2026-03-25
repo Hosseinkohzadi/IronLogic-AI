@@ -9,11 +9,10 @@ namespace IronLogic.Application.Services;
 public class WorkoutAnalyticsService : IWorkoutAnalyticsService
 {
     /// <inheritdoc />
-    public double CalculateSessionVolume(HevyWorkoutSessionDto session)
+    public double CalculateTotalVolume(HevyWorkoutSessionDto session)
     {
         if (session is null) return 0.0;
 
-        // Sum weight * reps across all exercises and sets, treating null weight/reps as 0
         return session.Exercises?
             .SelectMany(e => e?.Sets ?? Enumerable.Empty<HevySetDto>())
             .Select(s => (s?.Weight ?? 0.0) * (s?.Reps ?? 0))
@@ -21,17 +20,41 @@ public class WorkoutAnalyticsService : IWorkoutAnalyticsService
     }
 
     /// <inheritdoc />
+    public int CalculateTotalReps(HevyWorkoutSessionDto session)
+    {
+        if (session is null) return 0;
+
+        return session.Exercises?
+            .SelectMany(e => e?.Sets ?? Enumerable.Empty<HevySetDto>())
+            .Sum(s => s?.Reps ?? 0) ?? 0;
+    }
+
+    /// <inheritdoc />
+    public Dictionary<string, double> CalculateVolumePerExercise(HevyWorkoutSessionDto session)
+    {
+        if (session?.Exercises is null)
+            return new Dictionary<string, double>();
+
+        return session.Exercises
+            .Where(e => e is not null)
+            .GroupBy(e => e.Name ?? string.Empty, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(
+                g => g.Key,
+                g => g.SelectMany(e => e.Sets ?? Enumerable.Empty<HevySetDto>())
+                      .Sum(s => (s?.Weight ?? 0.0) * (s?.Reps ?? 0)),
+                StringComparer.OrdinalIgnoreCase);
+    }
+
+    /// <inheritdoc />
     public bool IsPersonalRecord(HevyExerciseDto currentExercise, IEnumerable<HevyWorkoutSessionDto> history)
     {
         if (currentExercise is null) return false;
 
-        // Compute the best single-set volume for the current exercise
         var currentMax = currentExercise.Sets?
             .Select(s => (s?.Weight ?? 0.0) * (s?.Reps ?? 0))
             .DefaultIfEmpty(0.0)
             .Max() ?? 0.0;
 
-        // Walk history to find the historical best single-set volume for the same exercise name
         var historicalMax = 0.0;
         if (history != null)
             foreach (var session in history)
@@ -53,7 +76,6 @@ public class WorkoutAnalyticsService : IWorkoutAnalyticsService
                 }
             }
 
-        // If no historical data exists (historicalMax == 0) then any non-zero currentMax is a PR.
         return currentMax > historicalMax;
     }
 }

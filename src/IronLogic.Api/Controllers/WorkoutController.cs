@@ -1,3 +1,4 @@
+using IronLogic.Application.DTOs;
 using IronLogic.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
@@ -6,7 +7,10 @@ namespace IronLogic.Api.Controllers;
 [ApiController]
 [Route("api/v1/workouts")]
 [Tags("Workouts")]
-public class WorkoutController(IWorkoutService workoutService) : ControllerBase
+public class WorkoutController(
+    IWorkoutService workoutService,
+    IWorkoutProvider workoutProvider,
+    IWorkoutAnalyticsService analyticsService) : ControllerBase
 {
     /// <summary>
     ///     Get all workout sessions with exercises and sets.
@@ -21,14 +25,39 @@ public class WorkoutController(IWorkoutService workoutService) : ControllerBase
     }
 
     /// <summary>
-    ///     Get aggregate workout statistics. Volume = Weight * Reps.
+    ///     Get aggregate workout statistics.
+    ///     Fetches the most recent session from the external workout provider and calculates
+    ///     total volume, top exercise, and intensity score.
     /// </summary>
     [HttpGet("stats")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(WorkoutStatsResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> GetStats()
     {
-        var stats = await workoutService.GetStatsAsync();
+        var recentSessions = (await workoutProvider.GetRecentSessionsAsync(1)).ToList();
 
-        return Ok(stats);
+        var lastSession = recentSessions.FirstOrDefault();
+
+        if (lastSession is null)
+            return NoContent();
+
+        var totalVolume = analyticsService.CalculateTotalVolume(lastSession);
+        var intensityScore = analyticsService.GetIntensityScore(lastSession);
+        var topExercise = analyticsService.GetTopExercise(lastSession);
+
+        var response = new WorkoutStatsResponse
+        {
+            TotalSessions = recentSessions.Count,
+            TotalExercises = lastSession.Exercises?.Count ?? 0,
+            TotalSets = lastSession.Exercises?
+                .SelectMany(e => e.Sets ?? [])
+                .Count() ?? 0,
+            TotalVolume = totalVolume,
+            TopExercise = topExercise?.Name,
+            IntensityScore = intensityScore
+        };
+
+        return Ok(response);
     }
 }

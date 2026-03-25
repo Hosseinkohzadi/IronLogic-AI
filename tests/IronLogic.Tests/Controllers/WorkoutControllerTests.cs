@@ -9,12 +9,14 @@ namespace IronLogic.Tests.Controllers;
 
 public class WorkoutControllerTests : IDisposable
 {
-    private readonly WorkoutController _sut;
     private readonly IWorkoutService _workoutService = Substitute.For<IWorkoutService>();
+    private readonly IWorkoutProvider _workoutProvider = Substitute.For<IWorkoutProvider>();
+    private readonly IWorkoutAnalyticsService _analyticsService = Substitute.For<IWorkoutAnalyticsService>();
+    private readonly WorkoutController _sut;
 
     public WorkoutControllerTests()
     {
-        _sut = new WorkoutController(_workoutService);
+        _sut = new WorkoutController(_workoutService, _workoutProvider, _analyticsService);
     }
 
     public void Dispose()
@@ -69,46 +71,109 @@ public class WorkoutControllerTests : IDisposable
     // =====================================================================
 
     [Fact]
-    public async Task GetStats_WhenCalled_Returns200Ok()
+    public async Task GetStats_WhenSessionExists_Returns200Ok()
     {
-        _workoutService.GetStatsAsync().Returns(new WorkoutStatsResponse());
+        // Arrange
+        var session = new HevyWorkoutSessionDto
+        {
+            Title = "Push Day",
+            Exercises =
+            [
+                new HevyExerciseDto
+                {
+                    Name = "Bench Press",
+                    Sets = [new HevySetDto { Weight = 100.0, Reps = 10, SetType = "work" }]
+                }
+            ]
+        };
 
+        _workoutProvider.GetRecentSessionsAsync(1).Returns(new List<HevyWorkoutSessionDto> { session });
+        _analyticsService.CalculateTotalVolume(session).Returns(1000.0);
+        _analyticsService.GetIntensityScore(session).Returns(100.0);
+        _analyticsService.GetTopExercise(session).Returns(session.Exercises[0]);
+
+        // Act
         var result = await _sut.GetStats();
 
+        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         okResult.StatusCode.Should().Be(200);
     }
 
     [Fact]
-    public async Task GetStats_WhenCalled_ReturnsStatsInBody()
+    public async Task GetStats_WhenSessionExists_ReturnsStatsWithAnalytics()
     {
-        var stats = new WorkoutStatsResponse
+        // Arrange
+        var session = new HevyWorkoutSessionDto
         {
-            TotalSessions = 10,
-            TotalExercises = 30,
-            TotalSets = 90,
-            TotalVolume = 45000
+            Title = "Push Day",
+            Exercises =
+            [
+                new HevyExerciseDto
+                {
+                    Name = "Bench Press",
+                    Sets = [new HevySetDto { Weight = 100.0, Reps = 10, SetType = "work" }]
+                }
+            ]
         };
 
-        _workoutService.GetStatsAsync().Returns(stats);
+        _workoutProvider.GetRecentSessionsAsync(1).Returns(new List<HevyWorkoutSessionDto> { session });
+        _analyticsService.CalculateTotalVolume(session).Returns(1000.0);
+        _analyticsService.GetIntensityScore(session).Returns(100.0);
+        _analyticsService.GetTopExercise(session).Returns(session.Exercises[0]);
 
+        // Act
         var result = await _sut.GetStats();
 
+        // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         var body = okResult.Value.Should().BeOfType<WorkoutStatsResponse>().Subject;
-        body.TotalSessions.Should().Be(10);
-        body.TotalExercises.Should().Be(30);
-        body.TotalSets.Should().Be(90);
-        body.TotalVolume.Should().Be(45000);
+        body.TotalSessions.Should().Be(1);
+        body.TotalExercises.Should().Be(1);
+        body.TotalSets.Should().Be(1);
+        body.TotalVolume.Should().Be(1000.0);
+        body.TopExercise.Should().Be("Bench Press");
+        body.IntensityScore.Should().Be(100.0);
     }
 
     [Fact]
-    public async Task GetStats_WhenCalled_CallsServiceExactlyOnce()
+    public async Task GetStats_WhenNoSessions_Returns204NoContent()
     {
-        _workoutService.GetStatsAsync().Returns(new WorkoutStatsResponse());
+        // Arrange
+        _workoutProvider.GetRecentSessionsAsync(1).Returns(Enumerable.Empty<HevyWorkoutSessionDto>());
 
+        // Act
+        var result = await _sut.GetStats();
+
+        // Assert
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task GetStats_WhenNoSessions_DoesNotCallAnalyticsService()
+    {
+        // Arrange
+        _workoutProvider.GetRecentSessionsAsync(1).Returns(Enumerable.Empty<HevyWorkoutSessionDto>());
+
+        // Act
         await _sut.GetStats();
 
-        await _workoutService.Received(1).GetStatsAsync();
+        // Assert
+        _analyticsService.DidNotReceive().CalculateTotalVolume(Arg.Any<HevyWorkoutSessionDto>());
+        _analyticsService.DidNotReceive().GetIntensityScore(Arg.Any<HevyWorkoutSessionDto>());
+        _analyticsService.DidNotReceive().GetTopExercise(Arg.Any<HevyWorkoutSessionDto>());
+    }
+
+    [Fact]
+    public async Task GetStats_WhenCalled_CallsProviderWithLimitOfOne()
+    {
+        // Arrange
+        _workoutProvider.GetRecentSessionsAsync(1).Returns(Enumerable.Empty<HevyWorkoutSessionDto>());
+
+        // Act
+        await _sut.GetStats();
+
+        // Assert
+        await _workoutProvider.Received(1).GetRecentSessionsAsync(1);
     }
 }

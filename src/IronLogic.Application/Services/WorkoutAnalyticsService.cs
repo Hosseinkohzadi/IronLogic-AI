@@ -46,6 +46,42 @@ public class WorkoutAnalyticsService : IWorkoutAnalyticsService
     }
 
     /// <inheritdoc />
+    public double GetIntensityScore(HevyWorkoutSessionDto session)
+    {
+        var totalVolume = CalculateTotalVolume(session);
+        var totalReps = CalculateTotalReps(session);
+
+        return totalReps > 0 ? totalVolume / totalReps : 0.0;
+    }
+
+    /// <inheritdoc />
+    public HevyExerciseDto? GetTopExercise(HevyWorkoutSessionDto session)
+    {
+        if (session?.Exercises is null or { Count: 0 })
+            return null;
+
+        HevyExerciseDto? top = null;
+        var topVolume = 0.0;
+
+        foreach (var exercise in session.Exercises)
+        {
+            if (exercise is null) continue;
+
+            var volume = exercise.Sets?
+                .Select(s => (s?.Weight ?? 0.0) * (s?.Reps ?? 0))
+                .Sum() ?? 0.0;
+
+            if (volume > topVolume)
+            {
+                topVolume = volume;
+                top = exercise;
+            }
+        }
+
+        return top;
+    }
+
+    /// <inheritdoc />
     public bool IsPersonalRecord(HevyExerciseDto currentExercise, IEnumerable<HevyWorkoutSessionDto> history)
     {
         if (currentExercise is null) return false;

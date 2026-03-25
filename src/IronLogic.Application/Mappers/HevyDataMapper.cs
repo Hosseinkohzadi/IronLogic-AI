@@ -12,10 +12,12 @@ public class HevyDataMapper : IHevyDataMapper
     {
         ArgumentNullException.ThrowIfNull(flatRecords);
 
-        if (!flatRecords.Any())
+        var exerciseRecords = flatRecords.ToList();
+
+        if (!exerciseRecords.Any())
             return new List<WorkoutSession>();
 
-        return flatRecords
+        return exerciseRecords
             .Where(r => r.Date.HasValue)
             .GroupBy(record => new { record.Date!.Value, record.WorkoutName })
             .Select(sessionGroup => new WorkoutSession

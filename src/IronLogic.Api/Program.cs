@@ -7,6 +7,7 @@ using IronLogic.Infrastructure.Data;
 using IronLogic.Infrastructure.Repositories;
 using IronLogic.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.SemanticKernel; // Added for Kernel registration
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,11 +32,17 @@ builder.Services.AddSingleton<IHevyParserService, HevyCsvParserService>();
 builder.Services.AddSingleton<IHevyDataMapper, HevyDataMapper>();
 
 builder.Services.AddScoped<WorkoutAnalysisService>();
-builder.Services.AddScoped<IronLogicCoachService>();
+builder.Services.AddScoped<CoachService>();
 builder.Services.AddScoped<IDailyWeightService, DailyWeightService>();
 builder.Services.AddScoped<IMuscleMeasurementService, MuscleMeasurementService>();
 builder.Services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();
 builder.Services.AddScoped<IWorkoutService, WorkoutService>();
+
+// Register Kernel (concrete) for Semantic Kernel usage across services/controllers.
+// NOTE: If you want to configure a chat provider (OpenAI, AzureOpenAI, etc.) add provider configuration
+// using the Kernel builder here (example the project owner suggested:
+// Kernel.CreateBuilder().AddOpenAIChatCompletion(...).Build(); )
+builder.Services.AddScoped<Kernel>(_ => Kernel.CreateBuilder().Build());
 
 // -----------------------------------------------------------
 

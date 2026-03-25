@@ -12,17 +12,17 @@ public class MuscleMeasurement
     /// <summary>
     ///     Neck circumference in cm.
     /// </summary>
-    public float Neck { get; set; }
+    public double Neck { get; set; }
 
     /// <summary>
     ///     Chest circumference in cm.
     /// </summary>
-    public float Chest { get; set; }
+    public double Chest { get; set; }
 
     /// <summary>
     ///     Waist circumference in cm. Crucial for Classic Physique ratio.
     /// </summary>
-    public float Waist { get; set; }
+    public double Waist { get; set; }
 
     /// <summary>
     ///     Left biceps circumference in cm (optional).

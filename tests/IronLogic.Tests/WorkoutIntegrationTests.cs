@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using FluentAssertions;
 using IronLogic.Application.DTOs;
 using IronLogic.Domain.Entities;
 using IronLogic.Infrastructure.Data;
@@ -15,8 +14,8 @@ namespace IronLogic.Tests;
 ///     Uses WebApplicationFactory with an EF Core InMemory database.
 ///     Volume is defined as Weight * Reps, scoped to the current calendar month.
 /// </summary>
-public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
-    : IClassFixture<IronLogicWebApplicationFactory>, IDisposable
+public class WorkoutIntegrationTests(WebApplicationFactory factory)
+    : IClassFixture<WebApplicationFactory>, IDisposable
 {
     private const string SessionsEndpoint = "/api/v1/workouts/sessions";
     private const string StatsEndpoint = "/api/v1/workouts/stats";
@@ -142,11 +141,11 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
     [Fact]
     public async Task GetSessions_EmptyDatabase_Returns200WithEmptyList()
     {
-        var response = await _client.GetAsync(SessionsEndpoint);
+        var response = await _client.GetAsync(SessionsEndpoint, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var sessions = await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions);
+        var sessions = await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions, CancellationToken.None);
         sessions.Should().NotBeNull();
     }
 
@@ -155,7 +154,7 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
     {
         await SeedWorkoutDataAsync();
 
-        var response = await _client.GetAsync(SessionsEndpoint);
+        var response = await _client.GetAsync(SessionsEndpoint, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -165,8 +164,8 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
     {
         await SeedWorkoutDataAsync();
 
-        var response = await _client.GetAsync(SessionsEndpoint);
-        var sessions = await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions);
+        var response = await _client.GetAsync(SessionsEndpoint, CancellationToken.None);
+        var sessions = await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions, CancellationToken.None);
 
         sessions.Should().NotBeNull();
         sessions.Should().Contain(s => s.Name == "Push Day");
@@ -177,8 +176,8 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
     {
         await SeedWorkoutDataAsync();
 
-        var response = await _client.GetAsync(SessionsEndpoint);
-        var sessions = await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions);
+        var response = await _client.GetAsync(SessionsEndpoint, CancellationToken.None);
+        var sessions = await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions, CancellationToken.None);
 
         var pushDay = sessions!.First(s => s.Name == "Push Day");
         pushDay.Exercises.Should().HaveCountGreaterThanOrEqualTo(2);
@@ -193,11 +192,11 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
     [Fact]
     public async Task GetStats_EmptyDatabase_Returns200WithZeroValues()
     {
-        var response = await _client.GetAsync(StatsEndpoint);
+        var response = await _client.GetAsync(StatsEndpoint, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions);
+        var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions, CancellationToken.None);
         stats.Should().NotBeNull();
         stats.TotalVolume.Should().Be(0);
     }
@@ -207,7 +206,7 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
     {
         await SeedWorkoutDataAsync();
 
-        var response = await _client.GetAsync(StatsEndpoint);
+        var response = await _client.GetAsync(StatsEndpoint, CancellationToken.None);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
@@ -217,8 +216,8 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
     {
         await SeedWorkoutDataAsync();
 
-        var response = await _client.GetAsync(StatsEndpoint);
-        var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions);
+        var response = await _client.GetAsync(StatsEndpoint, CancellationToken.None);
+        var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions, CancellationToken.None);
 
         stats.Should().NotBeNull();
         stats.TotalSessions.Should().BeGreaterThanOrEqualTo(1);
@@ -229,8 +228,8 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
     {
         await SeedWorkoutDataAsync();
 
-        var response = await _client.GetAsync(StatsEndpoint);
-        var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions);
+        var response = await _client.GetAsync(StatsEndpoint, CancellationToken.None);
+        var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions, CancellationToken.None);
 
         stats.Should().NotBeNull();
         stats.TotalExercises.Should().BeGreaterThanOrEqualTo(2);
@@ -241,8 +240,8 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
     {
         await SeedWorkoutDataAsync();
 
-        var response = await _client.GetAsync(StatsEndpoint);
-        var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions);
+        var response = await _client.GetAsync(StatsEndpoint, CancellationToken.None);
+        var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions, CancellationToken.None);
 
         stats.Should().NotBeNull();
         stats.TotalSets.Should().BeGreaterThanOrEqualTo(5);
@@ -253,8 +252,8 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
     {
         await SeedWorkoutDataAsync();
 
-        var response = await _client.GetAsync(StatsEndpoint);
-        var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions);
+        var response = await _client.GetAsync(StatsEndpoint, CancellationToken.None);
+        var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions, CancellationToken.None);
 
         // Expected volume from seed data (all in current month):
         // Bench: (80*10) + (85*8) + (90*6) = 800 + 680 + 540 = 2020
@@ -273,8 +272,8 @@ public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
     {
         await SeedMultiMonthWorkoutDataAsync();
 
-        var response = await _client.GetAsync(StatsEndpoint);
-        var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions);
+        var response = await _client.GetAsync(StatsEndpoint, CancellationToken.None);
+        var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions, CancellationToken.None);
 
         stats.Should().NotBeNull();
 

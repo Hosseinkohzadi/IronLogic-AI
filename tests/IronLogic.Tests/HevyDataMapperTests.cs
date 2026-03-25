@@ -1,4 +1,3 @@
-using FluentAssertions;
 using IronLogic.Application.Mappers;
 using IronLogic.Domain.Entities;
 

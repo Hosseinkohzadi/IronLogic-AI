@@ -1,8 +1,3 @@
-using IronLogic.Application.DTOs;
-using IronLogic.Application.Interfaces;
-using IronLogic.Domain.Entities;
-using IronLogic.Infrastructure.Data;
-
 namespace IronLogic.Infrastructure.Services;
 
 public class MuscleMeasurementService(AppDbContext dbContext) : IMuscleMeasurementService

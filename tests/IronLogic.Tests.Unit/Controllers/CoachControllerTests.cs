@@ -20,17 +20,10 @@ namespace IronLogic.Tests.Unit.Controllers
 
             var mockCoachService = new Mock<ICoachService>();
             mockCoachService
-                .Setup(s => s.GenerateAdviceAsync(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<string>()))
+                .Setup(s => s.AnalyzeAsync(It.IsAny<string>()))
                 .ReturnsAsync(expectedAdvice);
 
-            var mockAnalysisService = new Mock<IWorkoutAnalysisService>();
-            mockAnalysisService
-                .Setup(a => a.CalculateChestToWaistRatio(It.IsAny<Domain.Entities.MuscleMeasurement>()))
-                .Returns(1.46);
-
-            var controller = new CoachController(
-                coachService: mockCoachService.Object,
-                analysisService: mockAnalysisService.Object);
+            var controller = new CoachController(coachService: mockCoachService.Object);
 
             // Act
             var actionResult = await controller.AnalyzeAsync();

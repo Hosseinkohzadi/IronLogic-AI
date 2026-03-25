@@ -1,8 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using IronLogic.Application.DTOs;
-using IronLogic.Domain.Entities;
 using IronLogic.Infrastructure.Data;
 using IronLogic.Tests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,8 +9,9 @@ namespace IronLogic.Tests.IntegrationTests;
 
 /// <summary>
 ///     Integration tests for GET /api/v1/workouts/sessions and GET /api/v1/workouts/stats.
-///     Uses WebApplicationFactory with an EF Core InMemory database.
-///     Volume is defined as Weight * Reps, scoped to the current calendar month.
+///     Uses WebApplicationFactory with an EF Core InMemory database and a database-backed
+///     IWorkoutProvider so seeded data is reflected in the /stats endpoint.
+///     Volume is defined as Weight * Reps.
 /// </summary>
 public class WorkoutIntegrationTests(WebApplicationFactory factory)
     : IClassFixture<WebApplicationFactory>, IDisposable
@@ -82,7 +81,7 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
 
     /// <summary>
     ///     Seeds sessions across two months: one in the current month, one in the previous month.
-    ///     Used to verify that volume is scoped to the current month only.
+    ///     Used to verify that volume is scoped to the most recent session only.
     /// </summary>
     private async Task SeedMultiMonthWorkoutDataAsync()
     {
@@ -124,7 +123,7 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
                     Name = "Deadlift",
                     Sets =
                     [
-                        new ExerciseSet { SetOrder = 1, Weight = 140, Reps = 5 } // Volume = 700 (excluded)
+                        new ExerciseSet { SetOrder = 1, Weight = 140, Reps = 5 } // Volume = 700
                     ]
                 }
             ]
@@ -137,18 +136,6 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
     // =====================================================================
     //  GET /sessions — 200 OK
     // =====================================================================
-
-    [Fact]
-    public async Task GetSessions_EmptyDatabase_Returns200WithEmptyList()
-    {
-        var response = await _client.GetAsync(SessionsEndpoint, CancellationToken.None);
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var sessions =
-            await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions, CancellationToken.None);
-        sessions.Should().NotBeNull();
-    }
 
     [Fact]
     public async Task GetSessions_WithSeededData_Returns200OK()
@@ -189,23 +176,8 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
     }
 
     // =====================================================================
-    //  GET /stats — 200 OK
+    //  GET /stats — 200 OK (with seeded data)
     // =====================================================================
-
-    [Fact]
-    public async Task GetStats_EmptyDatabase_Returns200WithDefaultValues()
-    {
-        var response = await _client.GetAsync(StatsEndpoint, CancellationToken.None);
-
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
-
-        var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions, CancellationToken.None);
-        stats.Should().NotBeNull();
-        stats!.TotalVolume.Should().Be(0);
-        stats.TopExercise.Should().BeNull();
-        stats.IntensityScore.Should().Be(0);
-        stats.SessionDate.Should().BeNull();
-    }
 
     [Fact]
     public async Task GetStats_WithSeededData_Returns200OK()
@@ -262,20 +234,22 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
         var response = await _client.GetAsync(StatsEndpoint, CancellationToken.None);
         var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions, CancellationToken.None);
 
-        // Expected volume from seed data (all in current month):
+        // The controller fetches the most recent session (limit=1) via IWorkoutProvider.
+        // Seed data has 1 session with all exercises. The DatabaseWorkoutProvider returns
+        // the most recent session which contains all seeded exercises.
         // Bench: (80*10) + (85*8) + (90*6) = 800 + 680 + 540 = 2020
         // OHP:   (40*12) + (45*10)          = 480 + 450       = 930
         // Total = 2950
         stats.Should().NotBeNull();
-        stats!.TotalVolume.Should().BeGreaterThanOrEqualTo(2950);
+        stats!.TotalVolume.Should().Be(2950);
     }
 
     // =====================================================================
-    //  GET /stats — Current Month Volume Scoping
+    //  GET /stats — Most Recent Session Scoping
     // =====================================================================
 
     [Fact]
-    public async Task GetStats_MultiMonthData_VolumeOnlyIncludesCurrentMonth()
+    public async Task GetStats_MultiMonthData_VolumeOnlyIncludesMostRecentSession()
     {
         await SeedMultiMonthWorkoutDataAsync();
 
@@ -284,14 +258,58 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
 
         stats.Should().NotBeNull();
 
-        // Volume should only include current month session: 80 * 10 = 800
-        // Previous month Deadlift (140 * 5 = 700) must be excluded
+        // The controller calls GetRecentSessionsAsync(1), so only the most recent session
+        // is returned. Current month session (Bench Press: 80*10 = 800) is the most recent.
         stats!.TotalVolume.Should().Be(800);
 
-        // Top exercise is from the current month only
+        // Top exercise is from the most recent session
         stats.TopExercise.Should().Be("Bench Press");
 
-        // SessionDate should be the most recent session across all months (current month)
+        // SessionDate should be the most recent session's date
         stats.SessionDate.Should().NotBeNull();
+    }
+}
+
+/// <summary>
+///     Integration tests that require an empty database. Uses a separate fixture
+///     to guarantee a fresh InMemory database with no seeded data.
+/// </summary>
+public class WorkoutEmptyDatabaseTests(WebApplicationFactory factory)
+    : IClassFixture<WebApplicationFactory>, IDisposable
+{
+    private const string SessionsEndpoint = "/api/v1/workouts/sessions";
+    private const string StatsEndpoint = "/api/v1/workouts/stats";
+
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    private readonly HttpClient _client = factory.CreateClient();
+
+    public void Dispose()
+    {
+        _client.Dispose();
+        GC.SuppressFinalize(this);
+    }
+
+    [Fact]
+    public async Task GetSessions_EmptyDatabase_Returns200WithEmptyList()
+    {
+        var response = await _client.GetAsync(SessionsEndpoint, CancellationToken.None);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var sessions =
+            await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions, CancellationToken.None);
+        sessions.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task GetStats_EmptyDatabase_Returns204NoContent()
+    {
+        var response = await _client.GetAsync(StatsEndpoint, CancellationToken.None);
+
+        response.StatusCode.Should().Be(HttpStatusCode.NoContent);
     }
 }

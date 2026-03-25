@@ -1,4 +1,3 @@
-using IronLogic.Domain.Entities;
 using Microsoft.SemanticKernel;
 
 namespace IronLogic.Application.Services;

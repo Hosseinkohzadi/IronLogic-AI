@@ -1,5 +1,4 @@
 using IronLogic.Application.DTOs;
-using IronLogic.Domain.Entities;
 
 namespace IronLogic.Application.Interfaces;
 

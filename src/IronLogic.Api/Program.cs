@@ -1,4 +1,3 @@
-using IronLogic.Application.Interfaces;
 using IronLogic.Application.Mappers;
 using IronLogic.Application.Services;
 using IronLogic.Domain.Interfaces;
@@ -46,6 +45,9 @@ builder.Services.AddScoped<IWorkoutProvider, MockHevyWorkoutProvider>();
 
 // Register workout analytics service
 builder.Services.AddScoped<IWorkoutAnalyticsService, WorkoutAnalyticsService>();
+
+// Register body metrics provider
+builder.Services.AddScoped<IBodyMetricsProvider, BodyMetricsProvider>();
 
 // Register Kernel (concrete) for Semantic Kernel usage across services/controllers.
 // NOTE: If you want to configure a chat provider (OpenAI, AzureOpenAI, etc.) add provider configuration

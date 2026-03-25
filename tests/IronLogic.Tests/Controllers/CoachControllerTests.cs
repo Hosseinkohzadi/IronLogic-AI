@@ -1,7 +1,4 @@
 using IronLogic.Api.Controllers;
-using IronLogic.Application.DTOs;
-using IronLogic.Application.Interfaces;
-using IronLogic.Domain.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -18,30 +15,39 @@ public class CoachControllerTests
 
         var mockCoachService = new Mock<ICoachService>();
         mockCoachService
-            .Setup(s => s.GenerateAdviceAsync(It.IsAny<double>(), It.IsAny<double>(), It.IsAny<string>()))
+            .Setup(s => s.AnalyzeAsync(It.IsAny<string>()))
             .ReturnsAsync(expectedAdvice);
 
-        var mockAnalysisService = new Mock<IWorkoutAnalysisService>();
-        mockAnalysisService
-            .Setup(a => a.CalculateChestToWaistRatio(It.IsAny<MuscleMeasurement>()))
-            .Returns(1.46);
-
-        var controller = new CoachController(
-            mockCoachService.Object,
-            mockAnalysisService.Object);
+        var controller = new CoachController(mockCoachService.Object);
 
         // Act
         var actionResult = await controller.AnalyzeAsync();
 
         // Assert
-        // Ensure we received an Ok result
         actionResult.Result.Should().BeOfType<OkObjectResult>();
         var ok = actionResult.Result as OkObjectResult;
         ok!.StatusCode.Should().Be(StatusCodes.Status200OK);
 
-        // Ensure the payload is the expected DTO with the expected advice string
         ok.Value.Should().BeOfType<CoachAdviceResponse>();
         var payload = ok.Value as CoachAdviceResponse;
         payload!.Advice.Should().Be(expectedAdvice);
+    }
+
+    [Fact]
+    public async Task AnalyzeAsync_CallsCoachServiceExactlyOnce()
+    {
+        // Arrange
+        var mockCoachService = new Mock<ICoachService>();
+        mockCoachService
+            .Setup(s => s.AnalyzeAsync(It.IsAny<string>()))
+            .ReturnsAsync("Some advice");
+
+        var controller = new CoachController(mockCoachService.Object);
+
+        // Act
+        await controller.AnalyzeAsync();
+
+        // Assert
+        mockCoachService.Verify(s => s.AnalyzeAsync(It.IsAny<string>()), Times.Once);
     }
 }

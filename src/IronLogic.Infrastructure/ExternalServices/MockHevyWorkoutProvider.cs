@@ -1,6 +1,3 @@
-using IronLogic.Application.DTOs;
-using IronLogic.Application.Interfaces;
-
 namespace IronLogic.Infrastructure.ExternalServices;
 
 /// <summary>

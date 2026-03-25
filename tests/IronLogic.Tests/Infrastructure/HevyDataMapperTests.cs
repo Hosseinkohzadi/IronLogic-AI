@@ -1,5 +1,4 @@
 using IronLogic.Application.Mappers;
-using IronLogic.Domain.Entities;
 
 namespace IronLogic.Tests.Infrastructure;
 

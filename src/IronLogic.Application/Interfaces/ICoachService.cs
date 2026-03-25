@@ -14,4 +14,13 @@ public interface ICoachService
     /// <param name="userName">Optional username shown in the response. Defaults to "Athlete".</param>
     /// <returns>A task that resolves to a professional coaching advice string.</returns>
     Task<string> GenerateAdviceAsync(double chestToWaistRatio, double monthlyVolume, string userName = "Athlete");
+
+    /// <summary>
+    ///     Generates AI-driven coaching advice by gathering workout stats and body metrics,
+    ///     then invoking a Semantic Kernel prompt. Falls back to rule-based advice if the
+    ///     AI service is unavailable.
+    /// </summary>
+    /// <param name="userName">Optional username shown in the response. Defaults to "Athlete".</param>
+    /// <returns>A task that resolves to a coaching advice string.</returns>
+    Task<string> AnalyzeAsync(string userName = "Athlete");
 }

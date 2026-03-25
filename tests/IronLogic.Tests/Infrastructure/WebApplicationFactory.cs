@@ -9,6 +9,8 @@ namespace IronLogic.Tests.Infrastructure;
 /// <summary>
 ///     Custom WebApplicationFactory that replaces the real SQLite database
 ///     with an EF Core InMemory database for isolated integration tests.
+///     Also replaces MockHevyWorkoutProvider with a database-backed provider
+///     so that seeded data is reflected in the /stats endpoint.
 /// </summary>
 public class WebApplicationFactory : WebApplicationFactory<Program>
 {
@@ -38,6 +40,16 @@ public class WebApplicationFactory : WebApplicationFactory<Program>
 
             services.AddDbContext<AppDbContext>(options =>
                 options.UseInMemoryDatabase(dbName));
+
+            // Replace MockHevyWorkoutProvider with a database-backed provider
+            // so integration tests that seed the DB get consistent /stats results.
+            var workoutProviderDescriptor = services
+                .FirstOrDefault(d => d.ServiceType == typeof(IWorkoutProvider));
+
+            if (workoutProviderDescriptor is not null)
+                services.Remove(workoutProviderDescriptor);
+
+            services.AddScoped<IWorkoutProvider, DatabaseWorkoutProvider>();
         });
     }
 }

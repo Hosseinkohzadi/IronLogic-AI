@@ -2,8 +2,6 @@
 using System.Text;
 using CsvHelper;
 using CsvHelper.Configuration;
-using IronLogic.Application.Interfaces;
-using IronLogic.Domain.Entities;
 
 namespace IronLogic.Infrastructure;
 

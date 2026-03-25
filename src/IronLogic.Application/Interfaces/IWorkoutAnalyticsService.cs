@@ -4,6 +4,8 @@ namespace IronLogic.Application.Interfaces;
 
 /// <summary>
 ///     Analytics helpers for workout sessions and exercises.
+///     Output from these methods feeds into <see cref="ICoachService"/> to generate
+///     bodybuilding advice for Classic Physique athletes.
 /// </summary>
 public interface IWorkoutAnalyticsService
 {
@@ -24,6 +26,18 @@ public interface IWorkoutAnalyticsService
     ///     Treats null weights/reps as 0.
     /// </summary>
     Dictionary<string, double> CalculateVolumePerExercise(HevyWorkoutSessionDto session);
+
+    /// <summary>
+    ///     Calculates the average weight per rep (Total Volume / Total Reps) to indicate
+    ///     how heavy the session was. Returns 0 when total reps is 0.
+    /// </summary>
+    double GetIntensityScore(HevyWorkoutSessionDto session);
+
+    /// <summary>
+    ///     Returns the exercise with the highest total volume (weight × reps) in the session,
+    ///     or <c>null</c> when the session contains no exercises or all volumes are zero.
+    /// </summary>
+    HevyExerciseDto? GetTopExercise(HevyWorkoutSessionDto session);
 
     /// <summary>
     ///     Returns true when the provided exercise contains a set whose single-set volume

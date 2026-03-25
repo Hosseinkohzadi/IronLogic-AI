@@ -1,7 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using FluentAssertions;
 using IronLogic.Application.DTOs;
 using IronLogic.Domain.Entities;
 using IronLogic.Infrastructure.Data;
@@ -15,8 +14,8 @@ namespace IronLogic.Tests;
 ///     Uses WebApplicationFactory with an EF Core InMemory database.
 ///     Volume is defined as Weight * Reps, scoped to the current calendar month.
 /// </summary>
-public class WorkoutIntegrationTests(IronLogicWebApplicationFactory factory)
-    : IClassFixture<IronLogicWebApplicationFactory>, IDisposable
+public class WorkoutIntegrationTests(WebApplicationFactory factory)
+    : IClassFixture<WebApplicationFactory>, IDisposable
 {
     private const string SessionsEndpoint = "/api/v1/workouts/sessions";
     private const string StatsEndpoint = "/api/v1/workouts/stats";

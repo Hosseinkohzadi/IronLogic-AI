@@ -32,7 +32,7 @@ builder.Services.AddSingleton<IHevyParserService, HevyCsvParserService>();
 builder.Services.AddSingleton<IHevyDataMapper, HevyDataMapper>();
 
 builder.Services.AddScoped<WorkoutAnalysisService>();
-builder.Services.AddScoped<IronLogicCoachService>();
+builder.Services.AddScoped<CoachService>();
 builder.Services.AddScoped<IDailyWeightService, DailyWeightService>();
 builder.Services.AddScoped<IMuscleMeasurementService, MuscleMeasurementService>();
 builder.Services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();

@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using FluentAssertions;
 using IronLogic.Domain.Entities;
 using IronLogic.Tests.Infrastructure;
 
@@ -13,7 +12,8 @@ namespace IronLogic.Tests;
 ///     Uses WebApplicationFactory with an EF Core InMemory database.
 ///     Test cases are derived from the OpenAPI specification (openapi.yaml).
 /// </summary>
-public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplicationFactory>, IDisposable
+public class DailyWeightIntegrationTests(WebApplicationFactory factory)
+    : IClassFixture<WebApplicationFactory>, IDisposable
 {
     private const string Endpoint = "/api/v1/progress/weight";
 
@@ -22,12 +22,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
-    private readonly HttpClient _client;
-
-    public DailyWeightIntegrationTests(IronLogicWebApplicationFactory factory)
-    {
-        _client = factory.CreateClient();
-    }
+    private readonly HttpClient _client = factory.CreateClient();
 
     public void Dispose()
     {
@@ -46,7 +41,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
         var payload = new { date = "2026-03-24", weight = 85.5f, note = "Morning fasted" };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -59,8 +54,8 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
         var payload = new { date = "2026-03-24", weight = 92.0f, note = "Post-refeed" };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
-        var body = await response.Content.ReadFromJsonAsync<DailyWeight>(JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadFromJsonAsync<DailyWeight>(JsonOptions, TestContext.Current.CancellationToken);
 
         // Assert
         body.Should().NotBeNull();
@@ -77,7 +72,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
         var payload = new { date = "2026-03-24", weight = 85.5f };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, TestContext.Current.CancellationToken);
 
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -90,8 +85,8 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
         var payload = new { date = "2026-03-24", weight = 85.5f };
 
         // Act
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
-        var body = await response.Content.ReadFromJsonAsync<DailyWeight>(JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, TestContext.Current.CancellationToken);
+        var body = await response.Content.ReadFromJsonAsync<DailyWeight>(JsonOptions, TestContext.Current.CancellationToken);
 
         // Assert
         body.Should().NotBeNull();
@@ -107,7 +102,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
     {
         var payload = new { date = "2026-03-24", weight = 40.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
@@ -117,7 +112,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
     {
         var payload = new { date = "2026-03-24", weight = 200.0f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
@@ -134,7 +129,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
     {
         var payload = new { date = "2026-03-24", weight };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -146,7 +141,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
     {
         var payload = new { date = "2026-03-24", weight };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -161,7 +156,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
         // Only "date" provided — "weight" is required per spec
         var payload = new { date = "2026-03-24" };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -171,7 +166,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
     {
         var content = new StringContent("{}", Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync(Endpoint, content);
+        var response = await _client.PostAsync(Endpoint, content, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -186,7 +181,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
         var json = """{ "date": "not-a-date", "weight": 85.5 }""";
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync(Endpoint, content);
+        var response = await _client.PostAsync(Endpoint, content, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -198,7 +193,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
         var futureDate = DateTime.UtcNow.Date.AddDays(5).ToString("yyyy-MM-dd");
         var payload = new { date = futureDate, weight = 85.5f };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -212,7 +207,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
     {
         var payload = new { date = "2026-03-24", weight = 85.5f, note = new string('A', 201) };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -222,7 +217,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
     {
         var payload = new { date = "2026-03-24", weight = 85.5f, note = new string('A', 200) };
 
-        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions);
+        var response = await _client.PostAsJsonAsync(Endpoint, payload, JsonOptions, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
     }
@@ -236,7 +231,7 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
     {
         var content = new StringContent("{ broken json }", Encoding.UTF8, "application/json");
 
-        var response = await _client.PostAsync(Endpoint, content);
+        var response = await _client.PostAsync(Endpoint, content, TestContext.Current.CancellationToken);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
@@ -251,11 +246,11 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
         var payload1 = new { date = "2026-03-20", weight = 84.0f, note = "Day 1" };
         var payload2 = new { date = "2026-03-21", weight = 84.3f, note = "Day 2" };
 
-        var response1 = await _client.PostAsJsonAsync(Endpoint, payload1, JsonOptions);
-        var response2 = await _client.PostAsJsonAsync(Endpoint, payload2, JsonOptions);
+        var response1 = async () => await _client.PostAsJsonAsync(Endpoint, payload1, JsonOptions, TestContext.Current.CancellationToken);
+        var response2 = async () => await _client.PostAsJsonAsync(Endpoint, payload2, JsonOptions, TestContext.Current.CancellationToken);
 
-        response1.StatusCode.Should().Be(HttpStatusCode.Created);
-        response2.StatusCode.Should().Be(HttpStatusCode.Created);
+        (await response1()).StatusCode.Should().Be(HttpStatusCode.Created);
+        (await response2()).StatusCode.Should().Be(HttpStatusCode.Created);
     }
 
     [Fact]
@@ -264,11 +259,11 @@ public class DailyWeightIntegrationTests : IClassFixture<IronLogicWebApplication
         var payload1 = new { date = "2026-03-22", weight = 85.0f };
         var payload2 = new { date = "2026-03-23", weight = 85.5f };
 
-        var response1 = await _client.PostAsJsonAsync(Endpoint, payload1, JsonOptions);
-        var response2 = await _client.PostAsJsonAsync(Endpoint, payload2, JsonOptions);
+        var response1 = await _client.PostAsJsonAsync(Endpoint, payload1, JsonOptions, TestContext.Current.CancellationToken);
+        var response2 = await _client.PostAsJsonAsync(Endpoint, payload2, JsonOptions, TestContext.Current.CancellationToken);
 
-        var body1 = await response1.Content.ReadFromJsonAsync<DailyWeight>(JsonOptions);
-        var body2 = await response2.Content.ReadFromJsonAsync<DailyWeight>(JsonOptions);
+        var body1 = await response1.Content.ReadFromJsonAsync<DailyWeight>(JsonOptions, TestContext.Current.CancellationToken);
+        var body2 = await response2.Content.ReadFromJsonAsync<DailyWeight>(JsonOptions, TestContext.Current.CancellationToken);
 
         body1!.Id.Should().NotBe(body2!.Id);
     }

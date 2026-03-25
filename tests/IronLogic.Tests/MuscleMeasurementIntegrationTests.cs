@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using FluentAssertions;
 using IronLogic.Domain.Entities;
 using IronLogic.Tests.Infrastructure;
 
@@ -15,8 +14,8 @@ namespace IronLogic.Tests;
 ///     Special focus on Waist and Chest validation ranges and their persisted ratios,
 ///     which are critical metrics for Classic Physique bodybuilding.
 /// </summary>
-public class MuscleMeasurementIntegrationTests(IronLogicWebApplicationFactory factory)
-    : IClassFixture<IronLogicWebApplicationFactory>, IDisposable
+public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
+    : IClassFixture<WebApplicationFactory>, IDisposable
 {
     private const string Endpoint = "/api/v1/progress/measurements";
 

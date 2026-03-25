@@ -10,7 +10,7 @@ namespace IronLogic.Tests.Infrastructure;
 ///     Custom WebApplicationFactory that replaces the real SQLite database
 ///     with an EF Core InMemory database for isolated integration tests.
 /// </summary>
-public class IronLogicWebApplicationFactory : WebApplicationFactory<Program>
+public class WebApplicationFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -25,10 +25,9 @@ public class IronLogicWebApplicationFactory : WebApplicationFactory<Program>
                     d.ServiceType == typeof(AppDbContext) ||
                     d.ServiceType == typeof(DbContextOptions<AppDbContext>) ||
                     d.ServiceType == typeof(DbContextOptions) ||
-                    (d.ImplementationType != null &&
-                     d.ImplementationType.FullName != null &&
+                    (d.ImplementationType is { FullName: not null } &&
                      d.ImplementationType.FullName.Contains(nameof(AppDbContext))) ||
-                    (d.ServiceType.FullName != null &&
+                    (d.ServiceType is { FullName: not null } &&
                      d.ServiceType.FullName.Contains(nameof(AppDbContext))))
                 .ToList();
 

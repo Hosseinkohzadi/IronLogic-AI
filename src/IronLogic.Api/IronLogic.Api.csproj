@@ -7,7 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SemanticKernel" Version="1.35.0" />
+    <!-- Align Semantic Kernel version with IronLogic.Application -->
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.74.0" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.74.0" />
     <PackageReference Include="NSwag.AspNetCore" Version="14.6.3" />
   </ItemGroup>

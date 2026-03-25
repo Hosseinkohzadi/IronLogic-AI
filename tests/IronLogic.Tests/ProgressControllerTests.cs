@@ -1,5 +1,4 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using FluentAssertions;
 using IronLogic.Api.Controllers;
 using IronLogic.Application.DTOs;
 using IronLogic.Application.Interfaces;

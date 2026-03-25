@@ -3,7 +3,7 @@ using IronLogic.Domain.Interfaces;
 using IronLogic.Infrastructure.Services;
 using NSubstitute;
 
-namespace IronLogic.Tests;
+namespace IronLogic.Tests.Services;
 
 /// <summary>
 ///     Unit tests for WorkoutService.

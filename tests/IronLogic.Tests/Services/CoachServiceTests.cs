@@ -3,7 +3,7 @@ using IronLogic.Application.Services;
 using IronLogic.Domain.Entities;
 using Moq;
 
-namespace IronLogic.Tests;
+namespace IronLogic.Tests.Services;
 
 public class CoachServiceTests
 {

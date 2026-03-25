@@ -5,7 +5,7 @@ using System.Text.Json;
 using IronLogic.Domain.Entities;
 using IronLogic.Tests.Infrastructure;
 
-namespace IronLogic.Tests;
+namespace IronLogic.Tests.IntegrationTests;
 
 /// <summary>
 ///     Integration tests for POST /api/v1/progress/measurements (MuscleMeasurement endpoint).

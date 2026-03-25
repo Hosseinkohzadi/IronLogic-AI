@@ -7,7 +7,7 @@ using IronLogic.Infrastructure.Data;
 using IronLogic.Tests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace IronLogic.Tests;
+namespace IronLogic.Tests.IntegrationTests;
 
 /// <summary>
 ///     Integration tests for GET /api/v1/workouts/sessions and GET /api/v1/workouts/stats.

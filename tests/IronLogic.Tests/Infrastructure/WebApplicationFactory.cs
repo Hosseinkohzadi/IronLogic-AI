@@ -1,4 +1,3 @@
-using IronLogic.Api;
 using IronLogic.Infrastructure.Data;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;

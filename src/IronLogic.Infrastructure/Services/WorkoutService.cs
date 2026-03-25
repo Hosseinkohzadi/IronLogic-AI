@@ -15,12 +15,6 @@ public class WorkoutService(IWorkoutSessionRepository repository) : IWorkoutServ
     /// <summary>
     ///     Retrieves all workout sessions including their exercises and sets.
     /// </summary>
-    /// <remarks>
-    ///     This method delegates to the injected <paramref name="repository" /> and returns
-    ///     hydrated <see cref="WorkoutSession" /> instances with their nested exercises and sets.
-    ///     Any exception thrown by the repository (for example, database access errors) will
-    ///     propagate to the caller.
-    /// </remarks>
     /// <returns>
     ///     A task that represents the asynchronous operation. The task result contains a list
     ///     of <see cref="WorkoutSession" /> objects. The list may be empty if no sessions exist.
@@ -31,33 +25,21 @@ public class WorkoutService(IWorkoutSessionRepository repository) : IWorkoutServ
     }
 
     /// <summary>
-    ///     Computes aggregate workout statistics for all time and the total training volume for the current month.
+    ///     Computes aggregate workout statistics from locally stored sessions.
+    ///     Volume is scoped to the current UTC month. The most recent session's date,
+    ///     top exercise (by volume), and an intensity score are included when data exists.
     /// </summary>
-    /// <remarks>
-    ///     The returned <see cref="WorkoutStatsResponse" /> contains:
-    ///     - <see cref="WorkoutStatsResponse.TotalSessions" /> : total number of sessions across all time.
-    ///     - <see cref="WorkoutStatsResponse.TotalExercises" /> : total number of exercises across all sessions.
-    ///     - <see cref="WorkoutStatsResponse.TotalSets" /> : total number of sets across all exercises.
-    ///     - <see cref="WorkoutStatsResponse.TotalVolume" /> : summed volume for the current UTC month when volume for a set
-    ///     is calculated as (<c>Weight</c> ?? 0) * (<c>Reps</c> ?? 0).
-    ///     The current month is computed using UTC (DateTime.UtcNow). This method queries the repository twice:
-    ///     1) to obtain all sessions for global totals and 2) to obtain sessions in the current month for volume calculation.
-    ///     Any exceptions from repository calls will propagate to the caller.
-    /// </remarks>
     /// <returns>
     ///     A task that represents the asynchronous operation. The task result is a populated
-    ///     <see cref="WorkoutStatsResponse" /> instance.
+    ///     <see cref="WorkoutStatsResponse" /> instance with safe defaults when no data is found.
     /// </returns>
     public async Task<WorkoutStatsResponse> GetStatsAsync()
     {
         var allSessions = await repository.GetAllWithExercisesAndSetsAsync();
 
-        var allExercises = allSessions.SelectMany(s => s.Exercises).ToList();
-        var allSets = allExercises.SelectMany(e => e.Sets).ToList();
-
         // Volume is scoped to the current month
         var now = DateTime.UtcNow;
-        var monthStart = new DateTime(now.Year, now.Month, 1);
+        var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
         var monthEnd = monthStart.AddMonths(1).AddTicks(-1);
 
         var currentMonthSessions = await repository.GetByDateRangeWithExercisesAndSetsAsync(monthStart, monthEnd);
@@ -66,14 +48,30 @@ public class WorkoutService(IWorkoutSessionRepository repository) : IWorkoutServ
             .SelectMany(e => e.Sets)
             .ToList();
 
+        var totalVolume = currentMonthSets.Sum(s => (s.Weight ?? 0) * (s.Reps ?? 0));
+        var totalReps = currentMonthSets.Sum(s => s.Reps ?? 0);
+
+        var mostRecentSession = allSessions
+            .OrderByDescending(s => s.Date)
+            .FirstOrDefault();
+
+        // Top exercise = the one with the highest volume across the current month
+        var topExercise = currentMonthSessions
+            .SelectMany(s => s.Exercises)
+            .Select(e => new
+            {
+                e.Name,
+                Volume = e.Sets.Sum(s => (s.Weight ?? 0) * (s.Reps ?? 0))
+            })
+            .OrderByDescending(e => e.Volume)
+            .FirstOrDefault();
+
         return new WorkoutStatsResponse
         {
-            TotalSessions = allSessions.Count,
-            TotalExercises = allExercises.Count,
-            TotalSets = allSets.Count,
-            TotalVolume =
-                currentMonthSets.Sum(s =>
-                    (s.Weight ?? 0) * (s.Reps ?? 0)) // Volume = Weight * Reps (current month only)
+            TotalVolume = totalVolume,
+            TopExercise = topExercise?.Name,
+            IntensityScore = totalReps > 0 ? totalVolume / totalReps : 0.0,
+            SessionDate = mostRecentSession?.Date
         };
     }
 }

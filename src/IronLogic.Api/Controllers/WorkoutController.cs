@@ -25,9 +25,9 @@ public class WorkoutController(
     }
 
     /// <summary>
-    ///     Get aggregate workout statistics.
-    ///     Fetches the most recent session from the external workout provider and calculates
-    ///     total volume, top exercise, and intensity score.
+    ///     Get aggregate workout statistics for the most recent session.
+    ///     Returns total volume, top exercise (by volume), intensity score,
+    ///     and the session date.
     /// </summary>
     [HttpGet("stats")]
     [Produces("application/json")]
@@ -48,14 +48,10 @@ public class WorkoutController(
 
         var response = new WorkoutStatsResponse
         {
-            TotalSessions = recentSessions.Count,
-            TotalExercises = lastSession.Exercises?.Count ?? 0,
-            TotalSets = lastSession.Exercises?
-                .SelectMany(e => e.Sets ?? [])
-                .Count() ?? 0,
             TotalVolume = totalVolume,
             TopExercise = topExercise?.Name,
-            IntensityScore = intensityScore
+            IntensityScore = intensityScore,
+            SessionDate = lastSession.StartTime
         };
 
         return Ok(response);

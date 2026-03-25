@@ -6,12 +6,6 @@ namespace IronLogic.Application.DTOs;
 /// </summary>
 public class WorkoutStatsResponse
 {
-    public int TotalSessions { get; set; }
-
-    public int TotalExercises { get; set; }
-
-    public int TotalSets { get; set; }
-
     /// <summary>
     ///     Sum of (Weight × Reps) across all sets for the most recent session.
     /// </summary>
@@ -28,4 +22,10 @@ public class WorkoutStatsResponse
     ///     Indicates how "heavy" the session was.
     /// </summary>
     public double IntensityScore { get; set; }
+
+    /// <summary>
+    ///     The start date/time of the most recent session,
+    ///     or <c>null</c> if no sessions are available.
+    /// </summary>
+    public DateTime? SessionDate { get; set; }
 }

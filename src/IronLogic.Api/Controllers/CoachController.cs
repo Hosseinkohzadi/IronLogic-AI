@@ -1,6 +1,7 @@
+using IronLogic.Application.DTOs;
 using IronLogic.Application.Interfaces;
-using IronLogic.Application.Services;
 using IronLogic.Domain.Entities;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IronLogic.Api.Controllers;
@@ -31,11 +32,13 @@ public class CoachController : ControllerBase
     ///     Returns a mocked AI-driven coaching analysis. The endpoint uses <see cref="WorkoutAnalysisService" />
     ///     to compute a V-Taper (chest-to-waist ratio) and then delegates to <see cref="ICoachService" />
     ///     to generate a professional advice string.
-    ///     Mock Phase: returns JSON containing status, advice, and timestamp.
+    ///     Mock Phase: returns JSON payload containing advice wrapped in a <see cref="CoachAdviceResponse"/>.
     /// </summary>
-    /// <returns>A JSON object with keys: status, advice, timestamp.</returns>
+    /// <returns>A <see cref="CoachAdviceResponse"/> with the generated advice string.</returns>
     [HttpGet("analyze")]
-    public async Task<IActionResult> AnalyzeAsync()
+    [Produces("application/json")]
+    [ProducesResponseType(typeof(CoachAdviceResponse), StatusCodes.Status200OK)]
+    public async Task<ActionResult<CoachAdviceResponse>> AnalyzeAsync()
     {
         // NOTE (mock): In a full implementation we'd fetch a user's latest MuscleMeasurement and training volume.
         // For the mock phase we create a representative measurement and volume.
@@ -53,16 +56,14 @@ public class CoachController : ControllerBase
         // Mock monthly training volume (in pounds)
         double monthlyVolume = 120_000;
 
-        // Generate advice from the coach service
+        // Generate advice from the coach service (string) and wrap in DTO
         var advice = await _coachService.GenerateAdviceAsync(vTaper, monthlyVolume);
 
-        var payload = new
+        var response = new CoachAdviceResponse
         {
-            status = "success",
-            advice,
-            timestamp = DateTime.UtcNow
+            Advice = advice
         };
 
-        return Ok(payload);
+        return Ok(response);
     }
 }

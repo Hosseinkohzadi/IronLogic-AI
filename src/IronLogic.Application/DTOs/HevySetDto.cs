@@ -1,7 +1,7 @@
 namespace IronLogic.Application.DTOs;
 
 /// <summary>
-/// DTO representing a single set performed in an exercise from Hevy.
+///     DTO representing a single set performed in an exercise from Hevy.
 /// </summary>
 public sealed class HevySetDto
 {
@@ -10,7 +10,7 @@ public sealed class HevySetDto
     public int? Reps { get; set; }
 
     /// <summary>
-    /// Type of the set (e.g., "work", "warmup", "drop", etc.).
+    ///     Type of the set (e.g., "work", "warmup", "drop", etc.).
     /// </summary>
     public string SetType { get; set; } = string.Empty;
 }

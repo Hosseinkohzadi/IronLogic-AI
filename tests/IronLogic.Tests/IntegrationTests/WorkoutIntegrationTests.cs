@@ -145,7 +145,8 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var sessions = await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions, CancellationToken.None);
+        var sessions =
+            await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions, CancellationToken.None);
         sessions.Should().NotBeNull();
     }
 
@@ -165,7 +166,8 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
         await SeedWorkoutDataAsync();
 
         var response = await _client.GetAsync(SessionsEndpoint, CancellationToken.None);
-        var sessions = await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions, CancellationToken.None);
+        var sessions =
+            await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions, CancellationToken.None);
 
         sessions.Should().NotBeNull();
         sessions.Should().Contain(s => s.Name == "Push Day");
@@ -177,7 +179,8 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
         await SeedWorkoutDataAsync();
 
         var response = await _client.GetAsync(SessionsEndpoint, CancellationToken.None);
-        var sessions = await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions, CancellationToken.None);
+        var sessions =
+            await response.Content.ReadFromJsonAsync<List<WorkoutSession>>(JsonOptions, CancellationToken.None);
 
         var pushDay = sessions!.First(s => s.Name == "Push Day");
         pushDay.Exercises.Should().HaveCountGreaterThanOrEqualTo(2);

@@ -1,11 +1,9 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using IronLogic.Application.DTOs;
 
 namespace IronLogic.Application.Interfaces;
 
 /// <summary>
-/// Abstraction for external workout providers (e.g., Hevy) returning normalized DTOs.
+///     Abstraction for external workout providers (e.g., Hevy) returning normalized DTOs.
 /// </summary>
 public interface IWorkoutProvider
 {

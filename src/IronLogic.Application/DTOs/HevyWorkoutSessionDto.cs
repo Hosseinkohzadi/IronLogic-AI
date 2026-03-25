@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-
 namespace IronLogic.Application.DTOs;
 
 /// <summary>
-/// DTO representing a workout session received from the Hevy API.
+///     DTO representing a workout session received from the Hevy API.
 /// </summary>
 public sealed class HevyWorkoutSessionDto
 {

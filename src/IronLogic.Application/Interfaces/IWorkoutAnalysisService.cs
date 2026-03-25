@@ -8,7 +8,7 @@ namespace IronLogic.Application.Interfaces;
 public interface IWorkoutAnalysisService
 {
     /// <summary>
-    ///     Calculates the chest-to-waist ratio from a <see cref="MuscleMeasurement"/> instance.
+    ///     Calculates the chest-to-waist ratio from a <see cref="MuscleMeasurement" /> instance.
     /// </summary>
     double CalculateChestToWaistRatio(MuscleMeasurement measurement);
 

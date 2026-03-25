@@ -210,7 +210,7 @@ public class WorkoutAnalyticsServiceTests
     }
 
     // =====================================================================
-        //  IsPersonalRecord
+    //  IsPersonalRecord
     // =====================================================================
 
     [Fact]

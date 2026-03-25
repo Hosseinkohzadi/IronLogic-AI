@@ -1,8 +1,8 @@
 openapi: 3.0.3
 info:
   title: IronLogic AI - Bodybuilding Progress Tracker
-  description: API for tracking daily weight and muscle measurements for bodybuilding athletes.
-  version: 1.0.0
+  description: API for tracking daily weight, muscle measurements, and AI coaching for athletes.
+  version: 1.1.0
 servers:
   - url: http://localhost:5000/api/v1
     description: Local Development Server
@@ -11,8 +11,7 @@ paths:
   /progress/weight:
     post:
       summary: Log daily weight
-      tags:
-        - Progress
+      tags: [Progress]
       requestBody:
         required: true
         content:
@@ -22,12 +21,11 @@ paths:
       responses:
         '201':
           description: Weight logged successfully
-  
+
   /progress/measurements:
     post:
       summary: Log muscle measurements
-      tags:
-        - Progress
+      tags: [Progress]
       requestBody:
         required: true
         content:
@@ -38,67 +36,62 @@ paths:
         '201':
           description: Measurements logged successfully
 
+  /workouts/stats:
+    get:
+      summary: Get monthly workout analytics
+      tags: [Workouts]
+      responses:
+        '200':
+          description: Monthly stats retrieved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkoutStatsResponse'
+
+  /coach/analyze:
+    get:
+      summary: Get AI-driven coaching advice
+      tags: [Coach]
+      responses:
+        '200':
+          description: Advice generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoachAdviceResponse'
+
 components:
   schemas:
     DailyWeight:
       type: object
-      required:
-        - date
-        - weight
+      required: [date, weight]
       properties:
-        date:
-          type: string
-          format: date
-          example: "2026-03-24"
-        weight:
-          type: number
-          format: float
-          minimum: 40
-          maximum: 200
-          description: Weight in kilograms (kg)
-          example: 85.5
-        note:
-          type: string
-          maxLength: 200
+        date: { type: string, format: date }
+        weight: { type: number, format: float, minimum: 40, maximum: 200 }
+        note: { type: string, maxLength: 200 }
 
     MuscleMeasurement:
       type: object
-      required:
-        - date
-        - neck
-        - chest
-        - waist
+      required: [date, neck, chest, waist]
       properties:
-        date:
-          type: string
-          format: date
-        neck:
-          type: number
-          format: float
-          minimum: 20
-          maximum: 60
-          description: Neck circumference in cm
-        chest:
-          type: number
-          format: float
-          minimum: 50
-          maximum: 180
-          description: Chest circumference in cm
-        waist:
-          type: number
-          format: float
-          minimum: 40
-          maximum: 150
-          description: Waist circumference in cm (Crucial for Classic Physique ratio)
-        biceps_left:
-          type: number
-          format: float
-        biceps_right:
-          type: number
-          format: float
-        thigh_left:
-          type: number
-          format: float
-        thigh_right:
-          type: number
-          format: float
+        date: { type: string, format: date }
+        neck: { type: number, format: float }
+        chest: { type: number, format: float }
+        waist: { type: number, format: float, description: "Crucial for V-Taper" }
+        bicepsLeft: { type: number, format: float }
+        bicepsRight: { type: number, format: float }
+        thighLeft: { type: number, format: float }
+        thighRight: { type: number, format: float }
+
+    WorkoutStatsResponse:
+      type: object
+      properties:
+        totalVolume: { type: number, format: double }
+        topExercise: { type: string }
+        intensityScore: { type: number, format: double }
+        sessionDate: { type: string, format: date-time }
+
+    CoachAdviceResponse:
+      type: object
+      properties:
+        advice: { type: string }

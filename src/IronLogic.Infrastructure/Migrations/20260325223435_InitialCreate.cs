@@ -12,6 +12,39 @@ namespace IronLogic.Infrastructure.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
+                name: "DailyWeights",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Date = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Weight = table.Column<float>(type: "REAL", nullable: false),
+                    Note = table.Column<string>(type: "TEXT", maxLength: 200, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DailyWeights", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MuscleMeasurements",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "TEXT", nullable: false),
+                    Date = table.Column<DateTime>(type: "TEXT", nullable: false),
+                    Neck = table.Column<double>(type: "REAL", nullable: false),
+                    Chest = table.Column<double>(type: "REAL", nullable: false),
+                    Waist = table.Column<double>(type: "REAL", nullable: false),
+                    BicepsLeft = table.Column<float>(type: "REAL", nullable: true),
+                    BicepsRight = table.Column<float>(type: "REAL", nullable: true),
+                    ThighLeft = table.Column<float>(type: "REAL", nullable: true),
+                    ThighRight = table.Column<float>(type: "REAL", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MuscleMeasurements", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Sessions",
                 columns: table => new
                 {
@@ -79,6 +112,12 @@ namespace IronLogic.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "DailyWeights");
+
+            migrationBuilder.DropTable(
+                name: "MuscleMeasurements");
+
             migrationBuilder.DropTable(
                 name: "Sets");
 

@@ -41,8 +41,8 @@ try
     // 3. Connect to the database safely using DI
     await using var dbContext = provider.GetRequiredService<AppDbContext>();
 
-    // Ensure database and tables exist (Creates ironlogic.db if missing)
-    dbContext.Database.EnsureCreated();
+    // Apply pending migrations (creates DB + all tables if missing)
+    dbContext.Database.Migrate();
 
     // 4. Insert data if the database is currently empty
     if (!dbContext.Sessions.Any())

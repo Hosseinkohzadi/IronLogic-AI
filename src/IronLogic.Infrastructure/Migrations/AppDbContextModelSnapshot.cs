@@ -17,6 +17,27 @@ namespace IronLogic.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
 
+            modelBuilder.Entity("IronLogic.Domain.Entities.DailyWeight", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<float>("Weight")
+                        .HasColumnType("REAL");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DailyWeights");
+                });
+
             modelBuilder.Entity("IronLogic.Domain.Entities.ExerciseSet", b =>
                 {
                     b.Property<Guid>("Id")
@@ -43,6 +64,41 @@ namespace IronLogic.Infrastructure.Migrations
                     b.HasIndex("WorkoutExerciseId");
 
                     b.ToTable("Sets");
+                });
+
+            modelBuilder.Entity("IronLogic.Domain.Entities.MuscleMeasurement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<float?>("BicepsLeft")
+                        .HasColumnType("REAL");
+
+                    b.Property<float?>("BicepsRight")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("Chest")
+                        .HasColumnType("REAL");
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("TEXT");
+
+                    b.Property<double>("Neck")
+                        .HasColumnType("REAL");
+
+                    b.Property<float?>("ThighLeft")
+                        .HasColumnType("REAL");
+
+                    b.Property<float?>("ThighRight")
+                        .HasColumnType("REAL");
+
+                    b.Property<double>("Waist")
+                        .HasColumnType("REAL");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("MuscleMeasurements");
                 });
 
             modelBuilder.Entity("IronLogic.Domain.Entities.WorkoutExercise", b =>

@@ -14,11 +14,16 @@ generators:
     output: ../src/IronLogic.Api/Controllers
   - name: csharp-models
     output: ../src/IronLogic.Application/DTOs
+  - name: angular-services
+    output: ../web/iron-logic-dashboard/src/app/core/services
+  - name: angular-models
+    output: ../web/iron-logic-dashboard/src/app/core/models
+
 coding_standards:
   testing:
     framework: "xUnit"
     mocking_library: "Moq"
     assertion_library: "FluentAssertions"
-    pattern: "AAA (Arrange, Act, Assert)"
+    pattern: "AAA"
     required: true
     location: "tests/IronLogic.Tests.Unit"

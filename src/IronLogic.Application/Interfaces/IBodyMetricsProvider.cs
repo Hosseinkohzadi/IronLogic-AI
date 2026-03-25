@@ -1,5 +1,3 @@
-using IronLogic.Domain.Entities;
-
 namespace IronLogic.Application.Interfaces;
 
 /// <summary>

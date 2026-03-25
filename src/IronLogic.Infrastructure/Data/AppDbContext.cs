@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-
-namespace IronLogic.Infrastructure.Data;
+﻿namespace IronLogic.Infrastructure.Data;
 
 public class AppDbContext : DbContext
 {

@@ -1,5 +1,4 @@
-﻿using IronLogic.Application.DTOs;
-using IronLogic.Application.Services;
+﻿using IronLogic.Application.Services;
 
 namespace IronLogic.Tests.Services;
 

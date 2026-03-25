@@ -1,5 +1,3 @@
-using Microsoft.EntityFrameworkCore;
-
 namespace IronLogic.Infrastructure.Services;
 
 /// <summary>

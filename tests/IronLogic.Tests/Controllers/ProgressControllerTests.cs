@@ -1,8 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using IronLogic.Api.Controllers;
-using IronLogic.Application.DTOs;
-using IronLogic.Application.Interfaces;
-using IronLogic.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 

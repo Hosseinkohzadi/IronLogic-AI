@@ -1,9 +1,5 @@
-using System.Text;
 using IronLogic.Application.Services;
-using IronLogic.Domain.Entities;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace IronLogic.Api.Controllers;
 

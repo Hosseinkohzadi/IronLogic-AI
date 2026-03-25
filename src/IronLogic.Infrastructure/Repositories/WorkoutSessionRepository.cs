@@ -1,5 +1,4 @@
 using IronLogic.Domain.Interfaces;
-using Microsoft.EntityFrameworkCore;
 
 namespace IronLogic.Infrastructure.Repositories;
 

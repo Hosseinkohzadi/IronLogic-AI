@@ -1,6 +1,4 @@
-﻿using IronLogic.Domain.Entities;
-
-namespace IronLogic.Application.Interfaces;
+﻿namespace IronLogic.Application.Interfaces;
 
 public interface IHevyDataMapper
 {

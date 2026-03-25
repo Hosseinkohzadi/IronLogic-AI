@@ -1,7 +1,3 @@
-using IronLogic.Application.DTOs;
-using IronLogic.Application.Interfaces;
-using Microsoft.AspNetCore.Mvc;
-
 namespace IronLogic.Api.Controllers;
 
 /// <summary>

@@ -1,8 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using IronLogic.Application.DTOs;
-using IronLogic.Domain.Entities;
 using IronLogic.Infrastructure.Data;
 using IronLogic.Tests.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;

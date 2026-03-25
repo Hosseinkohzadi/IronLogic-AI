@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using IronLogic.Domain.Entities;
 using IronLogic.Tests.Infrastructure;
 
 namespace IronLogic.Tests.IntegrationTests;

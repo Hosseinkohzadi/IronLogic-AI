@@ -1,6 +1,4 @@
 using IronLogic.Api.Controllers;
-using IronLogic.Application.DTOs;
-using IronLogic.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;

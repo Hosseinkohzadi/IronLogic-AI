@@ -1,5 +1,4 @@
-﻿using IronLogic.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace IronLogic.Infrastructure.Data;
 

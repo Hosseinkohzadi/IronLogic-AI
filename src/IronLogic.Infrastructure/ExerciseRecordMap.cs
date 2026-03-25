@@ -1,5 +1,4 @@
 ﻿using CsvHelper.Configuration;
-using IronLogic.Domain.Entities;
 
 namespace IronLogic.Infrastructure;
 

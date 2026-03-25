@@ -1,6 +1,4 @@
-using IronLogic.Domain.Entities;
 using IronLogic.Domain.Interfaces;
-using IronLogic.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
 namespace IronLogic.Infrastructure.Repositories;

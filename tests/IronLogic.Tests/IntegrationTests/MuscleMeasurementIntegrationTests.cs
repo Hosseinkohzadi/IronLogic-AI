@@ -548,11 +548,15 @@ public class MuscleMeasurementIntegrationTests(WebApplicationFactory factory)
         var offseasonPayload = new { date = "2026-03-21", neck = 44.0f, chest = 125.0f, waist = 95.0f };
 
         // Act
-        var contestResponse = await _client.PostAsJsonAsync(Endpoint, contestPayload, JsonOptions, CancellationToken.None);
-        var offseasonResponse = await _client.PostAsJsonAsync(Endpoint, offseasonPayload, JsonOptions, CancellationToken.None);
+        var contestResponse =
+            await _client.PostAsJsonAsync(Endpoint, contestPayload, JsonOptions, CancellationToken.None);
+        var offseasonResponse =
+            await _client.PostAsJsonAsync(Endpoint, offseasonPayload, JsonOptions, CancellationToken.None);
 
-        var contestBody = await contestResponse.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
-        var offseasonBody = await offseasonResponse.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
+        var contestBody =
+            await contestResponse.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
+        var offseasonBody =
+            await offseasonResponse.Content.ReadFromJsonAsync<MuscleMeasurement>(JsonOptions, CancellationToken.None);
 
         // Assert - each entry persists its own distinct chest/waist values
         contestBody!.Chest.Should().Be(120.0f);

@@ -1,7 +1,7 @@
 namespace IronLogic.Application.DTOs;
 
 /// <summary>
-/// DTO containing coaching advice returned by the Coach endpoints.
+///     DTO containing coaching advice returned by the Coach endpoints.
 /// </summary>
 public sealed class CoachAdviceResponse
 {

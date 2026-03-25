@@ -31,9 +31,9 @@ public class CoachController : ControllerBase
     ///     Returns a mocked AI-driven coaching analysis. The endpoint uses <see cref="WorkoutAnalysisService" />
     ///     to compute a V-Taper (chest-to-waist ratio) and then delegates to <see cref="ICoachService" />
     ///     to generate a professional advice string.
-    ///     Mock Phase: returns JSON payload containing advice wrapped in a <see cref="CoachAdviceResponse"/>.
+    ///     Mock Phase: returns JSON payload containing advice wrapped in a <see cref="CoachAdviceResponse" />.
     /// </summary>
-    /// <returns>A <see cref="CoachAdviceResponse"/> with the generated advice string.</returns>
+    /// <returns>A <see cref="CoachAdviceResponse" /> with the generated advice string.</returns>
     [HttpGet("analyze")]
     [Produces("application/json")]
     [ProducesResponseType(typeof(CoachAdviceResponse), StatusCodes.Status200OK)]

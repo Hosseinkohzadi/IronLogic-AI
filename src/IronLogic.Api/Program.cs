@@ -4,6 +4,7 @@ using IronLogic.Application.Services;
 using IronLogic.Domain.Interfaces;
 using IronLogic.Infrastructure;
 using IronLogic.Infrastructure.Data;
+using IronLogic.Infrastructure.ExternalServices;
 using IronLogic.Infrastructure.Repositories;
 using IronLogic.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -40,6 +41,12 @@ builder.Services.AddScoped<IMuscleMeasurementService, MuscleMeasurementService>(
 builder.Services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();
 builder.Services.AddScoped<IWorkoutService, WorkoutService>();
 
+// Register the workout provider (mock implementation for now)
+builder.Services.AddScoped<IWorkoutProvider, MockHevyWorkoutProvider>();
+
+// Register workout analytics service
+builder.Services.AddScoped<IWorkoutAnalyticsService, WorkoutAnalyticsService>();
+
 // Register Kernel (concrete) for Semantic Kernel usage across services/controllers.
 // NOTE: If you want to configure a chat provider (OpenAI, AzureOpenAI, etc.) add provider configuration
 // using the Kernel builder here (example the project owner suggested:
@@ -75,5 +82,5 @@ app.Run();
 // Make the implicit Program class public so integration tests can reference it via WebApplicationFactory<Program>
 namespace IronLogic.Api
 {
-    public partial class Program;
+    public class Program;
 }

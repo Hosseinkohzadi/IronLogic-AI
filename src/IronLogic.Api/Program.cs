@@ -7,7 +7,9 @@ using IronLogic.Infrastructure.Data;
 using IronLogic.Infrastructure.Repositories;
 using IronLogic.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.SemanticKernel; // Added for Kernel registration
+using Microsoft.SemanticKernel;
+
+// Added for Kernel registration
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,4 +73,7 @@ app.MapGet("/api/health", () => "IronLogic API is running perfectly! ??");
 app.Run();
 
 // Make the implicit Program class public so integration tests can reference it via WebApplicationFactory<Program>
-public partial class Program;
+namespace IronLogic.Api
+{
+    public partial class Program;
+}

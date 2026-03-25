@@ -6,7 +6,7 @@ using IronLogic.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 using NSubstitute;
 
-namespace IronLogic.Tests;
+namespace IronLogic.Tests.Controllers;
 
 public class ProgressControllerTests : IDisposable
 {

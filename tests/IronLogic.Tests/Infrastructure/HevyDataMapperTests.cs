@@ -1,7 +1,7 @@
 using IronLogic.Application.Mappers;
 using IronLogic.Domain.Entities;
 
-namespace IronLogic.Tests;
+namespace IronLogic.Tests.Infrastructure;
 
 public class HevyDataMapperTests : IDisposable
 {

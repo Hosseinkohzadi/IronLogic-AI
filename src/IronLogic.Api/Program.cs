@@ -34,8 +34,8 @@ builder.Services.AddDbContextPool<AppDbContext>(options =>
 builder.Services.AddSingleton<IHevyParserService, HevyCsvParserService>();
 builder.Services.AddSingleton<IHevyDataMapper, HevyDataMapper>();
 
-builder.Services.AddScoped<IWorkoutAnalysisService,WorkoutAnalysisService>();
-builder.Services.AddScoped<ICoachService,CoachService>();
+builder.Services.AddScoped<IWorkoutAnalysisService, WorkoutAnalysisService>();
+builder.Services.AddScoped<ICoachService, CoachService>();
 builder.Services.AddScoped<IDailyWeightService, DailyWeightService>();
 builder.Services.AddScoped<IMuscleMeasurementService, MuscleMeasurementService>();
 builder.Services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();

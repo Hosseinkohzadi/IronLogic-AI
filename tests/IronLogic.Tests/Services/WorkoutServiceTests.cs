@@ -7,7 +7,8 @@ namespace IronLogic.Tests.Services;
 
 /// <summary>
 ///     Unit tests for WorkoutService.
-///     Verifies repository delegation and that TotalVolume is scoped to the current calendar month.
+///     Verifies repository delegation, that TotalVolume is scoped to the current calendar month,
+///     and that TopExercise, IntensityScore, and SessionDate are computed correctly.
 /// </summary>
 public class WorkoutServiceTests : IDisposable
 {
@@ -58,65 +59,31 @@ public class WorkoutServiceTests : IDisposable
     // =====================================================================
 
     [Fact]
-    public async Task GetStatsAsync_EmptyDatabase_ReturnsZeroValues()
+    public async Task GetStatsAsync_EmptyDatabase_ReturnsDefaultValues()
     {
+        // Arrange
         _repository.GetAllWithExercisesAndSetsAsync().Returns([]);
         _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>()).Returns([]);
 
+        // Act
         var stats = await _sut.GetStatsAsync();
 
-        stats.TotalSessions.Should().Be(0);
-        stats.TotalExercises.Should().Be(0);
-        stats.TotalSets.Should().Be(0);
+        // Assert
         stats.TotalVolume.Should().Be(0);
+        stats.TopExercise.Should().BeNull();
+        stats.IntensityScore.Should().Be(0);
+        stats.SessionDate.Should().BeNull();
     }
 
-    [Fact]
-    public async Task GetStatsAsync_WithSessions_ReturnsTotalSessionCount()
-    {
-        var sessions = new List<WorkoutSession>
-        {
-            new() { Date = new DateTime(2026, 3, 10), Name = "Push Day", Exercises = [] },
-            new() { Date = new DateTime(2026, 3, 12), Name = "Pull Day", Exercises = [] }
-        };
-
-        _repository.GetAllWithExercisesAndSetsAsync().Returns(sessions);
-        _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>()).Returns([]);
-
-        var stats = await _sut.GetStatsAsync();
-
-        stats.TotalSessions.Should().Be(2);
-    }
+    // =====================================================================
+    //  GetStatsAsync — TopExercise
+    // =====================================================================
 
     [Fact]
-    public async Task GetStatsAsync_WithExercises_ReturnsTotalExerciseCount()
+    public async Task GetStatsAsync_WithExercises_ReturnsHighestVolumeExerciseAsTop()
     {
-        var sessions = new List<WorkoutSession>
-        {
-            new()
-            {
-                Date = new DateTime(2026, 3, 10),
-                Name = "Push Day",
-                Exercises =
-                [
-                    new WorkoutExercise { Name = "Bench Press", Sets = [] },
-                    new WorkoutExercise { Name = "Overhead Press", Sets = [] }
-                ]
-            }
-        };
-
-        _repository.GetAllWithExercisesAndSetsAsync().Returns(sessions);
-        _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>()).Returns([]);
-
-        var stats = await _sut.GetStatsAsync();
-
-        stats.TotalExercises.Should().Be(2);
-    }
-
-    [Fact]
-    public async Task GetStatsAsync_WithSets_ReturnsTotalSetCount()
-    {
-        var sessions = new List<WorkoutSession>
+        // Arrange
+        var currentMonthSessions = new List<WorkoutSession>
         {
             new()
             {
@@ -129,21 +96,110 @@ public class WorkoutServiceTests : IDisposable
                         Name = "Bench Press",
                         Sets =
                         [
-                            new ExerciseSet { SetOrder = 1, Weight = 80, Reps = 10 },
-                            new ExerciseSet { SetOrder = 2, Weight = 85, Reps = 8 },
-                            new ExerciseSet { SetOrder = 3, Weight = 90, Reps = 6 }
+                            new ExerciseSet { SetOrder = 1, Weight = 80, Reps = 10 } // Volume = 800
+                        ]
+                    },
+                    new WorkoutExercise
+                    {
+                        Name = "Overhead Press",
+                        Sets =
+                        [
+                            new ExerciseSet { SetOrder = 1, Weight = 40, Reps = 12 } // Volume = 480
                         ]
                     }
                 ]
             }
         };
 
-        _repository.GetAllWithExercisesAndSetsAsync().Returns(sessions);
-        _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>()).Returns([]);
+        _repository.GetAllWithExercisesAndSetsAsync().Returns(currentMonthSessions);
+        _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>())
+            .Returns(currentMonthSessions);
 
+        // Act
         var stats = await _sut.GetStatsAsync();
 
-        stats.TotalSets.Should().Be(3);
+        // Assert
+        stats.TopExercise.Should().Be("Bench Press");
+    }
+
+    // =====================================================================
+    //  GetStatsAsync — IntensityScore
+    // =====================================================================
+
+    [Fact]
+    public async Task GetStatsAsync_WithSets_ReturnsCorrectIntensityScore()
+    {
+        // Arrange — single exercise: Volume = 80*10 = 800, Reps = 10, Intensity = 80
+        var currentMonthSessions = new List<WorkoutSession>
+        {
+            new()
+            {
+                Date = new DateTime(2026, 3, 10),
+                Name = "Push Day",
+                Exercises =
+                [
+                    new WorkoutExercise
+                    {
+                        Name = "Bench Press",
+                        Sets =
+                        [
+                            new ExerciseSet { SetOrder = 1, Weight = 80, Reps = 10 }
+                        ]
+                    }
+                ]
+            }
+        };
+
+        _repository.GetAllWithExercisesAndSetsAsync().Returns(currentMonthSessions);
+        _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>())
+            .Returns(currentMonthSessions);
+
+        // Act
+        var stats = await _sut.GetStatsAsync();
+
+        // Assert — 800 / 10 = 80.0
+        stats.IntensityScore.Should().Be(80.0);
+    }
+
+    [Fact]
+    public async Task GetStatsAsync_NoCurrentMonthReps_IntensityScoreIsZero()
+    {
+        // Arrange
+        _repository.GetAllWithExercisesAndSetsAsync().Returns([]);
+        _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>()).Returns([]);
+
+        // Act
+        var stats = await _sut.GetStatsAsync();
+
+        // Assert
+        stats.IntensityScore.Should().Be(0);
+    }
+
+    // =====================================================================
+    //  GetStatsAsync — SessionDate
+    // =====================================================================
+
+    [Fact]
+    public async Task GetStatsAsync_WithSessions_ReturnsMostRecentSessionDate()
+    {
+        // Arrange
+        var olderDate = new DateTime(2026, 2, 15);
+        var newerDate = new DateTime(2026, 3, 20);
+
+        var allSessions = new List<WorkoutSession>
+        {
+            new() { Date = olderDate, Name = "Old Session", Exercises = [] },
+            new() { Date = newerDate, Name = "New Session", Exercises = [] }
+        };
+
+        _repository.GetAllWithExercisesAndSetsAsync().Returns(allSessions);
+        _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>()).Returns([]);
+
+        // Act
+        var stats = await _sut.GetStatsAsync();
+
+        // Assert
+        stats.SessionDate.Should().Be(newerDate);
     }
 
     // =====================================================================
@@ -153,7 +209,7 @@ public class WorkoutServiceTests : IDisposable
     [Fact]
     public async Task GetStatsAsync_VolumeOnlyIncludesCurrentMonthSessions()
     {
-        // All sessions (across months) for total counts
+        // Arrange
         var allSessions = new List<WorkoutSession>
         {
             new()
@@ -185,29 +241,25 @@ public class WorkoutServiceTests : IDisposable
         };
 
         // Only current month sessions for volume calculation
-        var currentMonthSessions = new List<WorkoutSession>
-        {
-            allSessions[1] // Only the March session
-        };
+        var currentMonthSessions = new List<WorkoutSession> { allSessions[1] };
 
         _repository.GetAllWithExercisesAndSetsAsync().Returns(allSessions);
         _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>())
             .Returns(currentMonthSessions);
 
+        // Act
         var stats = await _sut.GetStatsAsync();
 
-        // Total counts include all sessions
-        stats.TotalSessions.Should().Be(2);
-        stats.TotalExercises.Should().Be(2);
-        stats.TotalSets.Should().Be(2);
-
-        // Volume should ONLY include current month (800), NOT last month (1000)
+        // Assert — Volume should ONLY include current month (800), NOT last month (1000)
         stats.TotalVolume.Should().Be(800);
+        stats.TopExercise.Should().Be("Bench Press");
+        stats.SessionDate.Should().Be(new DateTime(2026, 3, 10));
     }
 
     [Fact]
     public async Task GetStatsAsync_NoCurrentMonthSessions_VolumeIsZero()
     {
+        // Arrange
         var allSessions = new List<WorkoutSession>
         {
             new()
@@ -228,16 +280,19 @@ public class WorkoutServiceTests : IDisposable
         _repository.GetAllWithExercisesAndSetsAsync().Returns(allSessions);
         _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>()).Returns([]);
 
+        // Act
         var stats = await _sut.GetStatsAsync();
 
-        stats.TotalSessions.Should().Be(1);
+        // Assert
         stats.TotalVolume.Should().Be(0, "no sessions exist in the current month");
+        stats.TopExercise.Should().BeNull();
+        stats.SessionDate.Should().Be(new DateTime(2026, 1, 15), "most recent session is still returned");
     }
 
     [Fact]
     public async Task GetStatsAsync_CurrentMonthVolume_CalculatesWeightTimesReps()
     {
-        // Bench: (80*10) + (85*8) + (90*6) = 800 + 680 + 540 = 2020
+        // Arrange — Bench: (80*10) + (85*8) + (90*6) = 800 + 680 + 540 = 2020
         var currentMonthSessions = new List<WorkoutSession>
         {
             new()
@@ -264,21 +319,26 @@ public class WorkoutServiceTests : IDisposable
         _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>())
             .Returns(currentMonthSessions);
 
+        // Act
         var stats = await _sut.GetStatsAsync();
 
+        // Assert
         stats.TotalVolume.Should().Be(2020);
     }
 
     [Fact]
     public async Task GetStatsAsync_QueriesCurrentMonthDateRange()
     {
+        // Arrange
         _repository.GetAllWithExercisesAndSetsAsync().Returns([]);
         _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>()).Returns([]);
 
+        // Act
         await _sut.GetStatsAsync();
 
+        // Assert
         var now = DateTime.UtcNow;
-        var expectedStart = new DateTime(now.Year, now.Month, 1);
+        var expectedStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
         var expectedEnd = expectedStart.AddMonths(1).AddTicks(-1);
 
         await _repository.Received(1).GetByDateRangeWithExercisesAndSetsAsync(
@@ -289,6 +349,7 @@ public class WorkoutServiceTests : IDisposable
     [Fact]
     public async Task GetStatsAsync_SetsWithNullWeightOrReps_TreatsAsZeroVolume()
     {
+        // Arrange
         var currentMonthSessions = new List<WorkoutSession>
         {
             new()
@@ -314,8 +375,11 @@ public class WorkoutServiceTests : IDisposable
         _repository.GetByDateRangeWithExercisesAndSetsAsync(Arg.Any<DateTime>(), Arg.Any<DateTime>())
             .Returns(currentMonthSessions);
 
+        // Act
         var stats = await _sut.GetStatsAsync();
 
+        // Assert
         stats.TotalVolume.Should().Be(0);
+        stats.IntensityScore.Should().Be(0);
     }
 }

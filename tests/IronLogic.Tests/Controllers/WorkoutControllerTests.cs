@@ -67,16 +67,18 @@ public class WorkoutControllerTests : IDisposable
     }
 
     // =====================================================================
-    //  GetStats — Controller Action Tests
+    //  GetStats — Case A: Returns 200 with correct calculations
     // =====================================================================
 
     [Fact]
-    public async Task GetStats_WhenSessionExists_Returns200Ok()
+    public async Task GetStats_WhenSessionExists_Returns200OkWithCorrectStats()
     {
         // Arrange
+        var sessionDate = new DateTime(2026, 3, 25, 9, 0, 0, DateTimeKind.Utc);
         var session = new HevyWorkoutSessionDto
         {
             Title = "Push Day",
+            StartTime = sessionDate,
             Exercises =
             [
                 new HevyExerciseDto
@@ -98,43 +100,49 @@ public class WorkoutControllerTests : IDisposable
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
         okResult.StatusCode.Should().Be(200);
+
+        var body = okResult.Value.Should().BeOfType<WorkoutStatsResponse>().Subject;
+        body.TotalVolume.Should().Be(1000.0);
+        body.TopExercise.Should().Be("Bench Press");
+        body.IntensityScore.Should().Be(100.0);
+        body.SessionDate.Should().Be(sessionDate);
     }
 
     [Fact]
-    public async Task GetStats_WhenSessionExists_ReturnsStatsWithAnalytics()
+    public async Task GetStats_WhenSessionExists_CallsAllAnalyticsServices()
     {
         // Arrange
         var session = new HevyWorkoutSessionDto
         {
-            Title = "Push Day",
+            Title = "Pull Day",
+            StartTime = DateTime.UtcNow,
             Exercises =
             [
                 new HevyExerciseDto
                 {
-                    Name = "Bench Press",
-                    Sets = [new HevySetDto { Weight = 100.0, Reps = 10, SetType = "work" }]
+                    Name = "Deadlift",
+                    Sets = [new HevySetDto { Weight = 180.0, Reps = 5, SetType = "work" }]
                 }
             ]
         };
 
         _workoutProvider.GetRecentSessionsAsync(1).Returns(new List<HevyWorkoutSessionDto> { session });
-        _analyticsService.CalculateTotalVolume(session).Returns(1000.0);
-        _analyticsService.GetIntensityScore(session).Returns(100.0);
+        _analyticsService.CalculateTotalVolume(session).Returns(900.0);
+        _analyticsService.GetIntensityScore(session).Returns(180.0);
         _analyticsService.GetTopExercise(session).Returns(session.Exercises[0]);
 
         // Act
-        var result = await _sut.GetStats();
+        await _sut.GetStats();
 
         // Assert
-        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var body = okResult.Value.Should().BeOfType<WorkoutStatsResponse>().Subject;
-        body.TotalSessions.Should().Be(1);
-        body.TotalExercises.Should().Be(1);
-        body.TotalSets.Should().Be(1);
-        body.TotalVolume.Should().Be(1000.0);
-        body.TopExercise.Should().Be("Bench Press");
-        body.IntensityScore.Should().Be(100.0);
+        _analyticsService.Received(1).CalculateTotalVolume(session);
+        _analyticsService.Received(1).GetIntensityScore(session);
+        _analyticsService.Received(1).GetTopExercise(session);
     }
+
+    // =====================================================================
+    //  GetStats — Case B: Returns 204 when no sessions found
+    // =====================================================================
 
     [Fact]
     public async Task GetStats_WhenNoSessions_Returns204NoContent()

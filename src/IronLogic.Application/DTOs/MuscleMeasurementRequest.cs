@@ -8,7 +8,7 @@ namespace IronLogic.Application.DTOs;
 /// </summary>
 public class MuscleMeasurementRequest
 {
-    [Required] [NotFutureDate] public DateTime Date { get; set; }
+    [Required][NotFutureDate] public DateTime Date { get; set; }
 
     [Required]
     [Range(20.0, 60.0, ErrorMessage = "Neck must be between 20 and 60 cm.")]

@@ -102,10 +102,10 @@ public class WorkoutAnalyticsService : IWorkoutAnalyticsService
                 if (session?.Exercises == null) continue;
 
                 historicalMax = (from ex in session.Exercises.OfType<HevyExerciseDto>()
-                        where string.Equals(ex.Name, currentExercise.Name, StringComparison.OrdinalIgnoreCase)
-                        select ex.Sets?.Select(s => (s?.Weight ?? 0.0) * (s?.Reps ?? 0))
-                            .DefaultIfEmpty(0.0)
-                            .Max() ?? 0.0).Prepend(historicalMax)
+                                 where string.Equals(ex.Name, currentExercise.Name, StringComparison.OrdinalIgnoreCase)
+                                 select ex.Sets?.Select(s => (s?.Weight ?? 0.0) * (s?.Reps ?? 0))
+                                     .DefaultIfEmpty(0.0)
+                                     .Max() ?? 0.0).Prepend(historicalMax)
                     .Max();
             }
         }

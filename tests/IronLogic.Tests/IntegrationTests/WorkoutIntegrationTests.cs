@@ -193,7 +193,7 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
     // =====================================================================
 
     [Fact]
-    public async Task GetStats_EmptyDatabase_Returns200WithZeroValues()
+    public async Task GetStats_EmptyDatabase_Returns200WithDefaultValues()
     {
         var response = await _client.GetAsync(StatsEndpoint, CancellationToken.None);
 
@@ -201,7 +201,10 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
 
         var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions, CancellationToken.None);
         stats.Should().NotBeNull();
-        stats.TotalVolume.Should().Be(0);
+        stats!.TotalVolume.Should().Be(0);
+        stats.TopExercise.Should().BeNull();
+        stats.IntensityScore.Should().Be(0);
+        stats.SessionDate.Should().BeNull();
     }
 
     [Fact]
@@ -215,7 +218,7 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
     }
 
     [Fact]
-    public async Task GetStats_WithSeededData_ReturnsTotalSessions()
+    public async Task GetStats_WithSeededData_ReturnsTopExercise()
     {
         await SeedWorkoutDataAsync();
 
@@ -223,11 +226,12 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
         var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions, CancellationToken.None);
 
         stats.Should().NotBeNull();
-        stats.TotalSessions.Should().BeGreaterThanOrEqualTo(1);
+        // Bench Press volume (800+680+540=2020) > OHP volume (480+450=930)
+        stats!.TopExercise.Should().Be("Bench Press");
     }
 
     [Fact]
-    public async Task GetStats_WithSeededData_ReturnsTotalExercises()
+    public async Task GetStats_WithSeededData_ReturnsIntensityScore()
     {
         await SeedWorkoutDataAsync();
 
@@ -235,11 +239,11 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
         var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions, CancellationToken.None);
 
         stats.Should().NotBeNull();
-        stats.TotalExercises.Should().BeGreaterThanOrEqualTo(2);
+        stats!.IntensityScore.Should().BeGreaterThan(0);
     }
 
     [Fact]
-    public async Task GetStats_WithSeededData_ReturnsTotalSets()
+    public async Task GetStats_WithSeededData_ReturnsSessionDate()
     {
         await SeedWorkoutDataAsync();
 
@@ -247,7 +251,7 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
         var stats = await response.Content.ReadFromJsonAsync<WorkoutStatsResponse>(JsonOptions, CancellationToken.None);
 
         stats.Should().NotBeNull();
-        stats.TotalSets.Should().BeGreaterThanOrEqualTo(5);
+        stats!.SessionDate.Should().NotBeNull();
     }
 
     [Fact]
@@ -263,7 +267,7 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
         // OHP:   (40*12) + (45*10)          = 480 + 450       = 930
         // Total = 2950
         stats.Should().NotBeNull();
-        stats.TotalVolume.Should().BeGreaterThanOrEqualTo(2950);
+        stats!.TotalVolume.Should().BeGreaterThanOrEqualTo(2950);
     }
 
     // =====================================================================
@@ -280,11 +284,14 @@ public class WorkoutIntegrationTests(WebApplicationFactory factory)
 
         stats.Should().NotBeNull();
 
-        // Total counts include all months
-        stats.TotalSessions.Should().Be(2);
-
         // Volume should only include current month session: 80 * 10 = 800
         // Previous month Deadlift (140 * 5 = 700) must be excluded
-        stats.TotalVolume.Should().Be(800);
+        stats!.TotalVolume.Should().Be(800);
+
+        // Top exercise is from the current month only
+        stats.TopExercise.Should().Be("Bench Press");
+
+        // SessionDate should be the most recent session across all months (current month)
+        stats.SessionDate.Should().NotBeNull();
     }
 }

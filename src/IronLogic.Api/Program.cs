@@ -41,10 +41,13 @@ if (app.Environment.IsDevelopment())
     app.UseOpenApi();
     app.UseSwaggerUi();
 }
+else
+{
+    app.UseHttpsRedirection();
+}
 
+app.UseRouting();
 app.UseCors("AllowIronLogicDash");
-
-app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
 

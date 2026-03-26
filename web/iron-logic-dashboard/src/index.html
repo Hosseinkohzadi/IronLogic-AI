@@ -1,13 +1,31 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>IronLogicDashboard</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>IronLogic AI Dashboard</title>
   <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+  <link rel="preconnect" href="https://fonts.bunny.net" />
+  <link href="https://fonts.bunny.net/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <script src="https://unpkg.com/@tailwindcss/browser@4"></script>
+
+  <style type="text/tailwindcss">
+    @theme {
+      --default-font-family: "Inter";
+      /* رنگ بنفش اختصاصی برند تو رو جایگزین نیلی (indigo) پیش‌فرض می‌کنیم */
+      --color-indigo-50: #f5f3ff;
+      --color-indigo-100: #ede9fe;
+      --color-indigo-200: #ddd6fe;
+      --color-indigo-500: #6d5cff; /* رنگ اصلی تو */
+      --color-indigo-600: #5b4bdf;
+      --color-indigo-700: #4a3bc0;
+      --color-indigo-900: #322685;
+    }
+  </style>
 </head>
-<body>
-  <app-root></app-root>
+<body class="bg-slate-100">
+<app-root></app-root>
 </body>
 </html>

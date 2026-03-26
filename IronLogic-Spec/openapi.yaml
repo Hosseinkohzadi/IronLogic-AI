@@ -4,7 +4,7 @@ info:
   description: API for tracking daily weight, muscle measurements, and AI coaching for athletes.
   version: 1.1.0
 servers:
-  - url: http://localhost:5000/api/v1
+  - url: http://localhost:5001/api/v1
     description: Local Development Server
 
 paths:

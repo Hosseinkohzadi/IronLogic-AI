@@ -1,124 +1,174 @@
-<div class="p-4 lg:p-8">
-  <header class="mb-8">
-    <h1 class="text-2xl font-bold tracking-tight text-slate-900">
-      🏋️ IronLogic <span class="text-indigo-600">Dashboard</span>
-    </h1>
-    <p class="mt-1 text-sm font-medium text-slate-500 uppercase tracking-wider">Classic Physique Progress Tracker</p>
-  </header>
+<div class="flex h-screen overflow-hidden bg-slate-50 font-sans">
 
-  @if (loading()) {
-  <div class="flex items-center gap-3 text-slate-500 mb-6">
-    <svg class="h-5 w-5 animate-spin text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
-    </svg>
-    <p class="font-medium text-sm">Loading workout stats…</p>
-  </div>
-  }
-
-  @if (error(); as errorMsg) {
-  <div class="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-600">
-    {{ errorMsg }}
-  </div>
-  }
-
-  @if (stats(); as s) {
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 md:gap-6">
-
-    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:border-indigo-300 transition-colors">
-      <div class="flex items-start justify-between">
-        <div>
-          <p class="text-sm font-semibold tracking-wide text-slate-500">Monthly Volume</p>
-          <h3 class="mt-2 text-3xl font-bold text-slate-900">
-            {{ s.totalVolume | number:'1.0-0' }}
-            <span class="text-base font-medium text-slate-500">lbs</span>
-          </h3>
-        </div>
-        <div class="rounded-lg bg-indigo-50 p-2.5">
-          <svg class="h-6 w-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-          </svg>
-        </div>
-      </div>
-      <p class="mt-4 text-sm font-medium text-slate-500 flex items-center justify-between">
-        <span>Top Exercise:</span>
-        <span class="text-slate-900">{{ s.topExercise ?? 'N/A' }}</span>
-      </p>
+  <aside class="w-64 flex-none bg-white border-r border-slate-200 flex flex-col shadow-sm z-10">
+    <div class="flex items-center h-24 px-6 border-b border-slate-100">
+      <h1 class="text-2xl font-black text-slate-800 tracking-tight">
+        🏋️ Iron<span class="text-indigo-600">Logic</span>
+      </h1>
     </div>
 
-    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:border-orange-300 transition-colors">
-      <div class="flex items-start justify-between">
-        <div>
-          <p class="text-sm font-semibold tracking-wide text-slate-500">Intensity Score</p>
-          <h3 class="mt-2 text-3xl font-bold text-slate-900">
-            {{ s.intensityScore | number:'1.1-1' }}
-          </h3>
-        </div>
-        <div class="rounded-lg bg-orange-50 p-2.5">
-          <svg class="h-6 w-6 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
-        </div>
-      </div>
+    <div class="flex flex-col p-4 space-y-2 flex-1 mt-4">
+      <p class="px-4 text-xs font-semibold text-slate-400 uppercase tracking-widest mb-2">Menu</p>
 
-      <div class="mt-4 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
-        <div class="h-1.5 rounded-full transition-all duration-500"
-             [class.bg-orange-500]="s.intensityScore >= 150"
-             [class.bg-emerald-500]="s.intensityScore < 150"
-             [style.width.%]="s.intensityScore > 200 ? 100 : (s.intensityScore / 200) * 100">
-        </div>
-      </div>
+      <a href="#" class="flex items-center gap-3 px-4 py-3 bg-indigo-50 text-indigo-700 rounded-xl font-bold transition-all shadow-sm border border-indigo-100/50">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+        Dashboard
+      </a>
 
-      @if (s.intensityScore >= 150) {
-      <p class="mt-3 text-xs font-semibold text-orange-600 flex items-center gap-1">
-        <span>⚡</span> High — schedule a deload week
-      </p>
-      } @else {
-      <p class="mt-3 text-xs font-medium text-slate-500">Intensity is optimal</p>
-      }
+      <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition-all">
+        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+        V-Taper Lab
+      </a>
+
+      <a href="#" class="flex items-center justify-between px-4 py-3 text-slate-500 hover:bg-slate-50 hover:text-slate-900 rounded-xl font-medium transition-all">
+        <div class="flex items-center gap-3">
+          <span class="text-xl">🤖</span>
+          AI Coach
+        </div>
+        <span class="bg-orange-100 text-orange-700 py-0.5 px-2.5 rounded-full text-[10px] font-bold uppercase tracking-wider">New</span>
+      </a>
     </div>
 
-    <div class="rounded-xl border border-slate-200 bg-white p-6 shadow-sm hover:border-emerald-300 transition-colors">
-      <div class="flex items-start justify-between">
-        <div>
-          <p class="text-sm font-semibold tracking-wide text-slate-500">Last Session</p>
-          <h3 class="mt-2 text-2xl font-bold text-slate-900">
-            @if (s.sessionDate) {
-            {{ s.sessionDate | date:'MMM dd' }}
-            } @else {
-            —
-            }
-          </h3>
-        </div>
-        <div class="rounded-lg bg-emerald-50 p-2.5">
-          <svg class="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
+    <div class="p-4 border-t border-slate-100">
+      <div class="flex items-center gap-3 px-4 py-2">
+        <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">H</div>
+        <div class="flex flex-col">
+          <span class="text-sm font-bold text-slate-700">Hossein</span>
+          <span class="text-xs text-slate-400">Classic Physique</span>
         </div>
       </div>
-      <p class="mt-4 text-sm font-medium text-slate-500">
-        @if (s.sessionDate) {
-        Recorded at {{ s.sessionDate | date:'h:mm a' }}
+    </div>
+  </aside>
+
+  <main class="flex-1 overflow-y-auto p-6 lg:p-10 relative">
+
+    <header class="mb-10 flex justify-between items-end border-b border-slate-200 pb-4">
+      <div>
+        <h2 class="text-3xl font-black tracking-tight text-slate-800">
+          Overview
+        </h2>
+        <p class="mt-1 text-sm font-semibold text-slate-400 uppercase tracking-widest">Progress Tracker</p>
+      </div>
+      <div class="hidden sm:block text-sm font-medium text-slate-400">
+        @if (stats()?.sessionDate) {
+        Today is {{ stats()?.sessionDate | date:'EEEE, MMM d' }}
         } @else {
-        No sessions recorded
+        Dashboard Ready
         }
-      </p>
-    </div>
-
-    @if (advice(); as a) {
-    <div class="rounded-xl border border-indigo-100 bg-indigo-50/50 p-6 shadow-sm sm:col-span-2 lg:col-span-3">
-      <div class="mb-4 flex items-center gap-2 border-b border-indigo-100 pb-3">
-        <span class="text-xl">🤖</span>
-        <h4 class="text-sm font-bold uppercase tracking-wide text-indigo-900">Coach Intelligence Insight</h4>
       </div>
-      <p class="text-sm leading-relaxed text-slate-700 italic whitespace-pre-line">
-        "{{ a.advice }}"
-      </p>
+    </header>
+
+    @if (loading()) {
+    <div class="flex items-center gap-3 text-slate-500 mb-6 bg-white p-4 rounded-xl border border-slate-200 w-fit shadow-sm">
+      <svg class="h-5 w-5 animate-spin text-indigo-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+      </svg>
+      <p class="font-medium text-sm">Loading your IronLogic stats…</p>
     </div>
     }
 
-  </div>
-  }
+    @if (error(); as errorMsg) {
+    <div class="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-medium text-red-600 flex items-center gap-2">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+      {{ errorMsg }}
+    </div>
+    }
 
-  <router-outlet />
+    @if (stats(); as s) {
+    <div class="grid grid-cols-1 gap-6 md:grid-cols-3">
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm font-bold tracking-wide text-slate-400 uppercase">Monthly Volume</p>
+            <h3 class="mt-2 text-4xl font-black text-slate-800">
+              {{ s.totalVolume | number:'1.0-0' }}
+              <span class="text-lg font-medium text-slate-400">lbs</span>
+            </h3>
+          </div>
+          <div class="rounded-xl bg-indigo-50 p-3 text-indigo-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+          </div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-slate-100 flex items-center justify-between">
+          <span class="text-sm text-slate-500">Top Exercise:</span>
+          <span class="text-sm font-bold text-slate-800">{{ s.topExercise ?? 'N/A' }}</span>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm font-bold tracking-wide text-slate-400 uppercase">Intensity Score</p>
+            <h3 class="mt-2 text-4xl font-black text-slate-800">
+              {{ s.intensityScore | number:'1.1-1' }}
+            </h3>
+          </div>
+          <div class="rounded-xl bg-orange-50 p-3 text-orange-500">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+          </div>
+        </div>
+        <div class="mt-6 w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+          <div class="h-1.5 rounded-full transition-all duration-500"
+               [class.bg-orange-500]="s.intensityScore >= 150"
+               [class.bg-emerald-500]="s.intensityScore < 150"
+               [style.width.%]="s.intensityScore > 200 ? 100 : (s.intensityScore / 200) * 100"></div>
+        </div>
+
+        @if (s.intensityScore >= 150) {
+        <p class="mt-3 text-xs font-bold text-orange-600 flex items-center gap-1">
+          <span>⚡</span> High — schedule a deload week
+        </p>
+        } @else {
+        <p class="mt-3 text-xs font-medium text-slate-500">
+          Intensity is optimal
+        </p>
+        }
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm hover:shadow-md transition-shadow">
+        <div class="flex items-start justify-between">
+          <div>
+            <p class="text-sm font-bold tracking-wide text-slate-400 uppercase">Last Session</p>
+            <h3 class="mt-2 text-4xl font-black text-slate-800">
+              @if (s.sessionDate) {
+              {{ s.sessionDate | date:'MMM dd' }}
+              } @else {
+              —
+              }
+            </h3>
+          </div>
+          <div class="rounded-xl bg-emerald-50 p-3 text-emerald-600">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+          </div>
+        </div>
+        <div class="mt-6 pt-4 border-t border-slate-100">
+          <p class="text-sm text-slate-500 font-medium">
+            @if (s.sessionDate) {
+            Recorded at {{ s.sessionDate | date:'h:mm a' }}
+            } @else {
+            No sessions recorded
+            }
+          </p>
+        </div>
+      </div>
+
+      @if (advice(); as a) {
+      <div class="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-8 shadow-sm sm:col-span-2 md:col-span-3 mt-2">
+        <div class="mb-5 flex items-center gap-3">
+          <span class="text-2xl">🤖</span>
+          <h4 class="text-sm font-black uppercase tracking-widest text-indigo-900">Coach Intelligence Insight</h4>
+        </div>
+        <p class="text-sm leading-8 text-slate-700 italic whitespace-pre-line font-medium">
+          "{{ a.advice }}"
+        </p>
+      </div>
+      }
+
+    </div>
+    }
+
+    <router-outlet />
+  </main>
 </div>

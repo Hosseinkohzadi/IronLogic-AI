@@ -14,4 +14,10 @@
   <Folder Name="/tests/">
     <Project Path="tests/IronLogic.Tests/IronLogic.Tests.csproj" />
   </Folder>
+  <Folder Name="/web/">
+    <Project Path="web/iron-logic-dashboard/dashboard.esproj">
+      <Build />
+      <Deploy />
+    </Project>
+  </Folder>
 </Solution>

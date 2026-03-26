@@ -3,3 +3,24 @@
 [Oo]bj/
 *.user
 *.vspscc
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+
+# IDE
+.vs/
+.vscode/
+*.suo
+*.user
+
+# OS files
+Thumbs.db
+.DS_Store

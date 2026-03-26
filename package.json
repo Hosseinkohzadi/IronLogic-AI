@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "@tailwindcss/vite": "^4.2.2",
+    "alpinejs": "^3.15.8",
+    "tailwindcss": "^4.2.2"
+  },
+  "devDependencies": {
+    "@angular/cli": "^21.2.4",
+    "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/typography": "^0.5.19"
+  }
+}

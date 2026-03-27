@@ -1,1 +1,43 @@
-/* All styles are global or utility classes */
+/* Tooltip Container */
+#chartjs-tooltip {
+  opacity: 0;
+  transition: opacity 0.15s ease, transform 0.1s ease-out;
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* Tooltip Content (Hevy Style) */
+.tooltip-content {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  position: relative;
+  min-width: 140px;
+  text-align: center;
+}
+
+/* Tooltip Caret */
+.tooltip-content::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: #f8fafc transparent transparent transparent;
+}
+
+/* Custom Select Reset */
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+canvas {
+  width: 100% !important;
+  height: 100% !important;
+}

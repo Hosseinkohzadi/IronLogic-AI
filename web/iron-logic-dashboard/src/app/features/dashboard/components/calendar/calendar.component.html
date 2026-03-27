@@ -1,55 +1,54 @@
-<div class="calendar-card bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-50 w-full overflow-hidden">
-  <div class="flex justify-between items-center mb-6 px-2">
-    <h3 class="text-sm font-black uppercase tracking-widest text-slate-800">{{ monthName() }}</h3>
-    <div class="flex items-center gap-2">
+<div class="calendar-card rounded-[2.5rem] p-6 border border-slate-50">
+
+  <div class="flex justify-between items-center mb-6">
+    <h3 class="text-lg font-black text-slate-800 tracking-tight">{{ monthName() }}</h3>
+    <div class="flex gap-1">
       <button (click)="prevMonth()" class="nav-btn">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 19l-7-7 7-7"/></svg>
       </button>
       <button (click)="nextMonth()" class="nav-btn">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
       </button>
     </div>
   </div>
 
-  <div class="grid grid-cols-7 gap-1 text-center">
-    @for (dayName of ['S', 'M', 'T', 'W', 'T', 'F', 'S']; track dayName) {
-      <div class="text-[10px] font-bold text-slate-300 pb-2">{{ dayName }}</div>
+  <div class="calendar-header grid grid-cols-7 mb-4">
+    @for (day of weekDays; track $index) {
+    <div class="text-slate-400 font-bold text-[10px] uppercase text-center">{{ day }}</div>
     }
+  </div>
 
-    @for (d of days(); track $index) {
-      <div class="relative h-12 flex items-center justify-center group"
-           (mouseenter)="hoveredDate.set(d?.fullDate ?? null)"
-           (mouseleave)="hoveredDate.set(null)">
-        @if (d) {
-          <span class="z-10 text-sm font-bold transition-all"
-                [class.text-white]="d.isTrained"
-                [class.text-slate-600]="!d.isTrained">
-            {{ d.day }}
-          </span>
+  <div class="calendar-grid grid grid-cols-7 gap-2">
+    @for (day of calendarDays(); track day.date.getTime()) {
+    <div class="calendar-cell relative aspect-square flex items-center justify-center rounded-2xl text-xs font-bold transition-all duration-300"
+         [class.bg-indigo-50]="day.hasWorkout && !day.isToday"
+         [class.text-indigo-600]="day.hasWorkout && !day.isToday"
+         [class.text-slate-900]="!day.hasWorkout && !day.isAdjacentMonth && !day.isToday"
+         [class.text-slate-300]="day.isAdjacentMonth && !day.isToday"
+         [class.bg-indigo-600]="day.isToday"
+         [class.text-white]="day.isToday"
+         [class.shadow-md]="day.isToday"
+         [class.today-pulse]="day.isToday">
 
-          @if (d.isTrained) {
-            <div class="absolute inset-0 m-auto w-10 h-10 bg-indigo-600 rounded-xl shadow-md transition-transform group-hover:scale-110"></div>
-            
-            @if (hoveredDate() === d.fullDate) {
-              <div class="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-48 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 z-50 animate-in fade-in zoom-in duration-200">
-                @for (session of d.sessions; track $index) {
-                  <div class="text-left mb-2 last:mb-0">
-                    <p class="text-[11px] font-black text-slate-800">{{ session.type }}</p>
-                    <p class="text-[9px] font-bold text-slate-400">{{ session.duration }}</p>
-                    <button class="text-[9px] font-black text-indigo-600 uppercase mt-1">See Workout</button>
-                  </div>
-                }
-                <div class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-white"></div>
-              </div>
-            }
-          }
+    {{ day.date | date:'d' }}
 
-          @if (d.isToday) {
-            <div class="absolute inset-0 m-auto w-10 h-10 border-2 border-dashed border-indigo-400 rounded-xl animate-[spin_15s_linear_infinite]"></div>
-            <div class="absolute -bottom-1 w-1.5 h-1.5 bg-indigo-600 rounded-full"></div>
-          }
-        }
-      </div>
+    @if (day.hasWorkout) {
+    <div class="absolute bottom-1.5 w-1 h-1 rounded-full"
+         [class.bg-indigo-600]="!day.isToday"
+         [class.bg-white]="day.isToday"></div>
     }
+    </div>
+    }
+  </div>
+
+  <div class="mt-6 flex items-center gap-4 px-2">
+    <div class="flex items-center gap-2">
+      <div class="w-2 h-2 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(79,70,229,0.4)]"></div>
+      <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tight">Workout Day</span>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="w-2 h-2 bg-slate-200 rounded-full"></div>
+      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Rest Day</span>
+    </div>
   </div>
 </div>

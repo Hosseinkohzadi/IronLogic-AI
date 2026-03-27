@@ -1,0 +1,50 @@
+<div class="relative flex min-h-dvh items-center justify-center bg-slate-50 text-slate-900 overflow-hidden">
+
+  <div class="absolute right-0 bottom-0 left-0 pointer-events-none">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -100 1440 320" class="text-indigo-100/50">
+      <path fill="currentColor" fill-opacity="1" d="M0,96L26.7,112C53.3,128,107,160,160,181.3C213.3,203,267,213,320,192C373.3,171,427,117,480,122.7C533.3,128,587,192,640,229.3C693.3,267,747,277,800,245.3C853.3,213,907,139,960,138.7C1013.3,139,1067,213,1120,224C1173.3,235,1227,181,1280,154.7C1333.3,128,1387,128,1413,128L1440,128L1440,320L1413.3,320C1386.7,320,1333,320,1280,320C1226.7,320,1173,320,1120,320C1066.7,320,1013,320,960,320C906.7,320,853,320,800,320C746.7,320,693,320,640,320C586.7,320,533,320,480,320C426.7,320,373,320,320,320C266.7,320,213,320,160,320C106.7,320,53,320,27,320L0,320Z"></path>
+    </svg>
+  </div>
+
+  <div class="relative w-full max-w-xl px-5 py-6 z-10">
+    <div class="mb-8 text-center">
+      <h3 class="inline-flex items-center gap-2 text-3xl font-black tracking-tight">
+        <div class="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white font-black text-sm shadow-md">IL</div>
+        IronLogic AI
+      </h3>
+      <p class="font-medium text-slate-500 mt-2">Create your account to start tracking</p>
+    </div>
+
+    <div class="rounded-2xl border border-slate-100 bg-white/80 backdrop-blur-xl p-6 shadow-xl shadow-slate-200/50 lg:p-10">
+      <form class="space-y-5" (submit)="$event.preventDefault()">
+        <div class="space-y-1">
+          <label class="inline-block font-bold text-sm text-slate-700" for="name">Name</label>
+          <input type="text" id="name" class="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all" placeholder="Enter your full name" required />
+        </div>
+        <div class="space-y-1">
+          <label class="inline-block font-bold text-sm text-slate-700" for="email">Email</label>
+          <input type="email" id="email" class="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all" placeholder="Enter your email" required />
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div class="space-y-1">
+            <label class="inline-block font-bold text-sm text-slate-700" for="password">Password</label>
+            <input type="password" id="password" class="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all" placeholder="Password" required />
+          </div>
+          <div class="space-y-1">
+            <label class="inline-block font-bold text-sm text-slate-700" for="password_confirm">Confirm</label>
+            <input type="password" id="password_confirm" class="block w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all" placeholder="Confirm" required />
+          </div>
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="block w-full rounded-xl bg-indigo-600 px-4 py-3.5 font-bold text-white shadow-md shadow-indigo-600/30 transition-all hover:bg-indigo-700 active:scale-95">
+            Create Account
+          </button>
+        </div>
+        <div class="text-center mt-4">
+          <a routerLink="/login" class="text-sm font-bold text-slate-500 hover:text-indigo-600 transition-colors">Already have an account? Log in</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

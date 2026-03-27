@@ -21,6 +21,7 @@
           "builder": "@angular/build:application",
           "options": {
             "browser": "src/main.ts",
+            "polyfills": [],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "css",
             "assets": [
@@ -67,6 +68,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": {
               "buildTarget": "iron-logic-dashboard:build:production"

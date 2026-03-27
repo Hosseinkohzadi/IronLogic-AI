@@ -8,15 +8,12 @@
 /* @source "../views"; */
 /* @source "../other/folder/with/your/source/files"; */
 
-/* Plugins */
-@plugin "@tailwindcss/forms";
-@plugin "@tailwindcss/typography";
+/* Plugins are configured in tailwind.config.js */
 
-/* Class based dark mode */
-@custom-variant dark (&:where(.dark, .dark *));
+/* Enable dark mode by adding the 'dark' class to <html> or <body> and using Tailwind's 'dark:' variant in your classes. */
 
 /* Theme configuration */
-@theme {
+:root {
   /* Fonts */
   --default-font-family: "Inter";
   /* IronLogic custom palette */
@@ -31,3 +28,4 @@
   --color-iron-warning: #f59e0b;
   --color-iron-danger: #ef4444;
 }
+

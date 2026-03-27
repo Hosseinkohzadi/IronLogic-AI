@@ -1,0 +1,25 @@
+<div class="rounded-3xl bg-white p-8 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] flex flex-col justify-center">
+  <div class="flex items-center justify-between mb-6">
+    <h3 class="text-base font-bold text-slate-800">{{ monthAndYear() }}</h3>
+    <!-- Add prev/next month controls here if needed -->
+  </div>
+  <div class="grid grid-cols-7 gap-1 text-center mb-4">
+    @for (day of daysOfWeek; track day) {
+    <span class="text-[10px] font-bold text-slate-400">{{ day }}</span>
+    }
+  </div>
+  <div class="grid grid-cols-7 gap-y-3 gap-x-1 text-center text-xs font-bold">
+    @for (week of calendarGrid(); track week) {
+      @for (day of week; track day.date) {
+        <span [ngClass]="{
+          'text-slate-300': !day.isCurrentMonth,
+          'text-slate-800': day.isCurrentMonth && !day.isToday && !day.hasWorkout,
+          'text-indigo-600 bg-indigo-50 rounded-full w-6 h-6 flex items-center justify-center mx-auto': day.hasWorkout && !day.isToday,
+          'bg-indigo-600 text-white shadow-md rounded-full w-6 h-6 flex items-center justify-center mx-auto': day.isToday
+        }">
+          {{ day.dayOfMonth }}
+        </span>
+      }
+    }
+  </div>
+</div>

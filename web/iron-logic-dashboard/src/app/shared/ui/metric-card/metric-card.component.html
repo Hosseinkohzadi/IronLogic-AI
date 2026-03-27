@@ -1,0 +1,16 @@
+<div class="metric-card">
+  <div>
+    <div class="w-10 h-10 rounded-full flex items-center justify-center mb-4" [ngClass]="iconClasses">
+      <ng-container *ngTemplateOutlet="iconTemplate; context: { stats: stats }"></ng-container>
+    </div>
+
+    <p class="text-xs font-bold tracking-widest text-slate-400 uppercase mb-1">{{ title }}</p>
+    <h3 class="text-4xl font-black text-slate-800 tracking-tight">
+      {{ value }} <span *ngIf="unit" class="text-lg font-medium text-slate-400 ml-1">{{ unit }}</span>
+    </h3>
+  </div>
+
+  <div class="mt-6">
+    <ng-container *ngTemplateOutlet="footerTemplate; context: { stats: stats }"></ng-container>
+  </div>
+</div>

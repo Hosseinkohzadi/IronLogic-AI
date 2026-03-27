@@ -38,5 +38,5 @@ export class DashboardComponent {
   ));
 
   // 3. Mock data for the calendar.
-  workoutDates = signal(['2026-03-01', '2026-03-05', '2026-03-27']);
+  workoutDates = signal(['2026-03-01', '2026-03-05', '2026-03-26']);
 }

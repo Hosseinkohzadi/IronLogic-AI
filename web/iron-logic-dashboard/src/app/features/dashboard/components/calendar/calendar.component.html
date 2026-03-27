@@ -1,3 +1,43 @@
-<div class="calendar-wrapper">
-  <div #datepicker class="w-full flex justify-center"></div>
+<div class="calendar-card bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-50 w-full overflow-hidden">
+  <div class="flex justify-between items-center mb-6">
+    <h3 class="text-sm font-black uppercase tracking-widest text-slate-800">{{ monthName() }}</h3>
+    <div class="flex items-center gap-2">
+      <button (click)="prevMonth()" class="nav-btn" title="Previous month">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+      <button (click)="nextMonth()" class="nav-btn" title="Next month">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-7 gap-1 text-center">
+    @for (dayName of ['S', 'M', 'T', 'W', 'T', 'F', 'S']; track dayName) {
+    <div class="text-[10px] font-bold text-slate-300 pb-2">{{ dayName }}</div>
+    }
+
+    @for (d of days(); track $index) {
+    <div class="relative h-10 flex items-center justify-center">
+      @if (d) {
+      <span [class.today-indicator]="d.isToday" class="z-10 text-sm font-semibold p-1.5 transition-all"
+            [class.text-white]="d.isTrained" [class.text-slate-600]="!d.isTrained">
+        {{ d.day }}
+      </span>
+      @if (d.isTrained) {
+      <div class="absolute inset-0 m-auto w-10 h-10 bg-indigo-600 rounded-xl shadow-md"></div>
+      }
+
+      @if (d.isToday) {
+      <div class="absolute inset-0 m-auto w-10 h-10 border-2 border-dashed border-indigo-400 rounded-xl animate-[spin_10s_linear_infinite]">
+      </div>
+      <div class="absolute -bottom-1 w-1 h-1 bg-indigo-600 rounded-full"></div>
+      }
+      }
+    </div>
+    }
+  </div>
 </div>

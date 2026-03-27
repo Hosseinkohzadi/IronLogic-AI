@@ -24,17 +24,33 @@ import { CoachService } from '../../core/services/coach.service';
 export class DashboardComponent {
   private api = inject(IronLogicApiService);
   private coachService = inject(CoachService);
-  private statsData = toSignal(
-    this.api.getWorkoutStatsWithAdvice().pipe(
-      tap(() => this.loading.set(false))
-    )
-  );
+  
+  // 1. Fetch the data as a signal.
+  private statsData = toSignal(this.api.getWorkoutStatsWithAdvice());
 
-  loading = signal(true);
+  // 2. Compute the loading state based on data availability (error-free).
+  loading = computed(() => !this.statsData());
+  
   stats = computed(() => this.statsData());
+  
   advice = toSignal(this.coachService.analyze().pipe(
     map(res => res.advice) 
   ));
-  workoutDates = computed(() => (this.stats()?.workoutDates as any[]) ?? []);
 
+  // 3. Mock data for the calendar.
+  workouts = signal([
+  { 
+    date: '2026-03-26', 
+    sessions: [
+      { type: 'Morning workout ☀️', duration: '1h 5min' },
+      { type: 'Evening workout 🏋️', duration: '1h 15min' }
+    ] 
+  },
+  { 
+    date: '2026-03-27', 
+    sessions: [
+      { type: 'Leg Day 🔥', duration: '1h 30min' }
+    ] 
+  }
+]);
 }

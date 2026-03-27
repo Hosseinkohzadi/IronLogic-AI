@@ -1,20 +1,22 @@
 .nav-btn {
-  @apply p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border border-transparent hover:border-slate-100;
-}
-
-.today-indicator {
-  /* A soft purple border around today's number */
-  @apply ring-2 ring-indigo-400 ring-offset-2 border border-indigo-100 !important;
-  border-radius: 0.75rem;
-  background-color: rgba(79, 70, 229, 0.05); /* A very light background color */
+  @apply p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border border-transparent hover:border-slate-100 active:scale-95;
 }
 
 .calendar-card {
-  max-width: 100%;
-  min-height: 380px;
+  @apply min-h-[420px] shadow-xl shadow-slate-100/50;
+  background: linear-gradient(to bottom right, #ffffff, #fcfcff);
+}
+
+.z-50 {
+  z-index: 999;
 }
 
 :host {
   display: block;
   width: 100%;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }

@@ -1,43 +1,55 @@
 <div class="calendar-card bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-50 w-full overflow-hidden">
-  <div class="flex justify-between items-center mb-6">
+  <div class="flex justify-between items-center mb-6 px-2">
     <h3 class="text-sm font-black uppercase tracking-widest text-slate-800">{{ monthName() }}</h3>
     <div class="flex items-center gap-2">
-      <button (click)="prevMonth()" class="nav-btn" title="Previous month">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
+      <button (click)="prevMonth()" class="nav-btn">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
       </button>
-      <button (click)="nextMonth()" class="nav-btn" title="Next month">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-        </svg>
+      <button (click)="nextMonth()" class="nav-btn">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
       </button>
     </div>
   </div>
 
   <div class="grid grid-cols-7 gap-1 text-center">
     @for (dayName of ['S', 'M', 'T', 'W', 'T', 'F', 'S']; track dayName) {
-    <div class="text-[10px] font-bold text-slate-300 pb-2">{{ dayName }}</div>
+      <div class="text-[10px] font-bold text-slate-300 pb-2">{{ dayName }}</div>
     }
 
     @for (d of days(); track $index) {
-    <div class="relative h-10 flex items-center justify-center">
-      @if (d) {
-      <span [class.today-indicator]="d.isToday" class="z-10 text-sm font-semibold p-1.5 transition-all"
-            [class.text-white]="d.isTrained" [class.text-slate-600]="!d.isTrained">
-        {{ d.day }}
-      </span>
-      @if (d.isTrained) {
-      <div class="absolute inset-0 m-auto w-10 h-10 bg-indigo-600 rounded-xl shadow-md"></div>
-      }
+      <div class="relative h-12 flex items-center justify-center group"
+           (mouseenter)="hoveredDate.set(d?.fullDate ?? null)"
+           (mouseleave)="hoveredDate.set(null)">
+        @if (d) {
+          <span class="z-10 text-sm font-bold transition-all"
+                [class.text-white]="d.isTrained"
+                [class.text-slate-600]="!d.isTrained">
+            {{ d.day }}
+          </span>
 
-      @if (d.isToday) {
-      <div class="absolute inset-0 m-auto w-10 h-10 border-2 border-dashed border-indigo-400 rounded-xl animate-[spin_10s_linear_infinite]">
+          @if (d.isTrained) {
+            <div class="absolute inset-0 m-auto w-10 h-10 bg-indigo-600 rounded-xl shadow-md transition-transform group-hover:scale-110"></div>
+            
+            @if (hoveredDate() === d.fullDate) {
+              <div class="absolute bottom-full mb-3 left-1/2 -translate-x-1/2 w-48 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 z-50 animate-in fade-in zoom-in duration-200">
+                @for (session of d.sessions; track $index) {
+                  <div class="text-left mb-2 last:mb-0">
+                    <p class="text-[11px] font-black text-slate-800">{{ session.type }}</p>
+                    <p class="text-[9px] font-bold text-slate-400">{{ session.duration }}</p>
+                    <button class="text-[9px] font-black text-indigo-600 uppercase mt-1">See Workout</button>
+                  </div>
+                }
+                <div class="absolute top-full left-1/2 -translate-x-1/2 border-8 border-transparent border-t-white"></div>
+              </div>
+            }
+          }
+
+          @if (d.isToday) {
+            <div class="absolute inset-0 m-auto w-10 h-10 border-2 border-dashed border-indigo-400 rounded-xl animate-[spin_15s_linear_infinite]"></div>
+            <div class="absolute -bottom-1 w-1.5 h-1.5 bg-indigo-600 rounded-full"></div>
+          }
+        }
       </div>
-      <div class="absolute -bottom-1 w-1 h-1 bg-indigo-600 rounded-full"></div>
-      }
-      }
-    </div>
     }
   </div>
 </div>

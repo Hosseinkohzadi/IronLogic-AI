@@ -29,7 +29,7 @@
 
 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
   <app-training-duration class="lg:col-span-2"></app-training-duration>
-  <app-calendar [workoutDates]="workoutDates()" class="lg:col-span-1"></app-calendar>
+  <app-calendar [workoutData]="workouts()" class="lg:col-span-1"></app-calendar>
 </div>
 
 @if (advice(); as a) {

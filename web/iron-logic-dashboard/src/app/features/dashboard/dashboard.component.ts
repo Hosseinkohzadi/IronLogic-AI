@@ -38,5 +38,19 @@ export class DashboardComponent {
   ));
 
   // 3. Mock data for the calendar.
-  workoutDates = signal(['2026-03-01', '2026-03-05', '2026-03-26']);
+  workouts = signal([
+  { 
+    date: '2026-03-26', 
+    sessions: [
+      { type: 'Morning workout ☀️', duration: '1h 5min' },
+      { type: 'Evening workout 🏋️', duration: '1h 15min' }
+    ] 
+  },
+  { 
+    date: '2026-03-27', 
+    sessions: [
+      { type: 'Leg Day 🔥', duration: '1h 30min' }
+    ] 
+  }
+]);
 }

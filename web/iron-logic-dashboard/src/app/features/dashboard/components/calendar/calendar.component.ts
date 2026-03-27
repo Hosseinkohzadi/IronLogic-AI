@@ -1,6 +1,17 @@
 import { Component, Input, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+// Define interface for compatibility with the new data model
+export interface WorkoutSession {
+  type: string;
+  duration: string;
+}
+
+export interface DailyWorkout {
+  date: string;
+  sessions: WorkoutSession[];
+}
+
 @Component({
   selector: 'app-calendar',
   standalone: true,
@@ -9,44 +20,47 @@ import { CommonModule } from '@angular/common';
   styleUrl: './calendar.component.css'
 })
 export class CalendarComponent {
-  private _workoutDates = signal<string[]>([]);
+  private _workoutData = signal<DailyWorkout[]>([]);
+  public currentDate = signal(new Date());
+  public hoveredDate = signal<string | null>(null);
 
-  @Input() set workoutDates(dates: string[]) {
-    this._workoutDates.set(dates);
+  // Renamed from workoutDates to workoutData to fix NG8002 error
+  @Input() set workoutData(data: DailyWorkout[]) {
+    this._workoutData.set(data || []);
   }
 
-  // Use a signal to manage the current date
-  currentDate = signal(new Date());
-
-  // Compute the days of the month whenever the current date or workout data changes
   days = computed(() => {
     const date = this.currentDate();
     const month = date.getMonth();
     const year = date.getFullYear();
 
-    // The current system date
     const today = new Date();
-    const todayDay = today.getDate();
-    const todayMonth = today.getMonth();
-    const todayYear = today.getFullYear();
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
 
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const firstDayIndex = new Date(year, month, 1).getDay();
+    const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
 
     const daysArray = [];
-    for (let i = 0; i < firstDay; i++) { daysArray.push(null); }
 
-    for (let i = 1; i <= daysInMonth; i++) {
+    // Generate empty cells
+    for (let i = 0; i < firstDayIndex; i++) {
+      daysArray.push(null);
+    }
+
+    // Generate days and map workout sessions
+    for (let i = 1; i <= totalDaysInMonth; i++) {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+      const dayData = this._workoutData().find(w => w.date === dateStr);
 
       daysArray.push({
         day: i,
         fullDate: dateStr,
-        isTrained: this._workoutDates().includes(dateStr),
-        // Precise comparison to identify "today"
-        isToday: i === todayDay && month === todayMonth && year === todayYear
+        isTrained: !!dayData,
+        sessions: dayData?.sessions || [],
+        isToday: dateStr === todayStr
       });
     }
+
     return daysArray;
   });
 

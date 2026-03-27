@@ -31,3 +31,25 @@
   --color-iron-warning: #f59e0b;
   --color-iron-danger: #ef4444;
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .metric-card {
+    @apply rounded-3xl bg-white p-8 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] flex flex-col justify-between;
+  }
+
+  .menu-item {
+    @apply flex items-center gap-3 px-4 py-3 rounded-2xl font-medium transition-all;
+  }
+
+  .menu-item-inactive {
+    @apply text-slate-500 hover:bg-slate-50 hover:text-slate-900;
+  }
+
+  .menu-item-active {
+    @apply bg-slate-50 text-indigo-700 font-bold;
+  }
+}

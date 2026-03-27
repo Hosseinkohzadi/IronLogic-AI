@@ -1,43 +1,6 @@
 <div class="flex h-screen overflow-hidden bg-slate-50 font-sans text-slate-900">
 
-  <aside class="w-64 flex-none bg-white border-r border-slate-100 flex flex-col z-10">
-    <div class="flex items-center h-24 px-8">
-      <h1 class="text-2xl font-black tracking-tight">
-        🏋️ Iron<span class="text-indigo-600">Logic</span>
-      </h1>
-    </div>
-
-    <div class="flex flex-col p-4 space-y-1 flex-1 mt-2">
-      <p class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Menu</p>
-
-      <a href="#" class="flex items-center gap-3 px-4 py-3 bg-slate-50 text-indigo-700 rounded-2xl font-bold transition-all">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
-        Dashboard
-      </a>
-
-      <a href="#" class="flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 hover:text-slate-900 rounded-2xl font-medium transition-all">
-        <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-        V-Taper Lab
-      </a>
-
-      <a href="#" class="flex items-center justify-between px-4 py-3 text-slate-500 hover:bg-slate-50 hover:text-slate-900 rounded-2xl font-medium transition-all">
-        <div class="flex items-center gap-3">
-          <span class="text-xl">🤖</span>
-          AI Coach
-        </div>
-      </a>
-    </div>
-
-    <div class="p-6">
-      <div class="flex items-center gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-100">
-        <div class="w-10 h-10 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">H</div>
-        <div class="flex flex-col">
-          <span class="text-sm font-bold text-slate-800">Hossein</span>
-          <span class="text-[11px] font-medium text-slate-500">Classic Physique</span>
-        </div>
-      </div>
-    </div>
-  </aside>
+  <app-sidebar></app-sidebar>
 
   <main class="flex-1 overflow-y-auto p-8 lg:p-12 relative">
 
@@ -66,68 +29,28 @@
 
     <div class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-6">
 
-      <div class="rounded-3xl bg-white p-8 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] flex flex-col justify-between">
-        <div>
-          <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-indigo-600 mb-4">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
-          </div>
-          <p class="text-xs font-bold tracking-widest text-slate-400 uppercase mb-1">Monthly Volume</p>
-          <h3 class="text-4xl font-black text-slate-800 tracking-tight">
-            {{ s.totalVolume | number:'1.0-0' }} <span class="text-lg font-medium text-slate-400 ml-1">lbs</span>
-          </h3>
-        </div>
-        <div class="mt-6 inline-flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 px-3 py-2 rounded-lg w-fit">
-          <span>Top:</span> <span class="text-slate-800">{{ s.topExercise ?? 'N/A' }}</span>
-        </div>
-      </div>
+      <app-metric-card title="Monthly Volume"
+                       [value]="s.totalVolume | number:'1.0-0'"
+                       unit="lbs"
+                       iconClasses="bg-indigo-50 text-indigo-600"
+                       [iconTemplate]="volumeIcon"
+                       [footerTemplate]="volumeFooter">
+      </app-metric-card>
 
-      <div class="rounded-3xl bg-white p-8 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] flex flex-col justify-between">
-        <div>
-          <div class="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center text-orange-500 mb-4">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-          </div>
-          <p class="text-xs font-bold tracking-widest text-slate-400 uppercase mb-1">Intensity Score</p>
-          <h3 class="text-4xl font-black text-slate-800 tracking-tight">
-            {{ s.intensityScore | number:'1.1-1' }}
-          </h3>
-        </div>
-        <div class="mt-6 w-full">
-          <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mb-2">
-            <div class="h-full rounded-full transition-all duration-500"
-                 [class.bg-orange-500]="s.intensityScore >= 150"
-                 [class.bg-emerald-500]="s.intensityScore < 150"
-                 [style.width.%]="s.intensityScore > 200 ? 100 : (s.intensityScore / 200) * 100"></div>
-          </div>
-          @if (s.intensityScore >= 150) {
-          <p class="text-[11px] font-bold text-orange-500">⚡ Deload Week Recommended</p>
-          } @else {
-          <p class="text-[11px] font-bold text-slate-400">Intensity is optimal</p>
-          }
-        </div>
-      </div>
+      <app-metric-card title="Intensity Score"
+                       [value]="s.intensityScore | number:'1.1-1'"
+                       iconClasses="bg-orange-50 text-orange-500"
+                       [iconTemplate]="intensityIcon"
+                       [footerTemplate]="intensityFooter">
+      </app-metric-card>
 
-      <div class="rounded-3xl bg-white p-8 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.05)] flex flex-col justify-between">
-        <div>
-          <div class="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500 mb-4">
-            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-          </div>
-          <p class="text-xs font-bold tracking-widest text-slate-400 uppercase mb-1">Last Session</p>
-          <h3 class="text-4xl font-black text-slate-800 tracking-tight">
-            @if (s.sessionDate) {
-            {{ s.sessionDate | date:'MMM dd' }}
-            } @else {
-            —
-            }
-          </h3>
-        </div>
-        <div class="mt-6 text-xs font-bold text-slate-400">
-          @if (s.sessionDate) {
-          Recorded at {{ s.sessionDate | date:'h:mm a' }}
-          } @else {
-          No sessions recorded
-          }
-        </div>
-      </div>
+      <app-metric-card title="Last Session"
+                       [value]="s.sessionDate ? (s.sessionDate | date:'MMM dd') : '—'"
+                       iconClasses="bg-emerald-50 text-emerald-500"
+                       [iconTemplate]="sessionIcon"
+                       [footerTemplate]="sessionFooter">
+      </app-metric-card>
+
     </div>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
@@ -187,15 +110,7 @@
     </div>
 
     @if (advice(); as a) {
-    <div class="rounded-3xl bg-indigo-50/50 p-8 w-full">
-      <div class="mb-4 flex items-center gap-2">
-        <span class="text-xl">🤖</span>
-        <h4 class="text-xs font-black uppercase tracking-widest text-indigo-900">Coach Intelligence Insight</h4>
-      </div>
-      <p class="text-sm leading-relaxed text-indigo-950/80 font-medium whitespace-pre-line max-w-4xl">
-        "{{ a.advice }}"
-      </p>
-    </div>
+      <app-ai-coach-card [advice]="a.advice"></app-ai-coach-card>
     }
 
     }
@@ -203,3 +118,45 @@
     <router-outlet />
   </main>
 </div>
+
+<!-- Template definitions for Metric Cards -->
+<ng-template #volumeIcon>
+  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+</ng-template>
+<ng-template #volumeFooter let-s="stats">
+  <div class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 px-3 py-2 rounded-lg w-fit">
+    <span>Top:</span> <span class="text-slate-800">{{ s.topExercise ?? 'N/A' }}</span>
+  </div>
+</ng-template>
+
+<ng-template #intensityIcon>
+  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+</ng-template>
+<ng-template #intensityFooter let-s="stats">
+  <div class="w-full">
+    <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mb-2">
+      <div class="h-full rounded-full transition-all duration-500"
+           [class.bg-orange-500]="s.intensityScore >= 150"
+           [class.bg-emerald-500]="s.intensityScore < 150"
+           [style.width.%]="s.intensityScore > 200 ? 100 : (s.intensityScore / 200) * 100"></div>
+    </div>
+    @if (s.intensityScore >= 150) {
+    <p class="text-[11px] font-bold text-orange-500">⚡ Deload Week Recommended</p>
+    } @else {
+    <p class="text-[11px] font-bold text-slate-400">Intensity is optimal</p>
+    }
+  </div>
+</ng-template>
+
+<ng-template #sessionIcon>
+  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+</ng-template>
+<ng-template #sessionFooter let-s="stats">
+  <div class="text-xs font-bold text-slate-400">
+    @if (s.sessionDate) {
+    Recorded at {{ s.sessionDate | date:'h:mm a' }}
+    } @else {
+    No sessions recorded
+    }
+  </div>
+</ng-template>

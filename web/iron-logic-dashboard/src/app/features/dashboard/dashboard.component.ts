@@ -25,10 +25,10 @@ export class DashboardComponent {
   private api = inject(IronLogicApiService);
   private coachService = inject(CoachService);
   
-  // ۱. دیتا را به عنوان سیگنال دریافت کن
+  // 1. Fetch the data as a signal.
   private statsData = toSignal(this.api.getWorkoutStatsWithAdvice());
 
-  // ۲. وضعیت لودینگ را بر اساس وجود دیتا محاسبه کن (بدون خطا)
+  // 2. Compute the loading state based on data availability (error-free).
   loading = computed(() => !this.statsData());
   
   stats = computed(() => this.statsData());
@@ -37,6 +37,6 @@ export class DashboardComponent {
     map(res => res.advice) 
   ));
 
-  // ۳. دیتای تستی برای تقویم
+  // 3. Mock data for the calendar.
   workoutDates = signal(['2026-03-01', '2026-03-05', '2026-03-27']);
 }

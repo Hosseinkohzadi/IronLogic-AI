@@ -1,28 +1,29 @@
+/* Main container acting as a card */
 .calendar-wrapper {
-  @apply bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-50;
+  @apply bg-white rounded-[2.5rem] p-4 shadow-sm border border-slate-50 flex justify-center items-center min-h-[400px];
 }
 
-/* Highlight trained days */
+/* Fix for the width of the calendar injected by Flowbite */
+:host ::ng-deep .datepicker {
+  @apply border-0 shadow-none p-0 m-0 !important;
+  background: transparent !important;
+}
+
+:host ::ng-deep .datepicker-main {
+  @apply p-0 !important;
+}
+
+/* Highlighting for IronLogic brand trained days */
 :host ::ng-deep .datepicker-cell.trained-day-highlight {
-  background-color: #4f46e5 !important; /* Indigo 600 */
-  color: #ffffff !important;
-  font-weight: 800 !important;
-  border-radius: 1rem !important;
-  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3) !important;
+  @apply bg-indigo-600 text-white font-bold rounded-2xl shadow-md shadow-indigo-100 !important;
 }
 
-/* Current day style */
+/* Style for the current day */
 :host ::ng-deep .datepicker-cell.today:not(.trained-day-highlight) {
-  border: 2px solid #4f46e5 !important;
-  color: #4f46e5 !important;
-  background-color: transparent !important;
+  @apply border-2 border-indigo-600 text-indigo-600 bg-transparent rounded-2xl !important;
 }
 
-/* Cell layout settings */
+/* Cell alignment */
 :host ::ng-deep .datepicker-cell {
-  @apply h-12 w-12 flex items-center justify-center rounded-2xl text-sm font-semibold transition-all !important;
-}
-
-:host ::ng-deep .datepicker-grid .dow {
-  @apply text-[11px] uppercase tracking-widest text-slate-300 font-bold py-4 !important;
+  @apply w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-sm font-semibold transition-all !important;
 }

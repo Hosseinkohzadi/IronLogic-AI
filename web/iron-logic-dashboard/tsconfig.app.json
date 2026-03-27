@@ -8,7 +8,7 @@
   },
   "include": [
     "src/**/*.ts",
-    "src/**/*.d.ts"  // <--- این خط را اضافه کن
+    "src/**/*.d.ts" 
   ],
   "exclude": [
     "src/**/*.spec.ts"

@@ -1,22 +1,15 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { test, expect } from '@playwright/test';
 
-import { Register } from '../iron-logic-dashboard/src/app/features/register/register/register';
+test.describe('Register Component', () => {
+    test.beforeEach(async ({ page }) => {
+        // Navigate to the registration page
+        await page.goto('/register', { waitUntil: 'networkidle' });
+    });
 
-describe('Register', () => {
-  let component: Register;
-  let fixture: ComponentFixture<Register>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Register],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(Register);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    test('should render the registration form fields', async ({ page }) => {
+        // Using placeholder or label instead of ID (more stable)
+        await expect(page.getByPlaceholder(/name/i)).toBeVisible();
+        await expect(page.getByPlaceholder(/email/i)).toBeVisible();
+        await expect(page.locator('button[type="submit"]')).toBeVisible();
+    });
 });

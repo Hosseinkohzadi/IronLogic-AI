@@ -1,22 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { test, expect } from '@playwright/test';
 
-import { Forgot } from '../iron-logic-dashboard/src/app/features/forgot/forgot/forgot';
+test.describe('Forgot Component', () => {
+    test.beforeEach(async ({ page }) => {
+        // Navigate to the forgot password page
+        await page.goto('/forgot', { waitUntil: 'networkidle' });
+    });
 
-describe('Forgot', () => {
-  let component: Forgot;
-  let fixture: ComponentFixture<Forgot>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Forgot],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(Forgot);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
-  });
-
-  it('should create', () => {
-    expect(component).toBeTruthy();
-  });
+    test('should render the reset password button', async ({ page }) => {
+        const submitBtn = page.locator('button[type="submit"]');
+        await expect(submitBtn).toContainText('Reset Password'); // Or whatever text is on your button
+    });
 });

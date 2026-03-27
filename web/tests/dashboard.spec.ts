@@ -5,7 +5,7 @@ test.describe('IronLogic Dashboard - Training Duration', () => {
     // قبل از هر تست، وارد صفحه داشبورد می‌شویم
     test.beforeEach(async ({ page }) => {
         // آدرس لوکال‌هاست پروژه آنگولار شما
-        await page.goto('http://localhost:4200/');
+        await page.goto('/dashboard', { waitUntil: 'networkidle' });
     });
 
     test('should render the chart and match initial visual state', async ({ page }) => {

@@ -1,23 +1,21 @@
-import { TestBed } from '@angular/core/testing';
-import { App } from './app';
+import { test, expect } from '@playwright/test';
 
-describe('App', () => {
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [App],
-    }).compileComponents();
+test.describe('App Root Component', () => {
+  test.beforeEach(async ({ page }) => {
+    // Navigate to the application's root
+    await page.goto('/');
   });
 
-  it('should create the app', () => {
-    const fixture = TestBed.createComponent(App);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
+  test('should load the app successfully', async ({ page }) => {
+    // Check that the page has loaded without issues (e.g., the body tag is visible)
+    const body = page.locator('body');
+    await expect(body).toBeVisible();
   });
 
-  it('should render title', async () => {
-    const fixture = TestBed.createComponent(App);
-    await fixture.whenStable();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, iron-logic-dashboard');
+  test('should contain a router-outlet for routing', async ({ page }) => {
+    // The router-outlet tag usually has no physical or visible style on the page (it's just a placeholder)
+    // So, instead of toBeVisible, we use toBeAttached to just check for its existence in the DOM
+    const routerOutlet = page.locator('router-outlet');
+    await expect(routerOutlet).toBeAttached();
   });
 });

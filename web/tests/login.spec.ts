@@ -1,22 +1,15 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { test, expect } from '@playwright/test';
 
-import { Login } from '../iron-logic-dashboard/src/app/features/login/login/login';
-
-describe('Login', () => {
-  let component: Login;
-  let fixture: ComponentFixture<Login>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Login],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(Login);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
+test.describe('Login Component', () => {
+  test.beforeEach(async ({ page }) => {
+    // Navigate to the login page
+    await page.goto('/login', { waitUntil: 'networkidle' });
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  test('should have a login form', async ({ page }) => {
+    await expect(page.locator('form')).toBeVisible();
+
+    const submitBtn = page.locator('button[type="submit"]');
+    await expect(submitBtn).toContainText('Log In');
   });
 });

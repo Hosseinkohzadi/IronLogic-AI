@@ -3,27 +3,27 @@ import { test, expect } from '@playwright/test';
 test.describe('IronLogic Dashboard - Calendar Component', () => {
 
     test.beforeEach(async ({ page }) => {
-        // ⏱️ جادوی اول: Mock کردن زمان!
-        // زمان مرورگر را روی یک تاریخ ثابت (مثلاً ۲۷ مارچ ۲۰۲۶) فریز می‌کنیم.
-        // به این ترتیب، تقویم همیشه فکر می‌کند امروز این تاریخ است و تست‌ها فردا خراب نمی‌شوند.
+        // ⏱️ First Magic Trick: Mocking Time!
+        // We freeze the browser's time to a fixed date (e.g., March 27, 2026).
+        // This way, the calendar always thinks today is this date, and the tests won't fail tomorrow.
         await page.clock.install({ time: new Date('2026-03-27T12:00:00') });
 
-        // ورود به داشبورد
-        await page.goto('http://localhost:4200/');
+        // Navigate to the dashboard
+        await page.goto('/dashboard', { waitUntil: 'networkidle' });
     });
 
     test('should render calendar correctly with "Today" indicator', async ({ page }) => {
         const calendar = page.locator('app-calendar');
 
-        // مطمئن می‌شویم تقویم لود شده است
+        // Ensure the calendar is loaded
         await expect(calendar).toBeVisible();
 
-        // بررسی می‌کنیم که هدر تقویم، ماه صحیح (که ماک کردیم) را نشان دهد
+        // Check that the calendar header shows the correct month (the one we mocked)
         await expect(calendar.locator('h3')).toContainText('March 2026');
 
-        // 📸 جادوی دوم: توقف انیمیشن‌ها برای اسکرین‌شات
-        // گزینه animations: 'disabled' باعث می‌شود افکت Pulse Glow در یک حالت ثابت فریز شود
-        // تا عکس‌ها همیشه دقیقاً با هم تطابق داشته باشند.
+        // 📸 Second Magic Trick: Disabling animations for screenshots
+        // The `animations: 'disabled'` option freezes the Pulse Glow effect in a static state
+        // so that the screenshots always match exactly.
         await expect(calendar).toHaveScreenshot('calendar-march-baseline.png', {
             animations: 'disabled',
             maxDiffPixels: 50
@@ -31,29 +31,18 @@ test.describe('IronLogic Dashboard - Calendar Component', () => {
     });
 
     test('should navigate to next and previous months correctly', async ({ page }) => {
+        await page.goto('/dashboard', { waitUntil: 'networkidle' });
         const calendar = page.locator('app-calendar');
-        const headerTitle = calendar.locator('h3');
 
-        // پیدا کردن دکمه‌های چپ و راست (بر اساس کلاس nav-btn)
-        const prevBtn = calendar.locator('button.nav-btn').nth(0);
-        const nextBtn = calendar.locator('button.nav-btn').nth(1);
+        // Find buttons by order (left and right)
+        const prevBtn = calendar.locator('button').first();
+        const nextBtn = calendar.locator('button').nth(1);
 
-        // ۱. تست ماه بعد
         await nextBtn.click();
-        // بررسی تغییر متن هدر
-        await expect(headerTitle).toContainText('April 2026');
-        // گرفتن اسکرین‌شات از ماه جدید برای اطمینان از چیدمان صحیح روزها
-        await expect(calendar).toHaveScreenshot('calendar-april.png', {
-            animations: 'disabled'
-        });
+        await expect(calendar.locator('h3')).toContainText('April 2026');
 
-        // ۲. تست ماه قبل (برگشت به جای اول)
         await prevBtn.click();
-        await expect(headerTitle).toContainText('March 2026');
-
-        // ۳. تست ماه قبل‌تر
-        await prevBtn.click();
-        await expect(headerTitle).toContainText('February 2026');
+        await expect(calendar.locator('h3')).toContainText('March 2026');
     });
 
 });

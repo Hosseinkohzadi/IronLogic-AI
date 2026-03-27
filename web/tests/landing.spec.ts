@@ -1,22 +1,13 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { test, expect } from '@playwright/test';
 
-import { Landing } from '../iron-logic-dashboard/src/app/features/landing/landing/landing';
-
-describe('Landing', () => {
-  let component: Landing;
-  let fixture: ComponentFixture<Landing>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Landing],
-    }).compileComponents();
-
-    fixture = TestBed.createComponent(Landing);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
+test.describe('Landing Component', () => {
+  test.beforeEach(async ({ page }) => {
+    // Navigate to the main page
+    await page.goto('/');
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  test('should render the hero title', async ({ page }) => {
+    const heading = page.locator('h1');
+    await expect(heading).toContainText('Your Personal AI Coach');
   });
 });

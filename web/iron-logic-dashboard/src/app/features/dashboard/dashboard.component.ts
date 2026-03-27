@@ -24,17 +24,19 @@ import { CoachService } from '../../core/services/coach.service';
 export class DashboardComponent {
   private api = inject(IronLogicApiService);
   private coachService = inject(CoachService);
-  private statsData = toSignal(
-    this.api.getWorkoutStatsWithAdvice().pipe(
-      tap(() => this.loading.set(false))
-    )
-  );
+  
+  // ۱. دیتا را به عنوان سیگنال دریافت کن
+  private statsData = toSignal(this.api.getWorkoutStatsWithAdvice());
 
-  loading = signal(true);
+  // ۲. وضعیت لودینگ را بر اساس وجود دیتا محاسبه کن (بدون خطا)
+  loading = computed(() => !this.statsData());
+  
   stats = computed(() => this.statsData());
+  
   advice = toSignal(this.coachService.analyze().pipe(
     map(res => res.advice) 
   ));
-  workoutDates = computed(() => (this.stats()?.workoutDates as any[]) ?? []);
 
+  // ۳. دیتای تستی برای تقویم
+  workoutDates = signal(['2026-03-01', '2026-03-05', '2026-03-27']);
 }

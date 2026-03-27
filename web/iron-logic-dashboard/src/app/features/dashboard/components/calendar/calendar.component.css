@@ -1,1 +1,28 @@
-/* All styles are global or utility classes */
+.calendar-wrapper {
+  @apply bg-white rounded-[2.5rem] p-6 shadow-sm border border-slate-50;
+}
+
+/* Highlight trained days */
+:host ::ng-deep .datepicker-cell.trained-day-highlight {
+  background-color: #4f46e5 !important; /* Indigo 600 */
+  color: #ffffff !important;
+  font-weight: 800 !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.3) !important;
+}
+
+/* Current day style */
+:host ::ng-deep .datepicker-cell.today:not(.trained-day-highlight) {
+  border: 2px solid #4f46e5 !important;
+  color: #4f46e5 !important;
+  background-color: transparent !important;
+}
+
+/* Cell layout settings */
+:host ::ng-deep .datepicker-cell {
+  @apply h-12 w-12 flex items-center justify-center rounded-2xl text-sm font-semibold transition-all !important;
+}
+
+:host ::ng-deep .datepicker-grid .dow {
+  @apply text-[11px] uppercase tracking-widest text-slate-300 font-bold py-4 !important;
+}

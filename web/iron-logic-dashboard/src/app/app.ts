@@ -1,4 +1,4 @@
-import { isPlatformBrowser, DecimalPipe, DatePipe } from '@angular/common';
+import { isPlatformBrowser} from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { WorkoutService } from './core/services/workout.service';
 import { CoachService } from './core/services/coach.service';
@@ -6,11 +6,12 @@ import { WorkoutStatsResponse } from './core/models/workout-stats-response.model
 import { CoachAdviceResponse } from './core/models/coach-advice-response.model';
 
 import { Component, OnInit, PLATFORM_ID, inject, signal, ViewEncapsulation } from '@angular/core';
+import { SidebarComponent } from './layout/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, DecimalPipe, DatePipe],
+  imports: [RouterOutlet, SidebarComponent],
   templateUrl: './app.html',
   encapsulation: ViewEncapsulation.None,
 })

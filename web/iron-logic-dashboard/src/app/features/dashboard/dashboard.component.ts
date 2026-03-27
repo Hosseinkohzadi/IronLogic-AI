@@ -1,33 +1,40 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { map } from 'rxjs';
+import { map, tap } from 'rxjs';
 import { IronLogicApiService } from '../../core/services/iron-logic-api.service';
 import { MetricCardComponent } from '../../shared/ui/metric-card/metric-card.component';
 import { AiCoachCardComponent } from '../../shared/ui/ai-coach-card/ai-coach-card.component';
 import { TrainingDurationComponent } from './components/training-duration/training-duration.component';
 import { CalendarComponent } from './components/calendar/calendar.component';
+import { CoachService } from '../../core/services/coach.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, MetricCardComponent, AiCoachCardComponent, TrainingDurationComponent, CalendarComponent],
+  imports: [
+    CommonModule,
+    MetricCardComponent,
+    AiCoachCardComponent,
+    TrainingDurationComponent,
+    CalendarComponent
+  ],
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
 })
 export class DashboardComponent {
   private api = inject(IronLogicApiService);
+  private coachService = inject(CoachService);
+  private statsData = toSignal(
+    this.api.getWorkoutStatsWithAdvice().pipe(
+      tap(() => this.loading.set(false))
+    )
+  );
 
   loading = signal(true);
-  stats = toSignal(this.api.getWorkoutStatsWithAdvice().pipe(map(s => {
-    this.loading.set(false);
-    return s;
-  })));
-  advice = toSignal(this.api.getWorkoutStatsWithAdvice().pipe(map(s => s.advice)));
+  stats = computed(() => this.statsData());
+  advice = toSignal(this.coachService.analyze().pipe(
+    map(res => res.advice) 
+  ));
+  workoutDates = computed(() => (this.stats()?.workoutDates as any[]) ?? []);
 
-  // Mocked workout dates for demonstration. This would come from your API.
-  workoutDates = computed(() => {
-    const s = this.stats();
-    return s ? [s.sessionDate] : [];
-  });
 }

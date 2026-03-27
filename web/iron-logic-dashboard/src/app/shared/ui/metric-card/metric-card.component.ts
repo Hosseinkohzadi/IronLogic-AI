@@ -15,4 +15,5 @@ export class MetricCardComponent {
   @Input() iconClasses: string = '';
   @Input() iconTemplate?: TemplateRef<any>;
   @Input() footerTemplate?: TemplateRef<any>;
+  @Input() stats: any;
 }

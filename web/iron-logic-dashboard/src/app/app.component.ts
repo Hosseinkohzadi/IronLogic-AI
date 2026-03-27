@@ -1,15 +1,13 @@
 import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { SidebarComponent } from './layout/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, SidebarComponent],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  imports: [RouterOutlet, SidebarComponent],
+  templateUrl: './app.html',
 })
 export class AppComponent {
-  title = 'iron-logic-dashboard';
+  // AppComponent is now just a layout container.
 }

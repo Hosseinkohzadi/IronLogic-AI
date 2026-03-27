@@ -1,22 +1,30 @@
 .nav-btn {
-  @apply p-2 hover:bg-slate-50 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border border-transparent hover:border-slate-100 active:scale-95;
+  @apply p-2 hover:bg-slate-100 rounded-xl text-slate-400 hover:text-indigo-600 transition-all border border-transparent active:scale-95 flex items-center justify-center;
 }
 
 .calendar-card {
-  @apply min-h-[420px] shadow-xl shadow-slate-100/50;
-  background: linear-gradient(to bottom right, #ffffff, #fcfcff);
+  @apply min-h-[420px] shadow-sm;
+  background: white;
 }
 
-.z-50 {
-  z-index: 999;
+/* انیمیشن جذاب برای روز جاری */
+.today-pulse {
+  animation: pulse-glow 2s infinite;
+}
+
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(79, 70, 229, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+  }
 }
 
 :host {
   display: block;
   width: 100%;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
 }

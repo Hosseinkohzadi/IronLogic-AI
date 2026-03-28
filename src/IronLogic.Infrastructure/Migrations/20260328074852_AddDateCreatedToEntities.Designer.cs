@@ -3,6 +3,7 @@ using System;
 using IronLogic.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IronLogic.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260328074852_AddDateCreatedToEntities")]
+    partial class AddDateCreatedToEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
@@ -60,9 +63,6 @@ namespace IronLogic.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("DateModified")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("HowTo")
-                        .HasColumnType("TEXT");
-
                     b.Property<byte[]>("Image")
                         .HasColumnType("BLOB");
 
@@ -101,10 +101,13 @@ namespace IronLogic.Infrastructure.Migrations
                     b.Property<decimal?>("DistanceKm")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("DurationSeconds")
-                        .HasColumnType("INTEGER");
+                    b.Property<double?>("DurationSeconds")
+                        .HasColumnType("REAL");
 
                     b.Property<Guid>("ExerciseId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid?>("ExerciseId1")
                         .HasColumnType("TEXT");
 
                     b.Property<int?>("Reps")
@@ -131,6 +134,8 @@ namespace IronLogic.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ExerciseId");
+
+                    b.HasIndex("ExerciseId1");
 
                     b.HasIndex("SessionId");
 
@@ -201,6 +206,7 @@ namespace IronLogic.Infrastructure.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
+                        .HasMaxLength(255)
                         .HasColumnType("TEXT");
 
                     b.Property<string>("PasswordHash")
@@ -212,17 +218,10 @@ namespace IronLogic.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.HasIndex("Email")
+                        .IsUnique();
 
-                    b.HasData(
-                        new
-                        {
-                            Id = new Guid("00000000-0000-0000-0000-000000000001"),
-                            DateCreated = new DateTimeOffset(new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DateModified = new DateTimeOffset(new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            Email = "kohzadi90@gmail.com",
-                            Username = "kohzadi90"
-                        });
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("IronLogic.Domain.Entities.DailyWeight", b =>
@@ -250,10 +249,14 @@ namespace IronLogic.Infrastructure.Migrations
             modelBuilder.Entity("IronLogic.Domain.Entities.ExerciseSession", b =>
                 {
                     b.HasOne("IronLogic.Domain.Entities.Exercise", "Exercise")
-                        .WithMany("ExerciseSessions")
+                        .WithMany()
                         .HasForeignKey("ExerciseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("IronLogic.Domain.Entities.Exercise", null)
+                        .WithMany("ExerciseSessions")
+                        .HasForeignKey("ExerciseId1");
 
                     b.HasOne("IronLogic.Domain.Entities.Session", "Session")
                         .WithMany("ExerciseSessions")

@@ -7,7 +7,6 @@
   <Folder Name="/src/">
     <Project Path="src/IronLogic.Api/IronLogic.Api.csproj" />
     <Project Path="src/IronLogic.Application/IronLogic.Application.csproj" />
-    <Project Path="src/IronLogic.ConsoleApp/IronLogic.ConsoleApp.csproj" />
     <Project Path="src/IronLogic.Domain/IronLogic.Domain.csproj" />
     <Project Path="src/IronLogic.Infrastructure/IronLogic.Infrastructure.csproj" />
   </Folder>

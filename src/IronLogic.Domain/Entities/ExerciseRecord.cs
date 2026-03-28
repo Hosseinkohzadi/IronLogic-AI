@@ -1,29 +1,23 @@
 ﻿namespace IronLogic.Domain.Entities;
 
 /// <summary>
-///     Represents a single flat record (one row) directly parsed from the Hevy CSV export.
-///     This acts as a Data Transfer Object (DTO) before mapping to the hierarchical domain entities.
+///     Represents a single daily bodyweight log entry for tracking physique progress.
 /// </summary>
-public class ExerciseRecord
+public class DailyWeight : BaseEntity
 {
-    // Mapped from: "start_time"
-    public DateTime? Date { get; set; }
 
-    // Mapped from: "title"
-    public string WorkoutName { get; set; } = string.Empty;
+    public Guid UserId { get; set; }
+    public User User { get; set; }
 
-    // Mapped from: "exercise_title"
-    public string ExerciseName { get; set; } = string.Empty;
+    public DateTime Date { get; set; }
 
-    // Mapped from: "set_index"
-    public int SetOrder { get; set; }
+    /// <summary>
+    ///     Bodyweight in kilograms (kg).
+    /// </summary>
+    public float Weight { get; set; }
 
-    // Mapped from: "weight_lbs" (or weight_kg)
-    public double? Weight { get; set; }
-
-    // Mapped from: "reps"
-    public int? Reps { get; set; }
-
-    // Mapped from: "rpe"
-    public double? RPE { get; set; }
+    /// <summary>
+    ///     Optional note (e.g., "post-refeed", "morning fasted").
+    /// </summary>
+    public string? Note { get; set; }
 }

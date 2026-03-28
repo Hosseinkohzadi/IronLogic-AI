@@ -1,4 +1,5 @@
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace IronLogic.Api;
 

@@ -3,6 +3,7 @@ using System;
 using IronLogic.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IronLogic.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260328084620_SeedDefaultUser")]
+    partial class SeedDefaultUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
@@ -101,8 +104,8 @@ namespace IronLogic.Infrastructure.Migrations
                     b.Property<decimal?>("DistanceKm")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("DurationSeconds")
-                        .HasColumnType("INTEGER");
+                    b.Property<double?>("DurationSeconds")
+                        .HasColumnType("REAL");
 
                     b.Property<Guid>("ExerciseId")
                         .HasColumnType("TEXT");

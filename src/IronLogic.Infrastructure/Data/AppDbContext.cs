@@ -1,27 +1,27 @@
-﻿namespace IronLogic.Infrastructure.Data;
+﻿using IronLogic.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+
+namespace IronLogic.Infrastructure.Data;
 
 public class AppDbContext : DbContext
 {
-    // 1. Constructor for Dependency Injection (The standard way)
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
 
-    // 2. Parameterless constructor (Needed by EF Core Migrations Tooling)
     public AppDbContext()
     {
     }
 
-    public DbSet<WorkoutSession> Sessions { get; set; }
-    public DbSet<WorkoutExercise> Exercises { get; set; }
-    public DbSet<ExerciseSet> Sets { get; set; }
+    public DbSet<User> Users { get; set; }
+    public DbSet<Session> Sessions { get; set; }
+    public DbSet<Exercise> Exercises { get; set; }
+    public DbSet<ExerciseSession> ExerciseSessions { get; set; }
     public DbSet<DailyWeight> DailyWeights { get; set; }
-    public DbSet<MuscleMeasurement> MuscleMeasurements { get; set; }
+    public DbSet<Muscle> Muscles { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        // Only configure here if it wasn't already configured in Program.cs
-        // This prevents the "pooling" and configuration conflict errors!
         if (optionsBuilder.IsConfigured)
             return;
 
@@ -31,27 +31,35 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<WorkoutSession>()
-            .HasMany(s => s.Exercises)
-            .WithOne()
-            .OnDelete(DeleteBehavior.Cascade);
+        base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<WorkoutExercise>()
-            .HasMany(e => e.Sets)
-            .WithOne()
-            .OnDelete(DeleteBehavior.Cascade);
+        var defaultUserId = new Guid("00000000-0000-0000-0000-000000000001");
+        var seedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc); // Static historical date for seed data
 
-        modelBuilder.Entity<DailyWeight>(entity =>
+        modelBuilder.Entity<User>().HasData(new User
         {
-            entity.Property(d => d.Weight).IsRequired();
-            entity.Property(d => d.Note).HasMaxLength(200);
+            Id = defaultUserId,
+            Username = "kohzadi90",
+            Email = "kohzadi90@gmail.com",
+            DateCreated = seedDate,
+            DateModified = seedDate
         });
+    }
 
-        modelBuilder.Entity<MuscleMeasurement>(entity =>
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var entries = ChangeTracker
+            .Entries()
+            .Where(e => e is { Entity: BaseEntity, State: EntityState.Added or EntityState.Modified });
+
+        foreach (var entityEntry in entries)
         {
-            entity.Property(m => m.Neck).IsRequired();
-            entity.Property(m => m.Chest).IsRequired();
-            entity.Property(m => m.Waist).IsRequired();
-        });
+            ((BaseEntity)entityEntry.Entity).DateModified = DateTime.UtcNow;
+
+            if (entityEntry.State == EntityState.Added)
+                ((BaseEntity)entityEntry.Entity).DateCreated = DateTime.UtcNow;
+        }
+
+        return base.SaveChangesAsync(cancellationToken);
     }
 }

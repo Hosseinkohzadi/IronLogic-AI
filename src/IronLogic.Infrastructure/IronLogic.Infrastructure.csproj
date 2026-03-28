@@ -16,6 +16,10 @@
     <ProjectReference Include="..\IronLogic.Application\IronLogic.Application.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="ExternalServices\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

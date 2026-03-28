@@ -1,67 +1,77 @@
-using IronLogic.Domain.Interfaces;
+﻿using IronLogic.Application.DTOs;
+using IronLogic.Application.Interfaces;
+using IronLogic.Domain.Entities;
+using IronLogic.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace IronLogic.Infrastructure.Repositories;
 
-/// <summary>
-///     EF Core implementation of <see cref="IWorkoutSessionRepository" />.
-///     Encapsulates all WorkoutSession data access including eager loading of the full aggregate.
-/// </summary>
-public class WorkoutSessionRepository(AppDbContext dbContext) : IWorkoutSessionRepository
+public class WorkoutSessionRepository(AppDbContext context) : IWorkoutSessionRepository
 {
-    public async Task<IEnumerable<WorkoutSession>> GetAllAsync()
+    public async Task<Session?> GetByIdAsync(Guid id)
     {
-        return await dbContext.Sessions
-            .Include(s => s.Exercises)
-            .ThenInclude(e => e.Sets)
-            .OrderByDescending(s => s.Date)
-            .ToListAsync();
-    }
-
-    public async Task<WorkoutSession?> GetByIdAsync(Guid id)
-    {
-        return await dbContext.Sessions
-            .Include(s => s.Exercises)
-            .ThenInclude(e => e.Sets)
+        return await context.Sessions
+            .Include(s => s.ExerciseSessions)
+            .ThenInclude(es => es.Exercise)
             .FirstOrDefaultAsync(s => s.Id == id);
     }
 
-    public async Task AddAsync(WorkoutSession session)
+    public async Task<List<WorkoutResponseDto>> GetAllByUserIdAsync(Guid userId)
     {
-        await dbContext.Sessions.AddAsync(session);
-        await dbContext.SaveChangesAsync();
-    }
-
-    public async Task<float> GetTotalVolumeAsync(int month, int year)
-    {
-        var startDate = new DateTime(year, month, 1);
-        var endDate = startDate.AddMonths(1).AddTicks(-1);
-
-        var totalVolume = await dbContext.Sessions
-            .Where(s => s.Date >= startDate && s.Date <= endDate)
-            .SelectMany(s => s.Exercises)
-            .SelectMany(e => e.Sets)
-            .SumAsync(s => (float)((s.Weight ?? 0) * (s.Reps ?? 0)));
-
-        return totalVolume;
-    }
-
-    public async Task<List<WorkoutSession>> GetAllWithExercisesAndSetsAsync()
-    {
-        return await dbContext.Sessions
-            .Include(s => s.Exercises)
-            .ThenInclude(e => e.Sets)
+        var workouts = await context.Sessions
+            .Include(s => s.ExerciseSessions)
+            .ThenInclude(es => es.Exercise)
+            .Where(s => s.UserId == userId)
             .OrderByDescending(s => s.Date)
+            .Select(s => new WorkoutResponseDto(
+                s.Id,
+                s.Date,
+                s.ExerciseSessions.Select(es => new ExerciseSessionDto(
+                    es.SetIndex,
+                    es.SetType,
+                    es.Reps,
+                    es.Weight,
+                    es.DistanceKm,
+                    es.DurationSeconds,
+                    es.Exercise.Name
+                )).ToList()
+            ))
             .ToListAsync();
+
+        return workouts;
     }
 
-    public async Task<List<WorkoutSession>> GetByDateRangeWithExercisesAndSetsAsync(DateTime startDate,
-        DateTime endDate)
+    public async Task<List<Session>> GetSessionsWithDetailsAsync(Guid userId, DateTime? startDate = null)
     {
-        return await dbContext.Sessions
-            .Include(s => s.Exercises)
-            .ThenInclude(e => e.Sets)
-            .Where(s => s.Date >= startDate && s.Date <= endDate)
-            .OrderByDescending(s => s.Date)
-            .ToListAsync();
+        var query = context.Sessions
+            .Where(s => s.UserId == userId)
+            .Include(s => s.ExerciseSessions)
+            .ThenInclude(es => es.Exercise)
+            .AsQueryable();
+
+        if (startDate.HasValue) query = query.Where(s => s.Date >= startDate.Value);
+
+        return await query.OrderByDescending(s => s.Date).ToListAsync();
+    }
+
+    public Task Add(Session session)
+    {
+        context.Sessions.Add(session);
+        return Task.CompletedTask;
+    }
+
+    public void Update(Session session)
+    {
+        context.Sessions.Update(session);
+    }
+
+    public void Delete(Session session)
+    {
+        context.Sessions.Remove(session);
+    }
+
+    public async Task<bool> SaveChangesAsync()
+    {
+        return await context.SaveChangesAsync() > 0;
     }
 }

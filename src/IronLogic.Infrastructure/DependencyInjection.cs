@@ -1,9 +1,9 @@
-using IronLogic.Application.Mappers;
-using IronLogic.Application.Services;
-using IronLogic.Domain.Interfaces;
-using IronLogic.Infrastructure.ExternalServices;
+﻿using System.Text.Json.Serialization;
+using IronLogic.Application.Interfaces;
+using IronLogic.Infrastructure.Data;
 using IronLogic.Infrastructure.Repositories;
 using IronLogic.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,16 +11,11 @@ namespace IronLogic.Infrastructure;
 
 public static class DependencyInjection
 {
-    /// <summary>
-    ///     Registers all Infrastructure-layer services: EF Core, repositories,
-    ///     domain services, mappers, and external providers.
-    /// </summary>
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services
-            .AddPersistence(configuration)
+        services.AddPersistence(configuration)
             .AddRepositories()
             .AddDomainServices()
             .AddExternalProviders();
@@ -45,31 +40,17 @@ public static class DependencyInjection
     private static IServiceCollection AddRepositories(this IServiceCollection services)
     {
         services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();
-
         return services;
     }
 
     private static IServiceCollection AddDomainServices(this IServiceCollection services)
     {
-        services.AddScoped<IWorkoutAnalysisService, WorkoutAnalysisService>();
-        services.AddScoped<ICoachService, CoachService>();
-        services.AddScoped<IDailyWeightService, DailyWeightService>();
-        services.AddScoped<IMuscleMeasurementService, MuscleMeasurementService>();
-        services.AddScoped<IWorkoutService, WorkoutService>();
-        services.AddScoped<IWorkoutAnalyticsService, WorkoutAnalyticsService>();
-
-        services.AddScoped<BodybuildingCoachPlugin>();
-        services.AddSingleton<IHevyParserService, HevyCsvParserService>();
-        services.AddSingleton<IHevyDataMapper, HevyDataMapper>();
+        services.AddScoped<IWorkoutImportService, WorkoutImportService>();
 
         return services;
     }
 
-    private static IServiceCollection AddExternalProviders(this IServiceCollection services)
+    private static void AddExternalProviders(this IServiceCollection services)
     {
-        services.AddScoped<IWorkoutProvider, MockHevyWorkoutProvider>();
-        services.AddScoped<IBodyMetricsProvider, BodyMetricsProvider>();
-
-        return services;
     }
 }

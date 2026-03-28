@@ -3,6 +3,7 @@ using System;
 using IronLogic.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace IronLogic.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260328080108_AddDefaultUserSeed")]
+    partial class AddDefaultUserSeed
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
@@ -60,9 +63,6 @@ namespace IronLogic.Infrastructure.Migrations
                     b.Property<DateTimeOffset>("DateModified")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("HowTo")
-                        .HasColumnType("TEXT");
-
                     b.Property<byte[]>("Image")
                         .HasColumnType("BLOB");
 
@@ -101,8 +101,8 @@ namespace IronLogic.Infrastructure.Migrations
                     b.Property<decimal?>("DistanceKm")
                         .HasColumnType("TEXT");
 
-                    b.Property<int?>("DurationSeconds")
-                        .HasColumnType("INTEGER");
+                    b.Property<double?>("DurationSeconds")
+                        .HasColumnType("REAL");
 
                     b.Property<Guid>("ExerciseId")
                         .HasColumnType("TEXT");
@@ -218,8 +218,8 @@ namespace IronLogic.Infrastructure.Migrations
                         new
                         {
                             Id = new Guid("00000000-0000-0000-0000-000000000001"),
-                            DateCreated = new DateTimeOffset(new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
-                            DateModified = new DateTimeOffset(new DateTime(2024, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DateCreated = new DateTimeOffset(new DateTime(2026, 3, 28, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DateModified = new DateTimeOffset(new DateTime(2026, 3, 28, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
                             Email = "kohzadi90@gmail.com",
                             Username = "kohzadi90"
                         });

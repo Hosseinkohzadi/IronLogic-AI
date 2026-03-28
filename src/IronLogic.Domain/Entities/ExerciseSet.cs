@@ -1,17 +1,48 @@
-﻿namespace IronLogic.Domain.Entities;
+﻿using IronLogic.Domain.Enums;
 
-public class ExerciseSet
+namespace IronLogic.Domain.Entities;
+
+/// <summary>
+///     Represents a specific type of exercise, like "Bench Press" or "Running".
+/// </summary>
+public class Exercise : BaseEntity
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+    /// <summary>
+    ///     The name of the exercise (e.g., "Squat", "Deadlift").
+    /// </summary>
+    public string Name { get; set; }
 
-    public int SetOrder { get; set; }
+    /// <summary>
+    ///     The primary muscle group targeted by the exercise.
+    /// </summary>
+    public Muscle PrimaryMuscle { get; set; }
 
-    public double? Weight { get; set; }
+    /// <summary>
+    ///     A list of secondary muscles also engaged during the exercise.
+    /// </summary>
+    public List<Muscle> SecondaryMuscles { get; set; } = new();
 
-    public int? Reps { get; set; }
+    /// <summary>
+    ///     The category of exercise, which defines the metrics to be tracked (e.g., weight and reps, duration, distance).
+    /// </summary>
+    public ExerciseType Type { get; set; }
 
-    public double? RPE { get; set; } // Rate of Perceived Exertion (Optional)
+    /// <summary>
+    ///     How to perform the exercise, including proper form and technique. This is a string that can contain detailed
+    ///     instructions or tips for executing the exercise correctly.
+    /// </summary>
+    public string? HowTo { get; set; }
 
-    // Helper property to calculate the total volume for this specific set
-    public double Volume => (Weight ?? 0) * (Reps ?? 0);
+    /// <summary>
+    ///     An optional image illustrating the exercise form or equipment.
+    /// </summary>
+    public byte[]? Image { get; set; }
+
+    /// <summary>
+    ///     An optional link to a video demonstrating the exercise.
+    /// </summary>
+    public string? LinkOfVideo { get; set; }
+
+    public List<ExerciseSession> ExerciseSessions { get; set; } = new();
+
 }

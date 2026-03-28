@@ -1,21 +1,19 @@
 namespace IronLogic.Domain.Entities;
 
-/// <summary>
-///     Represents a single daily bodyweight log entry for tracking physique progress.
-/// </summary>
-public class DailyWeight
+public abstract class BaseEntity
 {
+    /// <summary>
+    /// Gets or sets the unique identifier for this entity.
+    /// </summary>
     public Guid Id { get; set; } = Guid.NewGuid();
 
-    public DateTime Date { get; set; }
+    /// <summary>
+    /// Gets or sets the date and time when this entity was created.
+    /// </summary>
+    public DateTimeOffset DateCreated { get; set; } = DateTimeOffset.UtcNow;
 
     /// <summary>
-    ///     Bodyweight in kilograms (kg).
+    /// Gets or sets the date and time when this entity was last modified.
     /// </summary>
-    public float Weight { get; set; }
-
-    /// <summary>
-    ///     Optional note (e.g., "post-refeed", "morning fasted").
-    /// </summary>
-    public string? Note { get; set; }
+    public DateTimeOffset DateModified { get; set; } = DateTimeOffset.UtcNow;
 }

@@ -15,7 +15,7 @@ public class Exercise : BaseEntity
     /// <summary>
     ///     The primary muscle group targeted by the exercise.
     /// </summary>
-    public Muscle PrimaryMuscle { get; set; }
+    public Muscle? PrimaryMuscle { get; set; }
 
     /// <summary>
     ///     A list of secondary muscles also engaged during the exercise.
@@ -44,5 +44,5 @@ public class Exercise : BaseEntity
     public string? LinkOfVideo { get; set; }
 
     public List<ExerciseSession> ExerciseSessions { get; set; } = new();
-
+    public Equipment Equipment { get; set; }
 }

@@ -5,14 +5,15 @@
 /// </summary>
 public class Session : BaseEntity
 {
-    public Guid UserId { get; set; }
+   public string UserId { get; set; }
     public User User { get; set; }
-    
+
     /// <summary>
     ///     Gets or sets the date of the exercise session.
     /// </summary>
     public DateTime Date { get; set; }
 
-    public ICollection<ExerciseSession> ExerciseSessions { get; set; } = new List<ExerciseSession>();
+    public string Title { get; set; }
 
+    public ICollection<ExerciseSession> ExerciseSessions { get; set; } = new List<ExerciseSession>();
 }

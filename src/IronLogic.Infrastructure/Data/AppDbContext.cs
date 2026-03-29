@@ -1,9 +1,11 @@
 ﻿using IronLogic.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace IronLogic.Infrastructure.Data;
 
-public class AppDbContext : DbContext
+public class AppDbContext : IdentityDbContext<User>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
@@ -13,7 +15,6 @@ public class AppDbContext : DbContext
     {
     }
 
-    public DbSet<User> Users { get; set; }
     public DbSet<Session> Sessions { get; set; }
     public DbSet<Exercise> Exercises { get; set; }
     public DbSet<ExerciseSession> ExerciseSessions { get; set; }
@@ -33,16 +34,36 @@ public class AppDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        var defaultUserId = new Guid("00000000-0000-0000-0000-000000000001");
-        var seedDate = new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc); // Static historical date for seed data
+        var defaultUserId = "00000000-0000-0000-0000-000000000001";
+        var hasher = new PasswordHasher<User>();
+
+        modelBuilder.Entity<Session>(entity =>
+        {
+            entity.HasOne(s => s.User)
+                .WithMany(u => u.Sessions)
+                .HasForeignKey(s => s.UserId)
+                .IsRequired();
+        });
+
+        modelBuilder.Entity<DailyWeight>(entity =>
+        {
+            entity.HasOne(dw => dw.User)
+                .WithMany(u => u.DailyWeights)
+                .HasForeignKey(dw => dw.UserId)
+                .IsRequired();
+        });
 
         modelBuilder.Entity<User>().HasData(new User
         {
             Id = defaultUserId,
-            Username = "kohzadi90",
             Email = "kohzadi90@gmail.com",
-            DateCreated = seedDate,
-            DateModified = seedDate
+            UserName = "kohzadi90@gmail.com",
+            NormalizedUserName = "KOHZADI90@GMAIL.COM",
+            NormalizedEmail = "KOHZADI90@GMAIL.COM",
+            EmailConfirmed = true,
+            PasswordHash = "AQAAAAIAAYagAAAAEA7IkppTOn/SpmrmnXTCMdPLqEonDkuYkMjRDc6IXd+rrZ5BbdPP0st7JtFTBjPOig==",
+            SecurityStamp = "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+            ConcurrencyStamp = "fedcba98-7654-3210-fedc-ba9876543210",
         });
     }
 

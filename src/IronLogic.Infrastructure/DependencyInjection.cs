@@ -1,11 +1,11 @@
-﻿using System.Text.Json.Serialization;
-using IronLogic.Application.Interfaces;
+﻿using IronLogic.Application.Interfaces;
 using IronLogic.Infrastructure.Data;
 using IronLogic.Infrastructure.Repositories;
 using IronLogic.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace IronLogic.Infrastructure;
 
@@ -32,7 +32,9 @@ public static class DependencyInjection
 
         services.AddDbContextPool<AppDbContext>(options =>
             options.UseSqlite(connectionString)
-                .EnableSensitiveDataLogging(false));
+                .LogTo(Console.WriteLine, LogLevel.Information) // نمایش کوئری‌ها در کنسول
+                .EnableSensitiveDataLogging()
+                .EnableDetailedErrors());
 
         return services;
     }

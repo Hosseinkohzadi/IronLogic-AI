@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using IronLogic.Application.DTOs.ParsedWorkout;
 using IronLogic.Application.Interfaces;
@@ -6,36 +6,35 @@ using IronLogic.Application.Shared;
 
 namespace IronLogic.Infrastructure.Services.Parsing;
 
+/// <summary>
+///     A service responsible for parsing raw workout text into a structured <see cref="ParsedWorkoutDto" />.
+/// </summary>
 public partial class WorkoutParserService : IWorkoutParserService
 {
-    // 1. Header Regex: Sensitive to emoji and exact date format (flexible new line handling)
-    [GeneratedRegex(@"^(?<title>.+?)\r?\n(?<dayOfWeek>\w+),\s*(?<month>\w+)\s(?<day>\d{1,2}),\s*(?<year>\d{4})\s*at\s*(?<time>\d{1,2}:\d{2}(?:am|pm))", RegexOptions.IgnoreCase | RegexOptions.Multiline)]
-    private static partial Regex HeaderRegex();
-
-    // 2. Exercise Block Regex: Find the exercise name and all its subsequent sets
-    [GeneratedRegex(@"^(?!.*,.*\d{4}.*at)(?<exerciseName>[^\n\r]+)\r?\n(?<sets>(?:Set\s\d+:.*?(?:\r?\n|$))+)", RegexOptions.IgnoreCase | RegexOptions.Multiline)]
-    private static partial Regex ExerciseBlockRegex();
-
-    // 3. Sets Regex: Extract weight, reps, and RPE (decimal)
-    [GeneratedRegex(@"Set\s(?<setIndex>\d+):\s*(?<weight>[\d\.]+)?\s*lbs\s*x\s*(?<reps>\d+)(?:\s*@\s*(?<rpe>[\d\.]+)\s*rpe)?", RegexOptions.IgnoreCase)]
-    private static partial Regex SetRegex();
-
+    /// <summary>
+    ///     Parses a raw string of workout data into a structured <see cref="ParsedWorkoutDto" />.
+    /// </summary>
+    /// <param name="rawText">The raw text representing the workout log.</param>
+    /// <returns>
+    ///     A <see cref="Result{T}" /> containing the <see cref="ParsedWorkoutDto" /> on success,
+    ///     or an error message on failure.
+    /// </returns>
     public Result<ParsedWorkoutDto> Parse(string rawText)
     {
         if (string.IsNullOrWhiteSpace(rawText))
             return Result.Failure<ParsedWorkoutDto>("Raw workout text is empty.");
 
-        // A) Parse Header (Title and Date)
         var headerMatch = HeaderRegex().Match(rawText);
         if (!headerMatch.Success)
             return Result.Failure<ParsedWorkoutDto>("Invalid workout header format. Check the title and date.");
 
+        // Using Value for string manipulations like Trim.
         var parsedDto = new ParsedWorkoutDto
         {
-            Title = headerMatch.Groups["title"].Value.Trim()
+            Title = headerMatch.Groups["title"].Value.Trim(),
+            Exercises = new List<ParsedExerciseDto>() // Initialization is best done in the DTO class itself.
         };
 
-        // Combine date parts for safe parsing
         var dateString =
             $"{headerMatch.Groups["month"].Value} {headerMatch.Groups["day"].Value} {headerMatch.Groups["year"].Value} {headerMatch.Groups["time"].Value}";
         if (!DateTime.TryParseExact(dateString, "MMM d yyyy h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.None,
@@ -44,46 +43,78 @@ public partial class WorkoutParserService : IWorkoutParserService
 
         parsedDto.Date = parsedDate;
 
-        // B) Parse Body (Exercises and Sets)
         var exerciseMatches = ExerciseBlockRegex().Matches(rawText);
         if (exerciseMatches.Count == 0)
             return Result.Failure<ParsedWorkoutDto>("No exercises found in the text.");
 
+        // Set initial capacity for the exercises list for better performance.
+        parsedDto.Exercises.Capacity = exerciseMatches.Count;
+
         foreach (Match exerciseMatch in exerciseMatches)
         {
-            var exerciseName = exerciseMatch.Groups["exerciseName"].Value.Trim();
+            var exerciseNameSpan = exerciseMatch.Groups["exerciseName"].ValueSpan.Trim();
 
-            // Prevent capturing empty lines as an exercise name
-            if (string.IsNullOrWhiteSpace(exerciseName))
+            if (exerciseNameSpan.IsWhiteSpace())
                 continue;
 
             var exerciseDto = new ParsedExerciseDto
             {
-                Name = exerciseName
+                Name = exerciseNameSpan.ToString()
             };
 
             var setsText = exerciseMatch.Groups["sets"].Value;
             var setMatches = SetRegex().Matches(setsText);
 
+            // 🚀 Set initial capacity for the sets list based on the number of matches found.
+            exerciseDto.Sets = new List<ParsedSetDto>(setMatches.Count);
+
             foreach (Match setMatch in setMatches)
                 exerciseDto.Sets.Add(new ParsedSetDto
                 {
-                    SetIndex = int.Parse(setMatch.Groups["setIndex"].Value),
+                    // 🚀 Use ValueSpan to avoid string allocation.
+                    SetIndex = int.Parse(setMatch.Groups["setIndex"].ValueSpan),
+
                     Weight = setMatch.Groups["weight"].Success
-                        ? decimal.Parse(setMatch.Groups["weight"].Value, CultureInfo.InvariantCulture)
+                        ? decimal.Parse(setMatch.Groups["weight"].ValueSpan, CultureInfo.InvariantCulture)
                         : 0,
-                    Reps = int.Parse(setMatch.Groups["reps"].Value),
+
+                    Reps = int.Parse(setMatch.Groups["reps"].ValueSpan),
+
                     Rpe = setMatch.Groups["rpe"].Success
-                        ? decimal.Parse(setMatch.Groups["rpe"].Value, CultureInfo.InvariantCulture)
+                        ? decimal.Parse(setMatch.Groups["rpe"].ValueSpan, CultureInfo.InvariantCulture)
                         : null
                 });
 
-            if (exerciseDto.Sets.Any())
+            // Using Count > 0 is more performant than Any().
+            if (exerciseDto.Sets.Count > 0)
                 parsedDto.Exercises.Add(exerciseDto);
         }
 
-        return parsedDto.Exercises.Any()
+        return parsedDto.Exercises.Count > 0
             ? Result.Success(parsedDto)
             : Result.Failure<ParsedWorkoutDto>("Text was processed, but no valid sets were found.");
     }
+
+    /// <summary>
+    ///     Regex to capture the header of a workout log, including title and date/time.
+    /// </summary>
+    [GeneratedRegex(
+        @"^(?<title>.+?)\r?\n(?<dayOfWeek>\w+),\s*(?<month>\w+)\s(?<day>\d{1,2}),\s*(?<year>\d{4})\s*at\s*(?<time>\d{1,2}:\d{2}(?:am|pm))",
+        RegexOptions.IgnoreCase | RegexOptions.Multiline)]
+    private static partial Regex HeaderRegex();
+
+    /// <summary>
+    ///     Regex to capture a block of an exercise, including its name and the sets performed.
+    /// </summary>
+    [GeneratedRegex(@"^(?!.*,.*\d{4}.*at)(?<exerciseName>[^\n\r]+)\r?\n(?<sets>(?:Set\s\d+:.*?(?:\r?\n|$))+)",
+        RegexOptions.IgnoreCase | RegexOptions.Multiline)]
+    private static partial Regex ExerciseBlockRegex();
+
+    /// <summary>
+    ///     Regex to capture the details of a single set, including weight, reps, and optional RPE.
+    /// </summary>
+    [GeneratedRegex(
+        @"Set\s(?<setIndex>\d+):\s*(?<weight>[\d\.]+)?\s*lbs\s*x\s*(?<reps>\d+)(?:\s*@\s*(?<rpe>[\d\.]+)\s*rpe)?",
+        RegexOptions.IgnoreCase)]
+    private static partial Regex SetRegex();
 }

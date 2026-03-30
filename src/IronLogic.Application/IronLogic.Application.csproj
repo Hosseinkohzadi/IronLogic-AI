@@ -9,13 +9,6 @@
     <ProjectReference Include="..\IronLogic.Domain\IronLogic.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Mappers\" />
-    <Folder Include="Services\" />
-    <Folder Include="Validation\" />
-    <Folder Include="Validators\" />
-  </ItemGroup>
-
   <PropertyGroup>
    
     <ImplicitUsings>enable</ImplicitUsings>

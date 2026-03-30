@@ -44,12 +44,8 @@ public class WorkoutsController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<Session>> GetWorkout(Guid id)
     {
-        var session = await repository.GetByIdAsync(id);
-
-        if (session == null || session.UserId != CurrentUserId.ToString()) 
-            return NotFound();
-
-        return Ok(session);
+        var session = await GetUserSessionAsync(id);
+        return session == null ? NotFound() : Ok(session);
     }
 
     /// <summary>
@@ -64,8 +60,8 @@ public class WorkoutsController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteWorkout(Guid id)
     {
-        var session = await repository.GetByIdAsync(id);
-        if (session == null || session.UserId != CurrentUserId.ToString()) 
+        var session = await GetUserSessionAsync(id);
+        if (session == null)
             return NotFound();
 
         repository.Delete(session);
@@ -92,7 +88,7 @@ public class WorkoutsController(
     /// <returns>The weekly volume trend data.</returns>
     [HttpGet("weekly-trend")]
     [ProducesResponseType<IEnumerable<object>>(StatusCodes.Status200OK)]
-    public async Task<ActionResult> GetWeeklyVolumeTrend()
+    public async Task<ActionResult<IEnumerable<object>>> GetWeeklyVolumeTrend()
     {
         var twelveWeeksAgo = DateTime.UtcNow.AddDays(-84);
 
@@ -116,13 +112,13 @@ public class WorkoutsController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateWorkout([FromBody] WorkoutImportRequest request)
     {
-        if (string.IsNullOrWhiteSpace(request.WorkoutText)) 
+        if (string.IsNullOrWhiteSpace(request.WorkoutText))
             return BadRequest("Workout text cannot be empty.");
 
         // result.Value now contains SessionId and ParsedData
         var result = await workoutService.CreateFromRawTextAsync(request.WorkoutText, CurrentUserId.ToString());
 
-        if (result.IsFailure) 
+        if (result.IsFailure)
             return BadRequest(new { message = result.Error });
 
         // Return the parsed data (ParsedData) to the front-end
@@ -131,5 +127,19 @@ public class WorkoutsController(
             new { id = result.Value.SessionId },
             result.Value.ParsedData
         );
+    }
+
+    /// <summary>
+    ///     Retrieves a session by its ID and verifies it belongs to the current user.
+    /// </summary>
+    /// <param name="sessionId">The ID of the session to retrieve.</param>
+    /// <returns>The session if found and belongs to the user; otherwise, null.</returns>
+    private async Task<Session?> GetUserSessionAsync(Guid sessionId)
+    {
+        var session = await repository.GetByIdAsync(sessionId);
+
+        if (session == null || session.UserId != CurrentUserId.ToString()) return null;
+
+        return session;
     }
 }

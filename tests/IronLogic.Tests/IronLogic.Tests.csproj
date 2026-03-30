@@ -32,6 +32,5 @@
     <Folder Include="Controllers\" />
     <Folder Include="Infrastructure\" />
     <Folder Include="IntegrationTests\" />
-    <Folder Include="Services\" />
   </ItemGroup>
 </Project>

@@ -2,6 +2,7 @@
 using IronLogic.Infrastructure.Data;
 using IronLogic.Infrastructure.Repositories;
 using IronLogic.Infrastructure.Services;
+using IronLogic.Infrastructure.Services.Parsing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,6 +49,8 @@ public static class DependencyInjection
     private static IServiceCollection AddDomainServices(this IServiceCollection services)
     {
         services.AddScoped<IWorkoutImportService, WorkoutImportService>();
+        services.AddScoped<IWorkoutParserService, WorkoutParserService>();
+        services.AddScoped<IWorkoutService, WorkoutService>();
 
         return services;
     }

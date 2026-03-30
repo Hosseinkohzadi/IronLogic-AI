@@ -26,10 +26,7 @@ public class AuthController(
         var user = new User { Email = registerDto.Email };
         var result = await userManager.CreateAsync(user, registerDto.Password);
 
-        if (!result.Succeeded)
-        {
-            return BadRequest(result.Errors);
-        }
+        if (!result.Succeeded) return BadRequest(result.Errors);
 
         return Ok(new { Message = "Registration successful" });
     }
@@ -39,10 +36,7 @@ public class AuthController(
     {
         var result = await signInManager.PasswordSignInAsync(loginDto.Email, loginDto.Password, isPersistent: false, lockoutOnFailure: false);
 
-        if (!result.Succeeded)
-        {
-            return Unauthorized(new { Message = "Invalid credentials" });
-        }
+        if (!result.Succeeded) return Unauthorized(new { Message = "Invalid credentials" });
 
         var user = await userManager.FindByEmailAsync(loginDto.Email);
         var token = GenerateJwtToken(user);

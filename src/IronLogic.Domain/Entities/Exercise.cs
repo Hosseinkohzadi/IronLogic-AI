@@ -12,6 +12,8 @@ public class Exercise : BaseEntity
     /// </summary>
     public string Name { get; set; }
 
+    public Guid PrimaryMuscleId { get; set; }
+
     /// <summary>
     ///     The primary muscle group targeted by the exercise.
     /// </summary>
@@ -45,4 +47,5 @@ public class Exercise : BaseEntity
 
     public List<ExerciseSession> ExerciseSessions { get; set; } = new();
     public Equipment Equipment { get; set; }
-}
+    public Guid EquipmentId { get; set; }
+}    

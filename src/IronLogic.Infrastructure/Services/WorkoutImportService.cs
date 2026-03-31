@@ -1,11 +1,7 @@
 ﻿using System.Globalization;
 using CsvHelper;
-using IronLogic.Application.Interfaces;
-using IronLogic.Domain.Entities;
 using IronLogic.Domain.Enums;
-using IronLogic.Infrastructure.Data;
 using IronLogic.Infrastructure.Mapper;
-using Microsoft.EntityFrameworkCore;
 
 namespace IronLogic.Infrastructure.Services;
 
@@ -30,9 +26,9 @@ public class WorkoutImportService(AppDbContext context) : IWorkoutImportService
     {
         var defaultUserId = "00000000-0000-0000-0000-000000000001";
 
-        // ۱. چک کردن وجود یوزر (اگر این نال باشد، تمام سشن‌ها با خطای FK مواجه می‌شوند)
+        // 1. Check for user existence (if this is null, all sessions will face an FK error)
         var user = await context.Users.FindAsync(defaultUserId);
-        if (user == null) throw new Exception("یوزر Kasra در دیتابیس یافت نشد! اول دیتابیس را Seed کن.");
+        if (user == null) throw new Exception("Default user not found in the database! Seed the database first.");
 
         using var reader = new StreamReader(fileStream);
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
@@ -51,7 +47,7 @@ public class WorkoutImportService(AppDbContext context) : IWorkoutImportService
             {
                 Date = group.Key.StartTime,
                 Title = group.Key.Title ?? "Workout Session",
-                User = user, // اتصال مستقیم به آبجکت یوزر
+                User = user, // Direct link to the user object
                 ExerciseSessions = new List<ExerciseSession>()
             };
 
@@ -89,14 +85,7 @@ public class WorkoutImportService(AppDbContext context) : IWorkoutImportService
             context.Sessions.Add(session);
         }
 
-        var orphans = context.ChangeTracker.Entries<ExerciseSession>()
-            .Where(e => e.Entity.ExerciseId == Guid.Empty || e.Entity.Session == null);
-        if (orphans.Any())
-        {
-            /* اینجا Breakpoint بگذار */
-        }
-
-        // ذخیره همزمان تمام ۱۳۰۰۰ ردیف دیتا
+        // Save all records at once
         await context.SaveChangesAsync();
     }
 }

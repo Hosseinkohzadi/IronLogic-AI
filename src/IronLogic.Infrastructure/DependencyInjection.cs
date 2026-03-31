@@ -1,9 +1,6 @@
-﻿using IronLogic.Application.Interfaces;
-using IronLogic.Infrastructure.Data;
-using IronLogic.Infrastructure.Repositories;
+﻿using IronLogic.Infrastructure.Repositories;
 using IronLogic.Infrastructure.Services;
 using IronLogic.Infrastructure.Services.Parsing;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

@@ -1,34 +1,57 @@
 <div class="p-6 lg:p-10 max-w-7xl mx-auto">
-  <div class="mb-8 flex items-center justify-between">
-    <div>
-      <h1 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-        <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-        </svg>
-        AI Log Analyzer
-      </h1>
-      <p class="text-slate-500 mt-2 font-medium">Paste your Hevy workout log below. Our AI will structure it automatically.</p>
-    </div>
+  <div class="mb-8">
+    <h1 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
+      <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+      </svg>
+      IronLogic Log Sync
+    </h1>
+    <p class="text-slate-500 mt-2 font-medium">Paste your Hevy log and sync it directly to your dashboard.</p>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-    <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 flex flex-col">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+
+    <div class="bg-white rounded-3xl p-6 shadow-xl border border-slate-100 flex flex-col h-[600px]">
       <div class="flex items-center justify-between mb-4">
         <h2 class="font-bold text-slate-800 text-lg">Raw Workout Data</h2>
         <span class="bg-indigo-50 text-indigo-600 text-xs font-bold px-3 py-1 rounded-full">Hevy Format</span>
       </div>
-      <textarea [(ngModel)]="rawLog" [disabled]="isAnalyzing()" class="custom-scrollbar w-full flex-grow min-h-[400px] p-5 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono text-sm text-slate-700 resize-none disabled:opacity-50"></textarea>
+
+      <textarea
+        [(ngModel)]="rawLog"
+        [disabled]="isAnalyzing()"
+        class="custom-scrollbar w-full flex-grow p-5 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all font-mono text-sm text-slate-700 resize-none disabled:opacity-50"></textarea>
 
       @if (errorMessage()) {
-      <div class="mt-4 p-3 bg-red-50 text-red-600 text-sm font-bold rounded-xl border border-red-100">❌ {{ errorMessage() }}</div>
+      <div class="mt-4 p-3 bg-red-50 text-red-600 text-sm font-bold rounded-xl border border-red-100">
+        ❌ {{ errorMessage() }}
+      </div>
       }
 
-      <button (click)="analyzeData()" [disabled]="isAnalyzing() || !rawLog()" class="mt-6 w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-2xl font-bold shadow-lg shadow-indigo-600/30 transition-all active:scale-95 flex items-center justify-center gap-2">
-        @if (!isAnalyzing()) { Analyze & Extract Data } @else { Analyzing Log... }
+      <button
+        (click)="analyzeData()"
+        [disabled]="isAnalyzing() || !rawLog()"
+        class="mt-6 w-full py-4 bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white rounded-2xl font-bold shadow-lg shadow-indigo-600/30 transition-all active:scale-95 flex items-center justify-center gap-2">
+        @if (!isAnalyzing()) {
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+        Sync Workout with Dashboard
+        } @else {
+        <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        Syncing...
+        }
       </button>
     </div>
 
-    <div class="bg-slate-900 rounded-3xl p-8 shadow-2xl relative flex flex-col h-[610px] custom-scrollbar overflow-y-auto">
+    <div class="bg-slate-900 rounded-3xl p-8 shadow-2xl relative flex flex-col h-[600px] custom-scrollbar overflow-y-auto">
+      @if (!isAnalyzing() && !analyzedWorkout()) {
+      <div class="m-auto text-center z-10">
+        <div class="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mx-auto mb-6 border border-slate-700 text-slate-500">
+          <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+        </div>
+        <h3 class="text-xl font-bold text-white">Ready to Sync</h3>
+      </div>
+      }
+
       @if (analyzedWorkout(); as workout) {
       <div class="fade-in">
         <div class="flex justify-between items-end border-b border-slate-800 pb-4 mb-6">
@@ -36,12 +59,13 @@
             <div class="text-indigo-400 text-xs font-bold uppercase mb-1">{{ workout.date }}</div>
               <h2 class="text-2xl font-black text-white">{{ workout.title }}</h2>
             </div>
-            <div class="text-right text-emerald-400 font-black text-xl">{{ workout.totalVolume }}</div>
+            <div class="text-emerald-400 font-black text-xl">{{ workout.totalVolume }}</div>
           </div>
 
-          <div class="space-y-3 mb-8">
+          <div class="space-y-3">
             @for (ex of workout.exercises; track ex.name) {
-      <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden transition-all duration-300">
+      <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl overflow-hidden transition-all">
+
         <div (click)="toggleDetails(ex)" class="p-4 cursor-pointer hover:bg-slate-700/30 flex justify-between items-center text-white">
           <div>
             <h4 class="font-bold text-sm">{{ ex.name }}</h4>
@@ -53,42 +77,65 @@
           </div>
         </div>
 
+        @if (ex.isPr) {
+        <div class="mx-4 mb-3 flex items-center gap-2 bg-amber-500/10 border border-amber-500/30 rounded-lg py-1.5 px-3 w-fit slide-in-from-left">
+          <span class="text-lg">🏆</span>
+          <span class="text-amber-400 text-xs font-black tracking-wide">{{ ex.prMessage }}</span>
+                  </div>
+        }
+
         @if (ex.isExpanded) {
-        <div class="bg-slate-900/50 border-t border-slate-700/50 p-4">
+        <div class="p-4 bg-slate-900/40 border-t border-slate-700/50">
           @if (ex.isLoadingHistory) {
-        <div class="text-center text-slate-400 text-sm py-10 animate-pulse">Loading history...</div>
+        <div class="text-center text-slate-500 py-6 animate-pulse">Loading Chart...</div>
         } @else if (ex.history && ex.history.length > 0) {
+
         <div class="grid grid-cols-3 gap-2 mb-4">
-          <div class="bg-slate-800/80 p-2 rounded text-center">
-            <p class="text-[10px] text-slate-500 uppercase font-bold">Est. 1RM</p>
+          <div class="bg-slate-800/80 p-2 rounded-xl text-center border border-slate-700/50 shadow-inner">
+            <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Est. 1RM</p>
             <p class="text-xs font-black text-indigo-400">{{ ex.history[ex.history.length-1].estimated1RM }}</p>
           </div>
-          <div class="bg-slate-800/80 p-2 rounded text-center">
-            <p class="text-[10px] text-slate-500 uppercase font-bold">Total Vol</p>
+          <div class="bg-slate-800/80 p-2 rounded-xl text-center border border-slate-700/50 shadow-inner">
+            <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Total Vol</p>
             <p class="text-xs font-black text-emerald-400">{{ ex.history[ex.history.length-1].totalVolume.toLocaleString() }}</p>
           </div>
-          <div class="bg-slate-800/80 p-2 rounded text-center">
-            <p class="text-[10px] text-slate-500 uppercase font-bold">Max</p>
+          <div class="bg-slate-800/80 p-2 rounded-xl text-center border border-slate-700/50 shadow-inner">
+            <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider">Max</p>
             <p class="text-[10px] font-bold text-white truncate">{{ ex.history[ex.history.length-1].maxWeight }} lbs</p>
           </div>
         </div>
+
         <div class="h-44 w-full"><canvas [id]="getChartId(ex.name)"></canvas></div>
-        } @else { <div class="text-center text-slate-500 text-xs py-4">No historical records yet.</div> }
+        } @else {
+        <div class="text-center text-slate-500 text-xs py-4">No historical records yet.</div>
+        }
         </div>
         }
       </div>
       }
       </div>
-
-      <div class="bg-gradient-to-br from-indigo-900/40 to-purple-900/40 border border-indigo-500/30 rounded-2xl p-6 mb-6">
-        <h3 class="text-white font-bold text-xs uppercase tracking-widest mb-4 flex items-center gap-2"><span class="w-2 h-2 bg-indigo-400 rounded-full animate-ping"></span> AI Insights</h3>
-        <ul class="space-y-2">
-          @for (insight of workout.aiInsights; track insight) { <li class="text-sm text-indigo-100/80">• {{ insight }}</li> }
-      </ul>
     </div>
-    <button (click)="saveToDashboard()" class="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl font-bold shadow-lg shadow-emerald-500/20 active:scale-95 transition-all">Save to Dashboard</button>
-  </div>
       }
     </div>
   </div>
+
+  @if (analyzedWorkout(); as workout) {
+  <div class="bg-gradient-to-r from-indigo-900/80 to-purple-900/80 border border-indigo-500/30 rounded-3xl p-8 fade-in">
+    <h3 class="text-white font-bold text-lg mb-6 flex items-center gap-3">
+      <span class="relative flex h-3 w-3">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-3 w-3 bg-indigo-500"></span>
+      </span>
+      AI Analysis & Progress Insights
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      @for (insight of workout.aiInsights; track insight) {
+  <div class="bg-slate-900/40 p-4 rounded-2xl border border-white/5 text-sm text-indigo-100/90 flex items-start gap-3">
+    <span class="text-indigo-400 font-bold">#</span>
+    {{ insight }}
+  </div>
+  }
+  </div>
+</div>
+  }
 </div>

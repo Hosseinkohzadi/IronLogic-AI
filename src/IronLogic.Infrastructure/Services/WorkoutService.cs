@@ -7,24 +7,12 @@ using Microsoft.EntityFrameworkCore;
 
 namespace IronLogic.Infrastructure.Services;
 
-/// <summary>
-/// Implements the application service for creating workout sessions from raw text.
-/// </summary>
 public class WorkoutService(IWorkoutParserService parserService, AppDbContext dbContext)
     : IWorkoutService
 {
     private static readonly Guid DefaultEquipmentId = new("00000000-0000-0000-0000-000000000001");
     private static readonly Guid DefaultMuscleId = new("00000000-0000-0000-0000-000000000002");
 
-    /// <summary>
-    /// Parses a raw text workout log, creates domain entities, and saves them to the database.
-    /// </summary>
-    /// <param name="rawText">The raw text log of the workout.</param>
-    /// <param name="userId">The ID of the user who performed the workout.</param>
-    /// <returns>
-    /// A <see cref="Result{T}"/> containing a <see cref="WorkoutImportResult"/> on success,
-    /// which includes the new session ID and the parsed data. On failure, it returns an error message.
-    /// </returns>
     public async Task<Result<WorkoutImportResult>> CreateFromRawTextAsync(string rawText, string userId)
     {
         var parseResult = parserService.Parse(rawText);
@@ -45,12 +33,20 @@ public class WorkoutService(IWorkoutParserService parserService, AppDbContext db
             };
             dbContext.Sessions.Add(session);
 
+            var exerciseNames = workoutDto.Exercises
+                .Select(e => e.Name.ToLower())
+                .Distinct()
+                .ToList();
+
+            var existingExercises = await dbContext.Exercises
+                .Where(e => exerciseNames.Contains(e.Name.ToLower()))
+                .ToDictionaryAsync(e => e.Name.ToLower(), e => e);
+
             foreach (var exerciseDto in workoutDto.Exercises)
             {
-                var exercise = await dbContext.Exercises
-                    .FirstOrDefaultAsync(e => e.Name.ToLower() == exerciseDto.Name.ToLower());
+                var searchName = exerciseDto.Name.ToLower();
 
-                if (exercise == null)
+                if (!existingExercises.TryGetValue(searchName, out var exercise))
                 {
                     exercise = new Exercise
                     {
@@ -60,22 +56,21 @@ public class WorkoutService(IWorkoutParserService parserService, AppDbContext db
                         PrimaryMuscleId = DefaultMuscleId
                     };
                     dbContext.Exercises.Add(exercise);
+
+                    existingExercises[searchName] = exercise;
                 }
 
-                foreach (var setDto in exerciseDto.Sets)
-                {
-                    var exerciseSession = new ExerciseSession
-                    {
-                        Id = Guid.NewGuid(),
-                        SessionId = session.Id,
-                        ExerciseId = exercise.Id,
-                        SetIndex = setDto.SetIndex,
-                        Weight = setDto.Weight,
-                        Reps = setDto.Reps,
-                        Rpe = setDto.Rpe
-                    };
+                foreach (var exerciseSession in exerciseDto.Sets.Select(setDto => new ExerciseSession
+                         {
+                             Id = Guid.NewGuid(),
+                             SessionId = session.Id,
+                             ExerciseId = exercise.Id,
+                             SetIndex = setDto.SetIndex,
+                             Weight = setDto.Weight,
+                             Reps = setDto.Reps,
+                             Rpe = setDto.Rpe
+                         }))
                     dbContext.ExerciseSessions.Add(exerciseSession);
-                }
             }
 
             await dbContext.SaveChangesAsync();

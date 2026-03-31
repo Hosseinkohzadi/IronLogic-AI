@@ -23,5 +23,5 @@ public interface IWorkoutService
     /// </returns>
     Task<Result<WorkoutImportResult>> CreateFromRawTextAsync(string rawText, string userId);
 
-    Task<Result<List<ExerciseHistoryPointDto>>> GetExerciseHistoryAsync(string userId, string exerciseName);
+    Task<Result<List<DayDetailsDto>>> GetSessionsByDateAsync(string userId, DateTime date);
 }

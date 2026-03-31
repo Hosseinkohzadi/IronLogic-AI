@@ -20,7 +20,9 @@
 
   <div class="calendar-grid grid grid-cols-7 gap-2">
     @for (day of calendarDays(); track day.date.getTime()) {
-    <div class="calendar-cell group relative aspect-square flex items-center justify-center rounded-2xl text-xs font-bold transition-all duration-300"
+
+    <div (click)="onDayClick(day.date)"
+         class="calendar-cell group relative cursor-pointer hover:scale-105 aspect-square flex items-center justify-center rounded-2xl text-xs font-bold transition-all duration-300"
          [class.bg-indigo-600]="day.isToday"
          [class.text-white]="day.isToday"
          [class.today-pulse]="day.isToday"

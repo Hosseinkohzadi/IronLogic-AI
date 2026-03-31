@@ -45,7 +45,7 @@ public class ExerciseSession : BaseEntity
     /// <summary>
     ///     Calculated property for the total volume of a strength-based set (Reps * Weight).
     /// </summary>
-    public decimal Volume => new((double)((Reps ?? 0) * (Weight ?? 0)));
+    public decimal Volume => new((double)(Reps * Weight)!);
 
     /// <summary>
     ///     Gets or sets the weight in kilograms. This property converts the value to and from the base <see cref="Weight" />

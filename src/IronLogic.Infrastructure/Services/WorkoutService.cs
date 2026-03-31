@@ -1,6 +1,7 @@
 ﻿using IronLogic.Application.DTOs;
 using IronLogic.Application.DTOs.ParsedWorkout;
 using IronLogic.Application.Shared;
+using IronLogic.Infrastructure.Services.Parsing;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 
@@ -255,5 +256,33 @@ public class WorkoutService(
                      }))
                 dbContext.ExerciseSessions.Add(exerciseSession);
         }
+    }
+
+
+    public async Task<Result<List<DayDetailsDto>>> GetSessionsByDateAsync(string userId, DateTime date)
+    {
+        var sessions = await dbContext.Sessions
+            .AsNoTracking()
+            .Where(s => s.UserId == userId && s.Date.Date == date.Date)
+            .Include(s => s.ExerciseSessions)
+            .ThenInclude(es => es.Exercise)
+            .ToListAsync();
+
+        var result = sessions.Select(s => new DayDetailsDto(
+            s.Id,
+            s.Title,
+            s.Date,
+            s.ExerciseSessions.Sum(es => es.Weight * es.Reps),
+            s.ExerciseSessions
+                .GroupBy(es => es.Exercise.Name)
+                .Select(g => new ExerciseDetailDto(
+                    g.Key,
+                    g.OrderBy(x => x.SetIndex)
+                        .Select(x => new SetDetailDto(x.SetIndex, x.Weight, x.Reps, x.Rpe))
+                        .ToList()
+                )).ToList()
+        )).ToList();
+
+        return Result.Success(result);
     }
 }

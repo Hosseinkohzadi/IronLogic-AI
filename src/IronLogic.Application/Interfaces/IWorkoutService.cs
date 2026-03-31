@@ -1,3 +1,4 @@
+using IronLogic.Application.DTOs;
 using IronLogic.Application.DTOs.ParsedWorkout;
 using IronLogic.Application.Shared;
 
@@ -21,4 +22,6 @@ public interface IWorkoutService
     /// with the ID of the newly created session.
     /// </returns>
     Task<Result<WorkoutImportResult>> CreateFromRawTextAsync(string rawText, string userId);
+
+    Task<Result<List<ExerciseHistoryPointDto>>> GetExerciseHistoryAsync(string userId, string exerciseName);
 }

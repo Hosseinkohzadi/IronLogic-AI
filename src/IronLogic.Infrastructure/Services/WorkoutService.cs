@@ -1,4 +1,5 @@
-﻿using IronLogic.Application.DTOs.ParsedWorkout;
+﻿using IronLogic.Application.DTOs;
+using IronLogic.Application.DTOs.ParsedWorkout;
 using IronLogic.Application.Shared;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,15 @@ public class WorkoutService(
     private static readonly Guid DefaultEquipmentId = new("00000000-0000-0000-0000-000000000001");
     private static readonly Guid DefaultMuscleId = new("00000000-0000-0000-0000-000000000001");
 
+    /// <summary>
+    ///     Parses a raw text input to create a new workout session or update an existing one for a specific user.
+    /// </summary>
+    /// <param name="rawText">The raw text representing the workout data.</param>
+    /// <param name="userId">The ID of the user for whom the workout is being created.</param>
+    /// <returns>
+    ///     A <see cref="Result{T}" /> containing a <see cref="WorkoutImportResult" /> on success,
+    ///     or an error message on failure.
+    /// </returns>
     public async Task<Result<WorkoutImportResult>> CreateFromRawTextAsync(string rawText, string userId)
     {
         var parseResult = parserService.Parse(rawText);
@@ -76,6 +86,49 @@ public class WorkoutService(
             await transaction.RollbackAsync();
             return Result.Failure<WorkoutImportResult>("An error occurred while saving the workout to the database.");
         }
+    }
+
+    /// <summary>
+    ///     Retrieves the performance history for a specific exercise for a given user.
+    /// </summary>
+    /// <param name="userId">The ID of the user.</param>
+    /// <param name="exerciseName">The name of the exercise.</param>
+    /// <returns>
+    ///     A <see cref="Result{T}" /> containing a list of <see cref="ExerciseHistoryPointDto" /> on success,
+    ///     or an error on failure.
+    /// </returns>
+    public async Task<Result<List<ExerciseHistoryPointDto>>> GetExerciseHistoryAsync(string userId, string exerciseName)
+    {
+        var exerciseNameLower = exerciseName.ToLower();
+
+        // 1. Fetch only the necessary fields from the database (very fast).
+        var rawHistory = await dbContext.ExerciseSessions
+            .AsNoTracking()
+            .Where(es => es.Session.UserId == userId && es.Exercise.Name.ToLower() == exerciseNameLower)
+            .Select(es => new { es.Session.Date, es.Weight, es.Reps, es.Rpe })
+            .ToListAsync();
+
+        // 2. Grouping and calculations are done in client-side memory.
+        var history = rawHistory
+            .GroupBy(es => es.Date.Date)
+            .Select(g =>
+            {
+                // Find the best set of that day.
+                var topSet = g.OrderByDescending(s => s.Weight).ThenByDescending(s => s.Reps).First();
+                var rpeText = topSet.Rpe.HasValue ? $" @ {topSet.Rpe}" : "";
+
+                return new ExerciseHistoryPointDto(
+                    g.Key,
+                    g.Max(s => s.Weight),
+                    g.Sum(s => s.Weight * s.Reps),
+                    $"{topSet.Weight} lbs x {topSet.Reps}{rpeText}",
+                    Math.Round((decimal)g.Max(s => s.Weight * (1 + s.Reps / 30m)), 2)
+                );
+            })
+            .OrderBy(h => h.Date)
+            .ToList();
+
+        return Result.Success(history);
     }
 
     /// <summary>
@@ -191,15 +244,15 @@ public class WorkoutService(
         {
             var exercise = exercises[exerciseDto.Name.ToLower()];
             foreach (var exerciseSession in exerciseDto.Sets.Select(setDto => new ExerciseSession
-            {
-                Id = Guid.NewGuid(),
-                SessionId = sessionId,
-                ExerciseId = exercise.Id,
-                SetIndex = setDto.SetIndex,
-                Weight = setDto.Weight,
-                Reps = setDto.Reps,
-                Rpe = setDto.Rpe
-            }))
+                     {
+                         Id = Guid.NewGuid(),
+                         SessionId = sessionId,
+                         ExerciseId = exercise.Id,
+                         SetIndex = setDto.SetIndex,
+                         Weight = setDto.Weight,
+                         Reps = setDto.Reps,
+                         Rpe = setDto.Rpe
+                     }))
                 dbContext.ExerciseSessions.Add(exerciseSession);
         }
     }

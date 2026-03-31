@@ -1,9 +1,20 @@
+export interface ExerciseHistoryPoint {
+  date: string;
+  maxWeight: number;
+  totalVolume: number;
+  topSetSummary: string;
+  estimated1RM: number;
+}
+
 export interface UIExercise {
   name: string;
   sets: number;
   topSet: string;
   isPr?: boolean;
   prMessage?: string | null;
+  isExpanded?: boolean;
+  isLoadingHistory?: boolean;
+  history?: ExerciseHistoryPoint[];
 }
 
 export interface AnalyzedWorkout {

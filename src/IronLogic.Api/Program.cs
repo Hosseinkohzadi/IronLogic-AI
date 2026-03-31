@@ -11,15 +11,18 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ۱. سرویس‌های هویت (Identity)
-builder.Services.AddIdentity<User, IdentityRole>(options => {
+builder.Services.AddIdentityCore<User>(options =>
+{
     options.Password.RequireDigit = true;
     options.Password.RequiredLength = 6;
 })
+.AddRoles<IdentityRole>()
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultTokenProviders();
 
-// ۲. تنظیمات JWT Authentication
+var jwtKey = builder.Configuration["Jwt:Key"]
+             ?? throw new InvalidOperationException("JWT Key is missing in configuration!");
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -35,23 +38,21 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = builder.Configuration["Jwt:Issuer"],
         ValidAudience = builder.Configuration["Jwt:Audience"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ?? "YourSuperSecretKey123!"))
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
     };
 });
 
-// ۳. تنظیمات CORS (بسیار مهم برای ارتباط با آنگولار)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowIronLogicDash", policy =>
     {
-        policy.WithOrigins("http://localhost:4200") // آدرس آنگولار
+        policy.WithOrigins("http://localhost:4200")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials(); 
+              .AllowCredentials();
     });
 });
 
-// ۴. تنظیمات کنترلرها و JSON (جلوگیری از Cycle در روابط دیتابیس)
 builder.Services.AddControllers()
     .AddJsonOptions(options =>
     {
@@ -59,6 +60,7 @@ builder.Services.AddControllers()
         options.JsonSerializerOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
     });
 
+builder.Services.AddMemoryCache();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApiDocument(config =>
 {
@@ -68,12 +70,10 @@ builder.Services.AddOpenApiDocument(config =>
 });
 
 builder.Services
-    .AddInfrastructure(builder.Configuration)
+    .AddInfrastructure(builder.Configuration, builder.Environment)
     .AddSemanticKernel(builder.Configuration);
 
 var app = builder.Build();
-
-app.UseCors("AllowIronLogicDash"); 
 
 if (app.Environment.IsDevelopment())
 {
@@ -88,7 +88,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
 app.UseRouting();
+
+app.UseCors("AllowIronLogicDash");
 
 app.UseAuthentication();
 app.UseAuthorization();

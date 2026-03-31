@@ -1,7 +1,6 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using IronLogic.Application.DTOs.ParsedWorkout;
-using IronLogic.Application.Interfaces;
 using IronLogic.Application.Shared;
 
 namespace IronLogic.Infrastructure.Services.Parsing;

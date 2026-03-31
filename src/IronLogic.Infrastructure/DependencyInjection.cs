@@ -1,22 +1,23 @@
-﻿using IronLogic.Application.Interfaces;
-using IronLogic.Infrastructure.Data;
-using IronLogic.Infrastructure.Repositories;
+﻿using IronLogic.Infrastructure.Repositories;
 using IronLogic.Infrastructure.Services;
 using IronLogic.Infrastructure.Services.Parsing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting; // اضافه شد
 using Microsoft.Extensions.Logging;
 
 namespace IronLogic.Infrastructure;
 
 public static class DependencyInjection
 {
+    // پارامتر IHostEnvironment اضافه شد تا محیط را تشخیص دهیم
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IHostEnvironment environment)
     {
-        services.AddPersistence(configuration)
+        services.AddPersistence(configuration, environment)
             .AddRepositories()
             .AddDomainServices()
             .AddExternalProviders();
@@ -26,16 +27,24 @@ public static class DependencyInjection
 
     private static IServiceCollection AddPersistence(
         this IServiceCollection services,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IHostEnvironment environment)
     {
         var connectionString = configuration.GetConnectionString("DefaultConnection")
-                               ?? "Data Source=ironlogic.db";
+                               ?? throw new InvalidOperationException("Connection string is missing!");
 
         services.AddDbContextPool<AppDbContext>(options =>
-            options.UseSqlite(connectionString)
-                .LogTo(Console.WriteLine, LogLevel.Information) // نمایش کوئری‌ها در کنسول
-                .EnableSensitiveDataLogging()
-                .EnableDetailedErrors());
+        {
+            options.UseSqlite(connectionString);
+
+            // لاگ‌های سنگین فقط در محیط Development فعال شوند
+            if (environment.IsDevelopment())
+            {
+                options.LogTo(Console.WriteLine, LogLevel.Information)
+                       .EnableSensitiveDataLogging()
+                       .EnableDetailedErrors();
+            }
+        });
 
         return services;
     }
@@ -49,8 +58,9 @@ public static class DependencyInjection
     private static IServiceCollection AddDomainServices(this IServiceCollection services)
     {
         services.AddScoped<IWorkoutImportService, WorkoutImportService>();
-        services.AddScoped<IWorkoutParserService, WorkoutParserService>();
         services.AddScoped<IWorkoutService, WorkoutService>();
+
+        services.AddSingleton<IWorkoutParserService, WorkoutParserService>();
 
         return services;
     }

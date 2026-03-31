@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { WorkoutStatsResponse } from '../models/workout-stats-response.model';
-import { environment } from '../../../../environments/environment';
+import { WorkoutStatsResponse } from '@core/models';
+import { environment } from '@env/environment';
 
 @Injectable({
   providedIn: 'root',

@@ -1,11 +1,13 @@
-namespace IronLogic.Domain.Entities;
+﻿namespace IronLogic.Domain.Entities;
 
 /// <summary>
 ///     Represents a single daily bodyweight log entry for tracking physique progress.
 /// </summary>
-public class DailyWeight
+public class DailyWeight : BaseEntity
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
+
+   public string UserId { get; set; }
+    public User User { get; set; }
 
     public DateTime Date { get; set; }
 

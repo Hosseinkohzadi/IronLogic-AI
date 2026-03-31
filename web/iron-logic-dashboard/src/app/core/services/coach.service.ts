@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { CoachAdviceResponse } from '../models/coach-advice-response.model';
+import { environment } from '../../../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
 })
 export class CoachService {
-  private readonly baseUrl = 'http://localhost:5010/api/v1/coach';
-
+  private readonly baseUrl = environment.apiUrl;
   constructor(private readonly http: HttpClient) {}
 
   /**
@@ -17,6 +17,6 @@ export class CoachService {
    * latest workout stats and body metrics.
    */
   analyze(): Observable<CoachAdviceResponse> {
-    return this.http.get<CoachAdviceResponse>(`${this.baseUrl}/analyze`);
+    return this.http.get<CoachAdviceResponse>(`${this.baseUrl}/coach/analyze`);
   }
 }

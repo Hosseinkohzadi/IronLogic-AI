@@ -1,46 +1,72 @@
+﻿using IronLogic.Domain.Constants;
+
 namespace IronLogic.Domain.Entities;
 
 /// <summary>
-///     Represents a single muscle measurement log entry for tracking physique progress.
+///     Represents a single workout session.
 /// </summary>
-public class MuscleMeasurement
+public class ExerciseSession : BaseEntity
 {
-    public Guid Id { get; set; } = Guid.NewGuid();
-
-    public DateTime Date { get; set; }
+    /// <summary>
+    ///     The order of this set within the exercise (e.g., 1st set, 2nd set).
+    /// </summary>
+    public int SetIndex { get; set; }
 
     /// <summary>
-    ///     Neck circumference in cm.
+    ///     The type of set, e.g., "normal", "warmup", "dropset".
     /// </summary>
-    public double Neck { get; set; }
+    public string? SetType { get; set; }
 
     /// <summary>
-    ///     Chest circumference in cm.
+    ///     The number of repetitions performed. Used for strength-based exercises.
     /// </summary>
-    public double Chest { get; set; }
+    public int? Reps { get; set; }
 
     /// <summary>
-    ///     Waist circumference in cm. Crucial for Classic Physique ratio.
+    ///     The weight used for the set, in the user's preferred unit (e.g., Lbs, Kg).
     /// </summary>
-    public double Waist { get; set; }
+    public decimal? Weight { get; set; }
 
     /// <summary>
-    ///     Left biceps circumference in cm (optional).
+    ///     The distance covered, in kilometers. Used for cardio exercises.
     /// </summary>
-    public float? BicepsLeft { get; set; }
+    public decimal? DistanceKm { get; set; }
 
     /// <summary>
-    ///     Right biceps circumference in cm (optional).
+    ///     The duration of the set, in seconds. Used for time-based exercises.
     /// </summary>
-    public float? BicepsRight { get; set; }
+    public int? DurationSeconds { get; set; }
 
     /// <summary>
-    ///     Left thigh circumference in cm (optional).
+    ///     Rate of Perceived Exertion, indicating the intensity of the set.
     /// </summary>
-    public float? ThighLeft { get; set; }
+    public decimal? Rpe { get; set; }
 
     /// <summary>
-    ///     Right thigh circumference in cm (optional).
+    ///     Calculated property for the total volume of a strength-based set (Reps * Weight).
     /// </summary>
-    public float? ThighRight { get; set; }
+    public decimal Volume => new((double)((Reps ?? 0) * (Weight ?? 0)));
+
+    /// <summary>
+    ///     Gets or sets the weight in kilograms. This property converts the value to and from the base <see cref="Weight" />
+    ///     property, which is assumed to be in pounds (Lbs).
+    /// </summary>
+    public decimal? WeightKg
+    {
+        get => Weight.HasValue ? (decimal?)Math.Round(Weight.Value / (decimal)IronAiConstants.LbsToKgFactor, 2) : null;
+        set => Weight = value.HasValue ? Math.Round(value.Value * (decimal)IronAiConstants.LbsToKgFactor, 2) : null;
+    }
+
+    /// <summary>
+    ///     Gets the duration formatted as a "mm:ss" string.
+    /// </summary>
+    public string FormattedDuration => DurationSeconds.HasValue
+        ? TimeSpan.FromSeconds(DurationSeconds.Value).ToString(@"mm\:ss")
+        : string.Empty;
+
+    public Guid ExerciseId { get; init; }
+    public Exercise Exercise { get; init; }
+
+    public Guid SessionId { get; init; }
+    public Session Session { get; init; }
 }

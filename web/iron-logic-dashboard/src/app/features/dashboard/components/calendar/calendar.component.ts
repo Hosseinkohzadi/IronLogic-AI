@@ -2,7 +2,7 @@ import { Component, Input, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface WorkoutSession {
-  type: string;
+  title: string;
   duration: string;
 }
 
@@ -56,14 +56,13 @@ export class CalendarComponent {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
       const dayData = this._workoutData().find(w => w.date === dateStr);
 
-      // تشخیص روز جاری
-      const isToday = currentDay.getDate() === today.getDate() &&
-        currentDay.getMonth() === today.getMonth() &&
-        currentDay.getFullYear() === today.getFullYear();
+      // روش مطمئن برای تشخیص امروز بدون درگیری با ساعت و دقیقه
+      const isToday = currentDay.toDateString() === today.toDateString();
 
       daysArray.push({
         date: currentDay,
         hasWorkout: !!dayData,
+        sessions: dayData ? dayData.sessions : [],
         isAdjacentMonth: false,
         isToday: isToday // اضافه شدن مجدد
       });

@@ -1,74 +1,88 @@
-using IronLogic.Domain.Interfaces;
+﻿using IronLogic.Application.DTOs.ParsedWorkout;
+using IronLogic.Application.Interfaces;
+using IronLogic.Application.Shared;
+using IronLogic.Domain.Entities;
+using IronLogic.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace IronLogic.Infrastructure.Services;
 
-/// <summary>
-///     Provides workout-related operations such as retrieving stored workout sessions
-///     and computing aggregate statistics (including current-month volume).
-/// </summary>
-/// <param name="repository">The repository used to read workout sessions, exercises and sets.</param>
-public class WorkoutService(IWorkoutSessionRepository repository) : IWorkoutService
+public class WorkoutService(IWorkoutParserService parserService, AppDbContext dbContext)
+    : IWorkoutService
 {
-    /// <summary>
-    ///     Retrieves all workout sessions including their exercises and sets.
-    /// </summary>
-    /// <returns>
-    ///     A task that represents the asynchronous operation. The task result contains a list
-    ///     of <see cref="WorkoutSession" /> objects. The list may be empty if no sessions exist.
-    /// </returns>
-    public async Task<List<WorkoutSession>> GetSessionsAsync()
+    private static readonly Guid DefaultEquipmentId = new("00000000-0000-0000-0000-000000000001");
+    private static readonly Guid DefaultMuscleId = new("00000000-0000-0000-0000-000000000001");
+
+    public async Task<Result<WorkoutImportResult>> CreateFromRawTextAsync(string rawText, string userId)
     {
-        return await repository.GetAllWithExercisesAndSetsAsync();
-    }
+        var parseResult = parserService.Parse(rawText);
+        if (parseResult.IsFailure) return Result.Failure<WorkoutImportResult>(parseResult.Error);
 
-    /// <summary>
-    ///     Computes aggregate workout statistics from locally stored sessions.
-    ///     Volume is scoped to the current UTC month. The most recent session's date,
-    ///     top exercise (by volume), and an intensity score are included when data exists.
-    /// </summary>
-    /// <returns>
-    ///     A task that represents the asynchronous operation. The task result is a populated
-    ///     <see cref="WorkoutStatsResponse" /> instance with safe defaults when no data is found.
-    /// </returns>
-    public async Task<WorkoutStatsResponse> GetStatsAsync()
-    {
-        var allSessions = await repository.GetAllWithExercisesAndSetsAsync();
+        var workoutDto = parseResult.Value;
 
-        // Volume is scoped to the current month
-        var now = DateTime.UtcNow;
-        var monthStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-        var monthEnd = monthStart.AddMonths(1).AddTicks(-1);
+        await using var transaction = await dbContext.Database.BeginTransactionAsync();
 
-        var currentMonthSessions = await repository.GetByDateRangeWithExercisesAndSetsAsync(monthStart, monthEnd);
-        var currentMonthSets = currentMonthSessions
-            .SelectMany(s => s.Exercises)
-            .SelectMany(e => e.Sets)
-            .ToList();
-
-        var totalVolume = currentMonthSets.Sum(s => (s.Weight ?? 0) * (s.Reps ?? 0));
-        var totalReps = currentMonthSets.Sum(s => s.Reps ?? 0);
-
-        var mostRecentSession = allSessions
-            .OrderByDescending(s => s.Date)
-            .FirstOrDefault();
-
-        // Top exercise = the one with the highest volume across the current month
-        var topExercise = currentMonthSessions
-            .SelectMany(s => s.Exercises)
-            .Select(e => new
-            {
-                e.Name,
-                Volume = e.Sets.Sum(s => (s.Weight ?? 0) * (s.Reps ?? 0))
-            })
-            .OrderByDescending(e => e.Volume)
-            .FirstOrDefault();
-
-        return new WorkoutStatsResponse
+        try
         {
-            TotalVolume = totalVolume,
-            TopExercise = topExercise?.Name,
-            IntensityScore = totalReps > 0 ? totalVolume / totalReps : 0.0,
-            SessionDate = mostRecentSession?.Date
-        };
+            var session = new Session
+            {
+                Id = Guid.NewGuid(),
+                UserId = userId,
+                Date = workoutDto.Date,
+                Title = workoutDto.Title
+            };
+            dbContext.Sessions.Add(session);
+
+            var exerciseNames = workoutDto.Exercises
+                .Select(e => e.Name.ToLower())
+                .Distinct()
+                .ToList();
+
+            var existingExercises = await dbContext.Exercises
+                .Where(e => exerciseNames.Contains(e.Name.ToLower()))
+                .ToDictionaryAsync(e => e.Name.ToLower(), e => e);
+
+            foreach (var exerciseDto in workoutDto.Exercises)
+            {
+                var searchName = exerciseDto.Name.ToLower();
+
+                if (!existingExercises.TryGetValue(searchName, out var exercise))
+                {
+                    exercise = new Exercise
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = exerciseDto.Name,
+                        EquipmentId = DefaultEquipmentId,
+                        PrimaryMuscleId = DefaultMuscleId
+                    };
+                    dbContext.Exercises.Add(exercise);
+
+                    existingExercises[searchName] = exercise;
+                }
+
+                foreach (var exerciseSession in exerciseDto.Sets.Select(setDto => new ExerciseSession
+                         {
+                             Id = Guid.NewGuid(),
+                             SessionId = session.Id,
+                             ExerciseId = exercise.Id,
+                             SetIndex = setDto.SetIndex,
+                             Weight = setDto.Weight,
+                             Reps = setDto.Reps,
+                             Rpe = setDto.Rpe
+                         }))
+                    dbContext.ExerciseSessions.Add(exerciseSession);
+            }
+
+            await dbContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            var resultData = new WorkoutImportResult(session.Id, workoutDto);
+            return Result.Success(resultData);
+        }
+        catch (Exception)
+        {
+            await transaction.RollbackAsync();
+            return Result.Failure<WorkoutImportResult>("An error occurred while saving the workout to the database.");
+        }
     }
 }

@@ -1,6 +1,9 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
+import { finalize } from 'rxjs';
+import { environment } from '@env/environment';
 
 @Component({
   selector: 'app-import-workout',
@@ -9,68 +12,103 @@ import { FormsModule } from '@angular/forms';
   templateUrl: './import-workout.html',
 })
 export class ImportWorkoutComponent {
-  rawLog: string = `Evening workout 🏋️
+  private http = inject(HttpClient);
+  private apiUrl = environment.apiUrl;
+
+  rawLog = signal<string>(`Evening workout 🏋️
 Thursday, Mar 26, 2026 at 12:00pm
 
 Incline Bench Press (Smith Machine)
 Set 1: 135 lbs x 12
 Set 2: 185 lbs x 8
-Set 3: 205 lbs x 5
-Set 4: 245 lbs x 2 @ 9 rpe
-Set 5: 185 lbs x 10 @ 8.5 rpe
+Set 4: 245 lbs x 2 @ 9 rpe`);
 
-Bench Press (Smith Machine)
-Set 1: 185 lbs x 5
-Set 2: 135 lbs x 10
-Set 3: 135 lbs x 12
-
-Lat Pulldown (Cable)
-Set 1: 108 lbs x 12
-Set 2: 122.5 lbs x 10
-Set 3: 145 lbs x 8
-Set 4: 153.5 lbs x 8 @ 9 rpe
-
-Seated Row (Machine)
-Set 1: 120 lbs x 12 @ 8.5 rpe
-Set 2: 140 lbs x 10 @ 9 rpe
-Set 3: 160 lbs x 8 @ 8.5 rpe
-Set 4: 140 lbs x 10 @ 8.5 rpe`;
-
-  isAnalyzing: boolean = false;
-  analyzedWorkout: any = null;
-
-  // Inject ChangeDetectorRef in the constructor
-  constructor(private cdr: ChangeDetectorRef) {}
+  isAnalyzing = signal<boolean>(false);
+  analyzedWorkout = signal<any>(null);
+  errorMessage = signal<string | null>(null);
 
   analyzeData() {
-    if (!this.rawLog.trim()) return;
+    const text = this.rawLog().trim();
+    if (!text) return;
 
-    this.isAnalyzing = true;
-    this.analyzedWorkout = null;
+    this.isAnalyzing.set(true);
+    this.analyzedWorkout.set(null);
+    this.errorMessage.set(null);
 
-    // Use window.setTimeout to ensure the browser's function is called
-    window.setTimeout(() => {
-      this.analyzedWorkout = {
-        title: "Evening workout 🏋️",
-        date: "Thursday, Mar 26, 2026",
-        totalVolume: "13,460 lbs",
-        exercises: [
-          { name: "Incline Bench Press (Smith)", sets: 5, topSet: "245 lbs x 2 @ 9 RPE" },
-          { name: "Bench Press (Smith)", sets: 3, topSet: "185 lbs x 5" },
-          { name: "Lat Pulldown (Cable)", sets: 4, topSet: "153.5 lbs x 8 @ 9 RPE" },
-          { name: "Seated Row (Machine)", sets: 4, topSet: "160 lbs x 8 @ 8.5 RPE" }
-        ],
-        aiInsights: [
-          "🔥 Incredible strength retention on Incline Bench (245 lbs @ 9 RPE).",
-          "📊 High volume on upper body. Make sure to track recovery.",
-          "💡 Perfect RPE management. Keeping it under 9.5 is ideal for a Classic Physique prep during a cut."
-        ]
+    this.http.post<any>(`${this.apiUrl}/Workouts/import-text`, { workoutText: text })
+      .pipe(finalize(() => this.isAnalyzing.set(false)))
+      .subscribe({
+        next: (response) => {
+          const formattedUI = this.transformDataForUI(response);
+          this.analyzedWorkout.set(formattedUI);
+        },
+        error: (err) => {
+          console.error('API Error:', err);
+          this.errorMessage.set('Invalid text format or server connection failed.');
+        }
+      });
+  }
+
+  private transformDataForUI(response: any) {
+    // 1. Intelligently find the data (whether it's direct or inside a 'value' field)
+    const data = response.value || response;
+
+    // 2. Handle case-insensitivity for the exercises array
+    const exercises = data.exercises || data.Exercises || [];
+
+    let totalVolume = 0;
+
+    const uiExercises = exercises.map((ex: any) => {
+      let maxWeight = 0;
+      let topSetStr = '';
+
+      // Handle the sets list
+      const sets = ex.sets || ex.Sets || [];
+
+      sets.forEach((set: any) => {
+        // Safely extract numeric values
+        const weight = set.weight || set.Weight || 0;
+        const reps = set.reps || set.Reps || 0;
+        const rpe = set.rpe || set.Rpe;
+
+        totalVolume += (weight * reps);
+
+        if (weight >= maxWeight) {
+          maxWeight = weight;
+          topSetStr = `${weight} lbs x ${reps}${rpe ? ' @ ' + rpe : ''}`;
+        }
+      });
+
+      return {
+        name: ex.name || ex.Name,
+        sets: sets.length,
+        topSet: topSetStr || 'N/A'
       };
+    });
 
-      this.isAnalyzing = false;
+    // 3. Find the heaviest exercise with a safe check (to avoid 'undefined' error)
+    const heaviestEx = uiExercises.length > 0
+      ? [...uiExercises].sort((a: any, b: any) => {
+        // Extract the weight number from the string (e.g., "245" from "245 lbs x 2")
+        const weightA = parseFloat(a.topSet) || 0;
+        const weightB = parseFloat(b.topSet) || 0;
+        return weightB - weightA;
+      })[0]?.name
+      : 'Unknown';
 
-      this.cdr.detectChanges();
+    return {
+      title: data.title || data.Title || 'New Workout',
+      date: new Date(data.date || data.Date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' }),
+      totalVolume: `${totalVolume.toLocaleString()} lbs`,
+      exercises: uiExercises,
+      aiInsights: [
+        `✅ ${uiExercises.length} exercises identified.`,
+        `🔥 Your heaviest lift was: ${heaviestEx}`
+      ]
+    };
+  }
 
-    }, 1500);
+  saveToDashboard() {
+    console.log('Saving to IronLogic database...');
   }
 }

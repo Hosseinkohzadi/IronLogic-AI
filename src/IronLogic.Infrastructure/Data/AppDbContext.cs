@@ -1,27 +1,28 @@
-﻿namespace IronLogic.Infrastructure.Data;
+﻿using IronLogic.Domain.Entities;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
 
-public class AppDbContext : DbContext
+namespace IronLogic.Infrastructure.Data;
+
+public class AppDbContext : IdentityDbContext<User>
 {
-    // 1. Constructor for Dependency Injection (The standard way)
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {
     }
 
-    // 2. Parameterless constructor (Needed by EF Core Migrations Tooling)
     public AppDbContext()
     {
     }
 
-    public DbSet<WorkoutSession> Sessions { get; set; }
-    public DbSet<WorkoutExercise> Exercises { get; set; }
-    public DbSet<ExerciseSet> Sets { get; set; }
+    public DbSet<Session> Sessions { get; set; }
+    public DbSet<Exercise> Exercises { get; set; }
+    public DbSet<ExerciseSession> ExerciseSessions { get; set; }
     public DbSet<DailyWeight> DailyWeights { get; set; }
-    public DbSet<MuscleMeasurement> MuscleMeasurements { get; set; }
+    public DbSet<Muscle> Muscles { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        // Only configure here if it wasn't already configured in Program.cs
-        // This prevents the "pooling" and configuration conflict errors!
         if (optionsBuilder.IsConfigured)
             return;
 
@@ -31,27 +32,55 @@ public class AppDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.Entity<WorkoutSession>()
-            .HasMany(s => s.Exercises)
-            .WithOne()
-            .OnDelete(DeleteBehavior.Cascade);
+        base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<WorkoutExercise>()
-            .HasMany(e => e.Sets)
-            .WithOne()
-            .OnDelete(DeleteBehavior.Cascade);
+        var defaultUserId = "00000000-0000-0000-0000-000000000001";
+        var hasher = new PasswordHasher<User>();
+
+        modelBuilder.Entity<Session>(entity =>
+        {
+            entity.HasOne(s => s.User)
+                .WithMany(u => u.Sessions)
+                .HasForeignKey(s => s.UserId)
+                .IsRequired();
+        });
 
         modelBuilder.Entity<DailyWeight>(entity =>
         {
-            entity.Property(d => d.Weight).IsRequired();
-            entity.Property(d => d.Note).HasMaxLength(200);
+            entity.HasOne(dw => dw.User)
+                .WithMany(u => u.DailyWeights)
+                .HasForeignKey(dw => dw.UserId)
+                .IsRequired();
         });
 
-        modelBuilder.Entity<MuscleMeasurement>(entity =>
+        modelBuilder.Entity<User>().HasData(new User
         {
-            entity.Property(m => m.Neck).IsRequired();
-            entity.Property(m => m.Chest).IsRequired();
-            entity.Property(m => m.Waist).IsRequired();
+            Id = defaultUserId,
+            Email = "kohzadi90@gmail.com",
+            UserName = "kohzadi90@gmail.com",
+            NormalizedUserName = "KOHZADI90@GMAIL.COM",
+            NormalizedEmail = "KOHZADI90@GMAIL.COM",
+            EmailConfirmed = true,
+            PasswordHash = "AQAAAAIAAYagAAAAEA7IkppTOn/SpmrmnXTCMdPLqEonDkuYkMjRDc6IXd+rrZ5BbdPP0st7JtFTBjPOig==",
+            SecurityStamp = "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+            ConcurrencyStamp = "fedcba98-7654-3210-fedc-ba9876543210",
         });
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var entries = ChangeTracker
+            .Entries()
+            .Where(e => e is { Entity: BaseEntity, State: EntityState.Added or EntityState.Modified });
+
+        foreach (var entityEntry in entries)
+        {
+            ((BaseEntity)entityEntry.Entity).DateModified = DateTime.UtcNow;
+
+            if (entityEntry.State == EntityState.Added)
+                ((BaseEntity)entityEntry.Entity).DateCreated = DateTime.UtcNow;
+        }
+
+        return base.SaveChangesAsync(cancellationToken);
     }
 }

@@ -20,15 +20,15 @@
 
   <div class="calendar-grid grid grid-cols-7 gap-2">
     @for (day of calendarDays(); track day.date.getTime()) {
-    <div class="calendar-cell relative aspect-square flex items-center justify-center rounded-2xl text-xs font-bold transition-all duration-300"
+    <div class="calendar-cell group relative aspect-square flex items-center justify-center rounded-2xl text-xs font-bold transition-all duration-300"
+         [class.bg-indigo-600]="day.isToday"
+         [class.text-white]="day.isToday"
+         [class.today-pulse]="day.isToday"
+         [class.shadow-md]="day.isToday"
          [class.bg-indigo-50]="day.hasWorkout && !day.isToday"
          [class.text-indigo-600]="day.hasWorkout && !day.isToday"
          [class.text-slate-900]="!day.hasWorkout && !day.isAdjacentMonth && !day.isToday"
-         [class.text-slate-300]="day.isAdjacentMonth && !day.isToday"
-         [class.bg-indigo-600]="day.isToday"
-         [class.text-white]="day.isToday"
-         [class.shadow-md]="day.isToday"
-         [class.today-pulse]="day.isToday">
+         [class.text-slate-300]="day.isAdjacentMonth && !day.isToday">
 
     {{ day.date | date:'d' }}
 
@@ -36,6 +36,19 @@
     <div class="absolute bottom-1.5 w-1 h-1 rounded-full"
          [class.bg-indigo-600]="!day.isToday"
          [class.bg-white]="day.isToday"></div>
+
+    <div class="invisible group-hover:visible absolute bottom-full mb-3 z-[100] w-48 p-3 bg-slate-900/95 backdrop-blur-md text-white rounded-2xl shadow-2xl pointer-events-none border border-slate-700/50 transform transition-all duration-200">
+      <div class="text-[10px] uppercase tracking-widest text-slate-400 font-black mb-2 border-b border-slate-700/50 pb-1">
+        Workouts
+      </div>
+      @for (s of day.sessions; track $index) {
+      <div class="mb-2 last:mb-0">
+        <p class="text-indigo-400 font-bold leading-tight">{{ s.title }}</p>
+              <p class="text-[10px] text-slate-300">{{ s.duration }}</p>
+            </div>
+      }
+      <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-900"></div>
+    </div>
     }
     </div>
     }

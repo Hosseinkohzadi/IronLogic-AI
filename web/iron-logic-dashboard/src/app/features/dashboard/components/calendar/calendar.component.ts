@@ -1,4 +1,4 @@
-import { Component, Input, computed, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface WorkoutSession {
@@ -28,7 +28,9 @@ export class CalendarComponent {
     this._workoutData.set(data || []);
   }
 
-  // گرفتن نام ماه برای هدر تقویم
+  // 🚀 خروجی جدید برای ارسال تاریخ به داشبورد اصلی
+  @Output() dayClicked = new EventEmitter<Date>();
+
   public monthName = computed(() => {
     return this.currentDate().toLocaleString('en-US', { month: 'long', year: 'numeric' });
   });
@@ -56,7 +58,6 @@ export class CalendarComponent {
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
       const dayData = this._workoutData().find(w => w.date === dateStr);
 
-      // روش مطمئن برای تشخیص امروز بدون درگیری با ساعت و دقیقه
       const isToday = currentDay.toDateString() === today.toDateString();
 
       daysArray.push({
@@ -64,14 +65,13 @@ export class CalendarComponent {
         hasWorkout: !!dayData,
         sessions: dayData ? dayData.sessions : [],
         isAdjacentMonth: false,
-        isToday: isToday // اضافه شدن مجدد
+        isToday: isToday
       });
     }
 
     return daysArray;
   });
 
-  // متدهای جابجایی ماه‌ها
   prevMonth() {
     const d = this.currentDate();
     this.currentDate.set(new Date(d.getFullYear(), d.getMonth() - 1, 1));
@@ -80,5 +80,10 @@ export class CalendarComponent {
   nextMonth() {
     const d = this.currentDate();
     this.currentDate.set(new Date(d.getFullYear(), d.getMonth() + 1, 1));
+  }
+
+  // 🚀 متد جدید: وقتی روی یک روز کلیک شد، تاریخ را به بیرون ارسال کن
+  onDayClick(date: Date) {
+    this.dayClicked.emit(date);
   }
 }

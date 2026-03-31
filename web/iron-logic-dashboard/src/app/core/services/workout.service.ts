@@ -20,4 +20,8 @@ export class WorkoutService {
   getStats(): Observable<WorkoutStatsResponse> {
     return this.http.get<WorkoutStatsResponse>(`${this.baseUrl}/workouts/stats`);
   }
+
+  getSessionsByDate(date: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/workouts/by-date?date=${date}`);
+  }
 }

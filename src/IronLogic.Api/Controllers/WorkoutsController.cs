@@ -142,4 +142,18 @@ public class WorkoutsController(
 
         return session;
     }
+
+    /// <summary>
+    ///     Retrieves workout sessions for a specific date.
+    /// </summary>
+    [HttpGet("by-date")]
+    [ProducesResponseType<IEnumerable<ExerciseDetailDto>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetWorkoutsByDate([FromQuery] DateTime date)
+    {
+        // استفاده از CurrentUserId که به صورت هاردکد در کنترلر داری
+        var result = await workoutService.GetSessionsByDateAsync(CurrentUserId.ToString(), date);
+
+        if (result.IsFailure) return BadRequest(result.Error);
+        return Ok(result.Value);
+    }
 }

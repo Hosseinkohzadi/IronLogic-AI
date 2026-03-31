@@ -1,9 +1,11 @@
-using FluentAssertions;
+﻿using FluentAssertions;
 using IronLogic.Infrastructure.Data;
 using IronLogic.Infrastructure.Services;
 using IronLogic.Infrastructure.Services.Parsing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory; // 🚀 اضافه شد
+using Microsoft.Extensions.Logging.Abstractions; // 🚀 اضافه شد
 using Xunit;
 
 namespace IronLogic.Tests.Services.Parsing;
@@ -23,7 +25,6 @@ public class WorkoutServiceTests
                       """;
 
         // Use SQLite in-memory database for transaction support.
-        // A single connection is opened and passed to the DbContext to ensure the database is not destroyed.
         var connection = new SqliteConnection("DataSource=:memory:");
         connection.Open();
 
@@ -38,7 +39,13 @@ public class WorkoutServiceTests
         }
 
         var parser = new WorkoutParserService();
-        var service = new WorkoutService(parser, new AppDbContext(options));
+        
+        // 🚀 ساخت نمونه‌های فیک/تستی برای Logger و Cache
+        var logger = NullLogger<WorkoutService>.Instance;
+        var cache = new MemoryCache(new MemoryCacheOptions());
+
+        // 🚀 پاس دادن هر 4 پارامتر به سازنده
+        var service = new WorkoutService(parser, new AppDbContext(options), logger, cache);
         var userId = "test-user";
 
         // Act
@@ -58,7 +65,8 @@ public class WorkoutServiceTests
             newExercise.EquipmentId.Should().NotBe(Guid.Empty);
             newExercise.PrimaryMuscleId.Should().NotBe(Guid.Empty);
 
-            var session = await dbContext.Sessions.FindAsync(result.Value, CancellationToken.None);
+            // در اینجا result.Value اکنون یک WorkoutImportResult است، پس برای پیدا کردن سشن باید از result.Value.SessionId استفاده کنید
+            var session = await dbContext.Sessions.FindAsync(result.Value.SessionId); 
             session.Should().NotBeNull();
             session.Title.Should().Be("First Time Leg Day");
         }

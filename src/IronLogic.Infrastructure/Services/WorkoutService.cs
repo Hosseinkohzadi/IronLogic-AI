@@ -11,7 +11,7 @@ public class WorkoutService(IWorkoutParserService parserService, AppDbContext db
     : IWorkoutService
 {
     private static readonly Guid DefaultEquipmentId = new("00000000-0000-0000-0000-000000000001");
-    private static readonly Guid DefaultMuscleId = new("00000000-0000-0000-0000-000000000002");
+    private static readonly Guid DefaultMuscleId = new("00000000-0000-0000-0000-000000000001");
 
     public async Task<Result<WorkoutImportResult>> CreateFromRawTextAsync(string rawText, string userId)
     {

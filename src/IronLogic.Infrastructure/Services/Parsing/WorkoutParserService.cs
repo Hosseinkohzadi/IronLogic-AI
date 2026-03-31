@@ -32,7 +32,7 @@ public partial class WorkoutParserService : IWorkoutParserService
         var parsedDto = new ParsedWorkoutDto
         {
             Title = headerMatch.Groups["title"].Value.Trim(),
-            Exercises = new List<ParsedExerciseDto>() // Initialization is best done in the DTO class itself.
+            Exercises = [] // Initialization is best done in the DTO class itself.
         };
 
         var dateString =

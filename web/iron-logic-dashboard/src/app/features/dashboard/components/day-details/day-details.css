@@ -1,0 +1,36 @@
+/* Accordion animation */
+.accordion-content {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  max-height: 0;
+  opacity: 0; 
+  overflow: hidden;
+}
+
+.accordion-content.expanded {
+  max-height: 2000px; /* Large value to ensure full content display */
+  opacity: 1;
+}
+
+/* Tooltip styling for better display */
+span[title] {
+  text-decoration: underline dotted #cbd5e1;
+  transition: transform 0.2s;
+}
+
+span[title]:hover {
+  transform: scale(1.1);
+}
+
+/* Custom scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}

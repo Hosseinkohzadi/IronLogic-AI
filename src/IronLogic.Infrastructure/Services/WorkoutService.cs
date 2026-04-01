@@ -160,7 +160,7 @@ public class WorkoutService(
                 .ThenInclude(es => es.Exercise)
             .ToListAsync();
 
-        if (!sessions.Any()) 
+        if (!sessions.Any())
             return Result.Success(new List<DayDetailsDto>());
 
         var allTimePrs = await GetAllTimePrsAsync(userId);
@@ -296,29 +296,40 @@ public class WorkoutService(
     {
         var cacheKey = GetUserPrsCacheKey(userId);
 
-        if (!cache.TryGetValue(cacheKey, out Dictionary<string, PrInfo>? allTimePrs) || allTimePrs == null)
-        {
-            allTimePrs = await dbContext.ExerciseSessions
-                .Where(es => es.Session.UserId == userId)
-                .GroupBy(es => es.Exercise.Name)
-                .Select(g => new
-                {
-                    ExerciseName = g.Key,
-                    MaxWeight = g.Max(x => x.Weight),
-                    Date = g.Where(x => x.Weight == g.Max(y => y.Weight))
-                             .OrderByDescending(x => x.Session.Date)
-                             .Select(x => x.Session.Date)
-                             .FirstOrDefault()
-                })
-                .ToDictionaryAsync(
-                    x => x.ExerciseName,
-                    x => new PrInfo(x.MaxWeight ?? 0, x.Date)
-                );
+        if (cache.TryGetValue(cacheKey, out Dictionary<string, PrInfo>? allTimePrs) && allTimePrs != null)
+            return allTimePrs;
 
-            var cacheOptions = new MemoryCacheEntryOptions()
-                .SetAbsoluteExpiration(TimeSpan.FromMinutes(PrsCacheDurationMinutes));
-            cache.Set(cacheKey, allTimePrs, cacheOptions);
-        }
+        // Fetch all exercise sessions with their weights and dates
+        var exerciseHistory = await dbContext.ExerciseSessions
+            .Where(es => es.Session.UserId == userId)
+            .Select(es => new
+            {
+                ExerciseName = es.Exercise.Name,
+                es.Weight,
+                es.Session.Date
+            })
+            .ToListAsync();
+
+        // Process in-memory to find max weight and corresponding date for each exercise
+        allTimePrs = exerciseHistory
+            .GroupBy(x => x.ExerciseName)
+            .ToDictionary(
+                g => g.Key,
+                g =>
+                {
+                    var maxWeight = g.Max(x => x.Weight) ?? 0;
+                    var dateOfMax = g
+                        .Where(x => x.Weight == maxWeight)
+                        .OrderByDescending(x => x.Date)
+                        .Select(x => x.Date)
+                        .FirstOrDefault();
+                    return new PrInfo(maxWeight, dateOfMax);
+                }
+            );
+
+        var cacheOptions = new MemoryCacheEntryOptions()
+            .SetAbsoluteExpiration(TimeSpan.FromMinutes(PrsCacheDurationMinutes));
+        cache.Set(cacheKey, allTimePrs, cacheOptions);
 
         return allTimePrs;
     }

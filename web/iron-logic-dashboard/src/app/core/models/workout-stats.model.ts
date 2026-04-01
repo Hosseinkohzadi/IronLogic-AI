@@ -12,8 +12,10 @@ export interface DailyWorkout {
 
 export interface WorkoutStats {
   totalVolume: number;
+  volumeTrend: number;      // 🚀 این را اضافه کن
   topExercise: string | null;
   intensityScore: number;
+  intensityTrend: number;   // 🚀 این را اضافه کن
   sessionDate: string | Date | null;
   advice: { advice: string } | null; // دقیقاً مطابق ساختار جیسون
   dailyWorkouts: DailyWorkout[];

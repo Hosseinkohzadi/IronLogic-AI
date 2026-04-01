@@ -1,51 +1,90 @@
 @if (stats(); as s) {
 <div class="grid grid-cols-1 gap-6 md:grid-cols-3 mb-6">
-<app-metric-card title="Monthly Volume"
-[value]="s.totalVolume | number:'1.0-0'"
-unit="lbs"
-iconClasses="bg-indigo-50 text-indigo-600"
-[iconTemplate]="volumeIcon"
-[footerTemplate]="volumeFooter"
-[stats]="s">
-</app-metric-card>
+  <app-metric-card title="Monthly Volume"
+                   [value]="s.totalVolume | number:'1.0-0'"
+                   unit="lbs"
+                   [trend]="s.volumeTrend"
+                   iconClasses="bg-indigo-50 text-indigo-600"
+                   [iconTemplate]="volumeIcon"
+                   [footerTemplate]="volumeFooter"
+                   [stats]="s">
+  </app-metric-card>
 
-<app-metric-card title="Intensity Score"
-[value]="s.intensityScore | number:'1.1-1'"
-iconClasses="bg-orange-50 text-orange-500"
-[iconTemplate]="intensityIcon"
-[footerTemplate]="intensityFooter"
-[stats]="s">
-</app-metric-card>
+  <app-metric-card title="Intensity Score"
+                   [value]="s.intensityScore | number:'1.1-1'"
+                   [trend]="s.intensityTrend"
+                   iconClasses="bg-orange-50 text-orange-500"
+                   [iconTemplate]="intensityIcon"
+                   [footerTemplate]="intensityFooter"
+                   [stats]="s">
+  </app-metric-card>
 
-<app-metric-card title="Last Session"
-[value]="s.sessionDate ? (s.sessionDate | date:'MMM dd') : '—'"
-iconClasses="bg-emerald-50 text-emerald-500"
-[iconTemplate]="sessionIcon"
-[footerTemplate]="sessionFooter"
-[stats]="s">
-</app-metric-card>
+  <app-metric-card title="Last Session"
+                   [value]="s.sessionDate ? (s.sessionDate | date:'MMM dd') : '—'"
+                   iconClasses="bg-emerald-50 text-emerald-500"
+                   [iconTemplate]="sessionIcon"
+                   [footerTemplate]="sessionFooter"
+                   [stats]="s">
+  </app-metric-card>
 </div>
 
 <div class="grid grid-cols-1 gap-6 lg:grid-cols-3 mb-6">
-<app-training-duration class="lg:col-span-2"></app-training-duration>
+  <app-training-duration class="lg:col-span-2"></app-training-duration>
 
-<app-calendar [workoutData]="workouts()"
-(dayClicked)="openDayDetails($event)"
-class="lg:col-span-1"></app-calendar>
+  <app-calendar [workoutData]="workouts()"
+                (dayClicked)="openDayDetails($event)"
+                class="lg:col-span-1">
+  </app-calendar>
 </div>
 
 @if (advice(); as a) {
 <app-ai-coach-card [advice]="a"></app-ai-coach-card>
 }
 
-  }
+}
 
-<ng-template #volumeIcon><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg></ng-template>
-<ng-template #volumeFooter let-s="stats"><div class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 px-3 py-2 rounded-lg w-fit"><span>Top:</span> <span class="text-slate-800">{{ s.topExercise ?? 'N/A' }}</span></div></ng-template>
-<ng-template #intensityIcon><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg></ng-template>
-<ng-template #intensityFooter let-s="stats"><div class="w-full"><div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mb-2"><div class="h-full rounded-full transition-all duration-500" [class.bg-orange-500]="s.intensityScore >= 150" [class.bg-emerald-500]="s.intensityScore < 150" [style.width.%]="s.intensityScore > 200 ? 100 : (s.intensityScore / 200) * 100"></div></div>@if (s.intensityScore >= 150) {<p class="text-[11px] font-bold text-orange-500">⚡ Deload Week Recommended</p>} @else {<p class="text-[11px] font-bold text-slate-400">Intensity is optimal</p>}</div></ng-template>
-<ng-template #sessionIcon><svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></ng-template>
-<ng-template #sessionFooter let-s="stats"><div class="flex items-center gap-2"><div class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div><span class="text-[11px] font-bold text-slate-400">Streak: {{ s.streak ?? 0 }} Workouts</span></div></ng-template>
+<ng-template #volumeIcon>
+  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+</ng-template>
+
+<ng-template #volumeFooter let-s="stats">
+  <div class="inline-flex items-center gap-2 text-xs font-bold text-slate-500 bg-slate-50 px-3 py-2 rounded-lg w-fit">
+    <span>Top Exercise:</span>
+    <span class="text-indigo-600">{{ s.topExercise ?? 'N/A' }}</span>
+  </div>
+</ng-template>
+
+<ng-template #intensityIcon>
+  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+</ng-template>
+
+<ng-template #intensityFooter let-s="stats">
+  <div class="w-full">
+    <div class="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden mb-2">
+      <div class="h-full rounded-full transition-all duration-500"
+           [class.bg-orange-500]="s.intensityScore >= 150"
+           [class.bg-emerald-500]="s.intensityScore < 150"
+           [style.width.%]="s.intensityScore > 200 ? 100 : (s.intensityScore / 200) * 100">
+      </div>
+    </div>
+    @if (s.intensityScore >= 150) {
+    <p class="text-[11px] font-bold text-orange-500">⚡ Deload Week Recommended</p>
+    } @else {
+    <p class="text-[11px] font-bold text-slate-400">Intensity is optimal</p>
+    }
+  </div>
+</ng-template>
+
+<ng-template #sessionIcon>
+  <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+</ng-template>
+
+<ng-template #sessionFooter let-s="stats">
+  <div class="flex items-center gap-2">
+    <div class="flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></div>
+    <span class="text-[11px] font-bold text-slate-400">Streak: {{ s.streak ?? 0 }} Workouts</span>
+  </div>
+</ng-template>
 
 @if (isOffcanvasOpen() && !isPinned()) {
 <div class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 transition-opacity" (click)="closeOffcanvas()"></div>
@@ -59,24 +98,25 @@ class="lg:col-span-1"></app-calendar>
      [class.border-slate-200]="isPinned()">
 
   @defer (when isOffcanvasOpen()) {
-
-  <app-day-details
-    class="flex flex-col h-full w-full"
-    [sessions]="selectedDateSessions()"
-    [date]="selectedDate()"
-    [isPinned]="isPinned()"
-    (close)="closeOffcanvas()"
-    (togglePin)="togglePin()">
+  <app-day-details class="flex flex-col h-full w-full"
+                   [sessions]="selectedDateSessions()"
+                   [date]="selectedDate()"
+                   [isPinned]="isPinned()"
+                   (close)="closeOffcanvas()"
+                   (togglePin)="togglePin()">
   </app-day-details>
-
   } @placeholder {
-  <div class="flex items-center justify-center h-full text-slate-400 font-medium">
-    Preparing details...
+  <div class="flex flex-col items-center justify-center h-full text-slate-400 space-y-4">
+    <div class="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center">
+      <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+    </div>
+    <p class="font-medium">Preparing details...</p>
   </div>
   } @loading (after 100ms; minimum 500ms) {
-  <div class="flex items-center justify-center h-full">
-    <div class="animate-spin h-10 w-10 border-4 border-indigo-500 border-t-transparent rounded-full"></div>
+  <div class="flex items-center justify-center h-full bg-white/80 backdrop-blur-sm">
+    <div class="relative">
+      <div class="animate-spin h-12 w-12 border-4 border-indigo-100 border-t-indigo-600 rounded-full"></div>
+    </div>
   </div>
   }
-
 </div>

@@ -35,6 +35,11 @@ public class AppDbContext : IdentityDbContext<User>
         var defaultUserId = "00000000-0000-0000-0000-000000000001";
         var hasher = new PasswordHasher<User>();
 
+        // 🚀 ایجاد ایندکس ترکیبی برای جستجوی فوق‌سریع رکوردها
+        modelBuilder.Entity<ExerciseSession>()
+            .HasIndex(es => new { es.ExerciseId, es.Weight })
+            .HasDatabaseName("IX_Exercise_Weight");
+
         modelBuilder.Entity<Session>(entity =>
         {
             entity.HasOne(s => s.User)

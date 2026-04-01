@@ -17,5 +17,5 @@ public record SetDetailDto(
     int SetIndex,
     decimal? Weight,
     int? Reps,
-    decimal? Rpe
-);
+    decimal? Rpe,
+    bool IsPr);

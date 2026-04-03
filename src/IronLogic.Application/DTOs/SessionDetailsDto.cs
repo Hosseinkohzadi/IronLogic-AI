@@ -10,6 +10,7 @@ public record DayDetailsDto(
 
 public record ExerciseDetailDto(
     string ExerciseName,
+    string PrimaryMuscle, // 🚀 This field was added
     List<SetDetailDto> Sets
 );
 

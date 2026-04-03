@@ -1,4 +1,4 @@
-﻿using IronLogic.Application.DTOs.ParsedWorkout;
+﻿namespace IronLogic.Application.DTOs.ParsedWorkout;
 
 /// <summary>
 /// Represents a single exercise parsed from a raw workout log.

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using IronLogic.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,7 +81,7 @@ if (app.Environment.IsDevelopment())
     using (var scope = app.Services.CreateScope())
     {
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        dbContext.Database.Migrate();
+        dbContext.Database.Migrate(); await ExerciseSeederService.SeedAsync(dbContext);
     }
 
     app.UseOpenApi();

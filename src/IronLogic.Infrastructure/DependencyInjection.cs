@@ -66,5 +66,9 @@ public static class DependencyInjection
 
     private static void AddExternalProviders(this IServiceCollection services)
     {
+        services.AddSingleton<IMuscleMapperService, MuscleMapperService>();
+        services.AddScoped<IExerciseCacheService, ExerciseCacheService>();
+        services.AddScoped<IPersonalRecordService, PersonalRecordService>();
+        services.AddScoped<IWorkoutPersistenceService, WorkoutPersistenceService>();
     }
 }

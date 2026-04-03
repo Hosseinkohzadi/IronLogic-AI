@@ -4,8 +4,8 @@ using IronLogic.Infrastructure.Services;
 using IronLogic.Infrastructure.Services.Parsing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory; // 🚀 اضافه شد
-using Microsoft.Extensions.Logging.Abstractions; // 🚀 اضافه شد
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging.Abstractions;
 using Xunit;
 
 namespace IronLogic.Tests.Services.Parsing;
@@ -39,13 +39,24 @@ public class WorkoutServiceTests
         }
 
         var parser = new WorkoutParserService();
-        
-        // 🚀 ساخت نمونه‌های فیک/تستی برای Logger و Cache
         var logger = NullLogger<WorkoutService>.Instance;
         var cache = new MemoryCache(new MemoryCacheOptions());
+        
+        // Create the db context and new service dependencies
+        var mainDbContext = new AppDbContext(options);
+        var muscleMapper = new MuscleMapperService(); // 🚀 Add the muscle mapper service
+        var exerciseCacheService = new ExerciseCacheService(cache, mainDbContext, muscleMapper);
+        var personalRecordService = new PersonalRecordService(cache, mainDbContext);
+        var persistenceService = new WorkoutPersistenceService(mainDbContext);
 
-        // 🚀 پاس دادن هر 4 پارامتر به سازنده
-        var service = new WorkoutService(parser, new AppDbContext(options), logger, cache);
+        var service = new WorkoutService(
+            parser,
+            exerciseCacheService,
+            personalRecordService,
+            persistenceService,
+            mainDbContext,
+            logger);
+        
         var userId = "test-user";
 
         // Act
@@ -65,13 +76,13 @@ public class WorkoutServiceTests
             newExercise.EquipmentId.Should().NotBe(Guid.Empty);
             newExercise.PrimaryMuscleId.Should().NotBe(Guid.Empty);
 
-            // در اینجا result.Value اکنون یک WorkoutImportResult است، پس برای پیدا کردن سشن باید از result.Value.SessionId استفاده کنید
-            var session = await dbContext.Sessions.FindAsync(result.Value.SessionId); 
+            var session = await dbContext.Sessions.FindAsync(result.Value.SessionId);
             session.Should().NotBeNull();
             session.Title.Should().Be("First Time Leg Day");
         }
 
-        // Clean up the connection
+        // Clean up
+        mainDbContext.Dispose();
         connection.Close();
     }
 }

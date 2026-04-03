@@ -3,12 +3,13 @@ import { NavigationEnd, Router, ActivatedRoute, RouterOutlet } from '@angular/ro
 import { SidebarComponent } from './layout/sidebar/sidebar.component';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
+import {FooterComponent} from '@features/footer/footer';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, SidebarComponent],
-  templateUrl: './app.html', // 🚀 هماهنگ با نام فایل شما
+  imports: [CommonModule, RouterOutlet, SidebarComponent,FooterComponent],
+  templateUrl: './app.html',
 })
 export class App implements OnInit {
   showSidebar = true;

@@ -52,11 +52,6 @@ public class WorkoutSessionRepository(AppDbContext context) : IWorkoutSessionRep
         return workouts;
     }
 
-    /// <summary>
-    /// Gets workout statistics for a specific user.
-    /// </summary>
-    /// <param name="userId">The user's ID.</param>
-    /// <returns>A DTO containing various workout statistics.</returns>
     public async Task<WorkoutStatsResponseDto> GetWorkoutStatsAsync(string userId)
     {
         var sessions = await context.Sessions
@@ -67,51 +62,51 @@ public class WorkoutSessionRepository(AppDbContext context) : IWorkoutSessionRep
             .ToListAsync();
 
         if (sessions.Count == 0)
-            return new WorkoutStatsResponseDto(0, null, 0, null, null, new List<DailyWorkoutDto>(), 0);
+            return new WorkoutStatsResponseDto(0, 0, null, 0, 0, null, null, new List<DailyWorkoutDto>(), 0);
 
+        var now = DateTime.UtcNow;
+        var last30DaysStart = now.AddDays(-30);
+        var prev30DaysStart = now.AddDays(-60);
+
+        // --- محاسبات بازه جاری (۳۰ روز اخیر) ---
+        var currentSessions = sessions.Where(s => s.Date >= last30DaysStart).ToList();
+        var currentVolume = currentSessions.Sum(s => s.ExerciseSessions.Sum(es => (es.Weight ?? 0) * (es.Reps ?? 0)));
+        var currentIntensity = currentSessions.Count > 0 ? currentVolume / currentSessions.Count : 0;
+
+        // --- محاسبات بازه قبلی (۳۰ تا ۶۰ روز قبل) ---
+        var prevSessions = sessions.Where(s => s.Date >= prev30DaysStart && s.Date < last30DaysStart).ToList();
+        var prevVolume = prevSessions.Sum(s => s.ExerciseSessions.Sum(es => (es.Weight ?? 0) * (es.Reps ?? 0)));
+        var prevIntensity = prevSessions.Count > 0 ? prevVolume / prevSessions.Count : 0;
+
+        // --- محاسبه درصد روند (Trend) ---
+        // فرمول: ((جدید - قدیم) / قدیم) * 100
+        var volumeTrend = prevVolume > 0 ? Math.Round((currentVolume - prevVolume) / prevVolume * 100, 1) : 0;
+        var intensityTrend = prevIntensity > 0 ? Math.Round((currentIntensity - prevIntensity) / prevIntensity * 100, 1) : 0;
+
+        // سایر محاسبات (بدون تغییر)
         var dailyWorkouts = sessions
             .GroupBy(s => s.Date.Date)
             .Select(g => new DailyWorkoutDto(
                 g.Key.ToString("yyyy-MM-dd"),
-                g.Select(s => new WorkoutSessionDto(
-                    s.Id,
-                    s.Title ?? "Workout",
-                    FormatDuration(s.ExerciseSessions.Sum(es => es.DurationSeconds ?? 0))
-                )).ToList()
+                g.Select(s => new WorkoutSessionDto(s.Id, s.Title ?? "Workout", FormatDuration(s.ExerciseSessions.Sum(es => es.DurationSeconds ?? 0)))).ToList()
             )).ToList();
 
-        var topExercise = sessions
-            .SelectMany(s => s.ExerciseSessions)
-            .GroupBy(es => es.Exercise.Name)
-            .OrderByDescending(g => g.Count())
-            .Select(g => g.Key)
-            .FirstOrDefault();
-
-        var totalVolumeLast30Days = sessions
-            .Where(s => s.Date >= DateTime.UtcNow.AddDays(-30))
-            .Sum(s => s.ExerciseSessions.Sum(es => (es.Weight ?? 0) * (es.Reps ?? 0)));
-
-        var averageIntensity = sessions.Count > 0
-            ? sessions.Sum(s => s.ExerciseSessions.Sum(es => (es.Weight ?? 0) * (es.Reps ?? 0))) / sessions.Count
-            : 0;
-
-        var advice = topExercise != null
-            ? $"Your most frequent exercise is {topExercise}. Keep up the great work and consistency!"
-            : "Start logging workouts to receive personalized advice.";
+        var topExercise = sessions.SelectMany(s => s.ExerciseSessions).GroupBy(es => es.Exercise.Name)
+            .OrderByDescending(g => g.Count()).Select(g => g.Key).FirstOrDefault();
 
         var streak = CalculateStreak(sessions.Select(s => s.Date.Date).Distinct());
 
-        var stats = new WorkoutStatsResponseDto(
-            totalVolumeLast30Days,
+        return new WorkoutStatsResponseDto(
+            currentVolume,
+            volumeTrend,      // 🚀 فیلد جدید
             topExercise,
-            averageIntensity,
+            currentIntensity,
+            intensityTrend,   // 🚀 فیلد جدید
             sessions.First().Date,
-            new { advice },
+            new { advice = topExercise != null ? $"Your most frequent exercise is {topExercise}." : "Start logging..." },
             dailyWorkouts,
             streak
         );
-
-        return stats;
     }
 
     /// <summary>

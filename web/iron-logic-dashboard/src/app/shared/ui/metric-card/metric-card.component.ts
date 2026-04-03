@@ -16,4 +16,5 @@ export class MetricCardComponent {
   @Input() iconTemplate?: TemplateRef<any>;
   @Input() footerTemplate?: TemplateRef<any>;
   @Input() stats: any;
+  @Input() trend: number = 0;
 }

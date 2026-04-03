@@ -1,4 +1,6 @@
-﻿namespace IronLogic.Application.DTOs;
+﻿using System;
+
+namespace IronLogic.Application.DTOs;
 
 /// <summary>
 /// Represents the response for workout statistics.
@@ -12,8 +14,10 @@
 /// <param name="Streak">The current workout streak in days.</param>
 public record WorkoutStatsResponseDto(
     decimal TotalVolume,
+    decimal VolumeTrend,
     string TopExercise,
     decimal IntensityScore,
+    decimal IntensityTrend,
     DateTime? SessionDate,
     object Advice,
     List<DailyWorkoutDto> DailyWorkouts,

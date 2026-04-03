@@ -1,0 +1,108 @@
+<div class="min-h-screen bg-slate-950 p-8 pt-24">
+  <header class="fixed top-0 left-0 right-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-900">
+    <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+      <a routerLink="/">
+        <div class="flex items-center gap-3">
+          <div
+            class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center font-black text-white shadow-lg shadow-indigo-500/20">
+            IL
+          </div>
+          <span class="text-xl font-black text-white tracking-tighter uppercase">IronLogic AI</span>
+        </div>
+      </a>
+
+
+      <div class="flex items-center gap-6">
+        <a routerLink="/login" class="text-sm font-bold text-white hover:text-indigo-400 transition-all">Login</a>
+        <a routerLink="/register"
+           class="hidden sm:block bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all shadow-lg shadow-indigo-500/25">
+          Start Free
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <div class="max-w-4xl mx-auto text-center mb-16">
+    <h2 class="text-5xl font-black text-white mb-4 tracking-tighter italic uppercase">FAQ</h2>
+    <p class="text-slate-400 text-lg">Everything you need to know about <span class="text-indigo-500 font-bold">IronLogic AI</span>
+    </p>
+  </div>
+
+  <div
+    class="max-w-4xl mx-auto flex flex-wrap gap-4 mb-12 p-2 bg-slate-900/50 rounded-2xl border border-slate-800/50 backdrop-blur-sm">
+    @for (cat of categories; track cat.id) {
+    <button (click)="activeCategory.set(cat.id)"
+            [class.bg-indigo-600]="activeCategory() === cat.id"
+            [class.shadow-xl]="activeCategory() === cat.id"
+            [class.shadow-indigo-500/20]="activeCategory() === cat.id"
+            class="flex-1 flex items-center justify-center gap-3 py-4 px-6 rounded-xl border border-transparent transition-all duration-500 group">
+
+      <span class="text-white transition-colors duration-300"
+            [class.opacity-100]="activeCategory() === cat.id"
+            [class.opacity-60]="activeCategory() !== cat.id"> @if (cat.icon === 'membership') {
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+    </svg>
+    } @else if (cat.icon === 'training') {
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+    </svg>
+    } @else {
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+    </svg>
+    }
+    </span>
+
+    <span class="text-white text-[11px] font-black uppercase tracking-[0.15em] whitespace-nowrap transition-all duration-300"
+          [class.opacity-100]="activeCategory() === cat.id"
+          [class.opacity-50]="activeCategory() !== cat.id"> {{ cat.id }}
+    </span>
+  </button>
+    }
+  </div>
+
+  <div class="max-w-3xl mx-auto space-y-4">
+    @for (faq of faqs; track $index) {
+    @if (faq.category === activeCategory()) {
+    <div
+      class="bg-slate-900/40 rounded-2xl border border-slate-800/50 overflow-hidden transition-all duration-300 hover:border-slate-700">
+      <button (click)="toggleFaq($index)"
+              class="w-full flex justify-between items-center p-6 text-left hover:bg-slate-800/30 transition-colors">
+        <span class="font-bold text-slate-200 text-lg pr-4">{{ faq.question }}</span>
+        <div class="shrink-0 bg-slate-800 rounded-full p-1.5 transition-all"
+             [class.bg-indigo-600]="openIndex() === $index">
+          <svg class="w-4 h-4 text-white transition-transform duration-500"
+               [class.rotate-180]="openIndex() === $index"
+               fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </div>
+      </button>
+
+      <div class="overflow-hidden transition-all duration-500 ease-in-out"
+           [style.max-height]="openIndex() === $index ? '400px' : '0'">
+        <div class="p-6 pt-0 text-slate-400 text-[15px] leading-relaxed border-t border-slate-800/50">
+          {{ faq.answer }}
+        </div>
+      </div>
+    </div>
+    }
+    }
+  </div>
+
+  <div class="max-w-3xl mx-auto mt-20">
+    <div class="relative group p-1 rounded-3xl bg-gradient-to-r from-indigo-500 to-purple-600">
+      <div class="bg-slate-950 rounded-[22px] p-8 text-center">
+        <h3 class="text-2xl font-black text-white mb-2 italic">STILL HAVE QUESTIONS?</h3>
+        <p class="text-slate-400 mb-6">Our AI Support is ready to help you hit your goals.</p>
+        <button
+          class="bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-3 rounded-xl font-black text-xs uppercase tracking-widest transition-all shadow-lg shadow-indigo-500/25">
+          Chat with AI Coach
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

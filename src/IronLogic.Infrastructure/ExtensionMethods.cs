@@ -5,13 +5,13 @@ public static class ExtensionMethods
     public static double CalculateDiceSimilarity(string source, string target)
     {
         if (string.IsNullOrEmpty(source) || string.IsNullOrEmpty(target)) return 0;
-    
+
         source = source.ToLower().Trim();
         target = target.ToLower().Trim();
 
         if (source == target) return 1.0;
 
-        // ایجاد لیست جفت‌حروف (Bigrams)
+        // Create list of character pairs (Bigrams)
         var sPairs = GetBigrams(source);
         var tPairs = GetBigrams(target);
 
@@ -22,7 +22,7 @@ public static class ExtensionMethods
             tPairs.Remove(sPair);
         }
 
-        // فرمول Dice: (2 * تعداد اشتراکات) / (مجموع کل جفت‌ها)
+        // Dice formula: (2 * number of matches) / (total of all pairs)
         return (2.0 * matches) / (sPairs.Count + GetBigrams(target).Count);
     }
 

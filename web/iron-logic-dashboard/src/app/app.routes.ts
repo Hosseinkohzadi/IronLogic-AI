@@ -1,11 +1,12 @@
 import {Routes} from '@angular/router';
-import {LandingComponent} from './features/landing/landing/landing';
-import {LoginComponent} from './features/login/login/login';
-import {RegisterComponent} from './features/register/register/register';
-import {ForgotComponent} from './features/forgot/forgot/forgot';
+import {LandingComponent} from '@features/landing/landing';
+import {LoginComponent} from '@features/login/login';
+import {RegisterComponent} from '@features/register/register';
+import {ForgotComponent} from '@features/forgot/forgot';
 import {DashboardComponent} from './features/dashboard/dashboard.component';
-import {ImportWorkoutComponent} from './features/import-workout/import-workout/import-workout';
+import {ImportWorkoutComponent} from '@features/import-workout/import-workout';
 import {FaqComponent} from './pages/faq/faq';
+import {ContactComponent} from './pages/contact/contact';
 
 export const routes: Routes = [
   {path: '', component: LandingComponent, pathMatch: 'full', data: {hideSidebar: true}},
@@ -15,5 +16,6 @@ export const routes: Routes = [
   {path: 'dashboard', component: DashboardComponent, data: {hideSidebar: false}},
   {path: 'import', component: ImportWorkoutComponent, data: {hideSidebar: false}},
   {path: 'faq', component: FaqComponent, data: {hideSidebar: true}},
+  { path: 'contact', component: ContactComponent, data: { hideSidebar: true } },
   {path: '**', redirectTo: ''}
 ];

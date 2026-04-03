@@ -1,14 +1,14 @@
-<div class="flex h-screen bg-slate-50 overflow-hidden">
+<div class="flex h-screen overflow-hidden bg-slate-950 font-sans text-slate-900">
 
+  @if (showSidebar) {
+  <app-sidebar></app-sidebar>
+  }
 
-  <main class="flex-1 overflow-y-auto">
-    @if (showSidebar) {
-    <app-sidebar></app-sidebar>
+  <main class="flex-1 overflow-y-auto relative">
+    <router-outlet />
+
+    @if (!showSidebar) {
+    <app-footer></app-footer>
     }
-
-
-    <router-outlet></router-outlet>
-
   </main>
-
 </div>

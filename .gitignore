@@ -30,3 +30,5 @@ Thumbs.db
 *.db-shm
 *.db-wal
 *.sqlite
+/IronLogic.Scraper/user_data/Default
+/.idea

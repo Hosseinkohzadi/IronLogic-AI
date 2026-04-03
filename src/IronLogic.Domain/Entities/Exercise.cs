@@ -22,7 +22,7 @@ public class Exercise : BaseEntity
     /// <summary>
     ///     A list of secondary muscles also engaged during the exercise.
     /// </summary>
-    public List<Muscle> SecondaryMuscles { get; set; } = new();
+    public List<Muscle>? SecondaryMuscles { get; set; }
 
     /// <summary>
     ///     The category of exercise, which defines the metrics to be tracked (e.g., weight and reps, duration, distance).
@@ -48,4 +48,8 @@ public class Exercise : BaseEntity
     public List<ExerciseSession> ExerciseSessions { get; set; } = new();
     public Equipment Equipment { get; set; }
     public Guid EquipmentId { get; set; }
+    public string? ImagePath { get; set; }
+    public string Url { get; set; }
+    public string Mechanics { get; set; }
+    public string Instructions { get; set; }
 }    

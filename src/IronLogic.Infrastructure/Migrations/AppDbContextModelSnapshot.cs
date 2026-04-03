@@ -67,7 +67,7 @@ namespace IronLogic.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Equipment");
+                    b.ToTable("Equipments");
                 });
 
             modelBuilder.Entity("IronLogic.Domain.Entities.Exercise", b =>
@@ -91,7 +91,18 @@ namespace IronLogic.Infrastructure.Migrations
                     b.Property<byte[]>("Image")
                         .HasColumnType("BLOB");
 
+                    b.Property<string>("ImagePath")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Instructions")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("LinkOfVideo")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Mechanics")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -103,6 +114,10 @@ namespace IronLogic.Infrastructure.Migrations
 
                     b.Property<int>("Type")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 

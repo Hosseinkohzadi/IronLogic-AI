@@ -8,6 +8,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\**" />
+    <Compile Remove="Infrastructure\**" />
+    <Compile Remove="IntegrationTests\**" />
+    <EmbeddedResource Remove="Controllers\**" />
+    <EmbeddedResource Remove="Infrastructure\**" />
+    <EmbeddedResource Remove="IntegrationTests\**" />
+    <None Remove="Controllers\**" />
+    <None Remove="Infrastructure\**" />
+    <None Remove="IntegrationTests\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Moq" />
     <PackageReference Include="NSubstitute" />
     <PackageReference Include="xunit.runner.visualstudio">
@@ -26,11 +38,5 @@
     <ProjectReference Include="..\..\src\IronLogic.Domain\IronLogic.Domain.csproj" />
     <ProjectReference Include="..\..\src\IronLogic.Api\IronLogic.Api.csproj" />
     <ProjectReference Include="..\..\src\IronLogic.Infrastructure\IronLogic.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="Infrastructure\" />
-    <Folder Include="IntegrationTests\" />
   </ItemGroup>
 </Project>

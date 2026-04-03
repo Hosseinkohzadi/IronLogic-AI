@@ -1,0 +1,66 @@
+<div class="relative flex min-h-dvh items-center justify-center bg-slate-950 text-white overflow-hidden p-4">
+
+  <div class="absolute top-0 -left-4 w-72 h-72 bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none"></div>
+  <div class="absolute bottom-0 -right-4 w-72 h-72 bg-purple-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+  <div class="relative w-full max-w-xl z-10">
+    <div class="mb-10 text-center">
+      <div class="inline-flex items-center gap-3 mb-4">
+        <div class="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-indigo-600 font-black text-xl shadow-xl shadow-indigo-500/20">
+          IL
+        </div>
+        <h3 class="text-3xl font-black tracking-tighter uppercase italic">IronLogic AI</h3>
+      </div>
+      <p class="font-medium text-slate-500 tracking-wide uppercase text-xs">Start your AI-driven fitness journey</p>
+    </div>
+
+    <div class="rounded-[2.5rem] border border-slate-800 bg-slate-900/40 backdrop-blur-2xl p-8 shadow-2xl lg:p-12">
+      <h2 class="text-2xl font-black mb-8 italic uppercase tracking-tight">Create Account</h2>
+
+      <form class="space-y-6" (submit)="$event.preventDefault()">
+        <div class="space-y-2">
+          <label class="text-xs font-black uppercase tracking-[0.15em] text-slate-400 ml-1" for="name">Full Name</label>
+          <input type="text" id="name"
+                 class="block w-full rounded-2xl border border-slate-800 bg-slate-950 px-5 py-4 text-sm text-white outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-700"
+                 placeholder="John Doe" required />
+        </div>
+
+        <div class="space-y-2">
+          <label class="text-xs font-black uppercase tracking-[0.15em] text-slate-400 ml-1" for="email">Email Address</label>
+          <input type="email" id="email"
+                 class="block w-full rounded-2xl border border-slate-800 bg-slate-950 px-5 py-4 text-sm text-white outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-700"
+                 placeholder="john@example.com" required />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div class="space-y-2">
+            <label class="text-xs font-black uppercase tracking-[0.15em] text-slate-400 ml-1" for="password">Password</label>
+            <input type="password" id="password"
+                   class="block w-full rounded-2xl border border-slate-800 bg-slate-950 px-5 py-4 text-sm text-white outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-700"
+                   placeholder="••••••••" required />
+          </div>
+          <div class="space-y-2">
+            <label class="text-xs font-black uppercase tracking-[0.15em] text-slate-400 ml-1" for="password_confirm">Confirm</label>
+            <input type="password" id="password_confirm"
+                   class="block w-full rounded-2xl border border-slate-800 bg-slate-950 px-5 py-4 text-sm text-white outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 transition-all placeholder:text-slate-700"
+                   placeholder="••••••••" required />
+          </div>
+        </div>
+
+        <div class="pt-4">
+          <button type="submit"
+                  class="block w-full rounded-2xl bg-indigo-600 px-4 py-5 font-black text-xs uppercase tracking-[0.2em] text-white shadow-xl shadow-indigo-600/20 transition-all hover:bg-indigo-500 active:scale-[0.98]">
+            Create Account
+          </button>
+        </div>
+
+        <div class="text-center pt-2">
+          <p class="text-xs font-bold text-slate-500 uppercase tracking-widest">
+            Already a member?
+            <a routerLink="/login" class="text-indigo-500 hover:text-indigo-400 transition-colors ml-1 underline underline-offset-4">Log in here</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

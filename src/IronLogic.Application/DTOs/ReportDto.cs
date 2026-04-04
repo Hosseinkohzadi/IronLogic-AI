@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace IronLogic.Application.DTOs;
+﻿namespace IronLogic.Application.DTOs;
 
 /// <summary>
 /// Represents the response for workout statistics.

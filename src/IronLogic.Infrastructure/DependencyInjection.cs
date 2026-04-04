@@ -3,14 +3,14 @@ using IronLogic.Infrastructure.Services;
 using IronLogic.Infrastructure.Services.Parsing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting; // اضافه شد
+using Microsoft.Extensions.Hosting; 
 using Microsoft.Extensions.Logging;
 
 namespace IronLogic.Infrastructure;
 
 public static class DependencyInjection
 {
-    // پارامتر IHostEnvironment اضافه شد تا محیط را تشخیص دهیم
+    // IHostEnvironment parameter added to detect the environment
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration,
@@ -36,7 +36,7 @@ public static class DependencyInjection
         {
             options.UseSqlite(connectionString);
 
-            // لاگ‌های سنگین فقط در محیط Development فعال شوند
+            // Heavy logging is only enabled in Development environment
             if (environment.IsDevelopment())
             {
                 options.LogTo(Console.WriteLine, LogLevel.Information)
@@ -50,6 +50,7 @@ public static class DependencyInjection
 
     private static IServiceCollection AddRepositories(this IServiceCollection services)
     {
+        services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
         services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();
         return services;
     }

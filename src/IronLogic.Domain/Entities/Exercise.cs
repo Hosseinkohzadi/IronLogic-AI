@@ -12,6 +12,9 @@ public class Exercise : BaseEntity
     /// </summary>
     public string Name { get; set; }
 
+    /// <summary>
+    ///     Gets or sets the identifier for the primary muscle group.
+    /// </summary>
     public Guid PrimaryMuscleId { get; set; }
 
     /// <summary>
@@ -45,11 +48,38 @@ public class Exercise : BaseEntity
     /// </summary>
     public string? LinkOfVideo { get; set; }
 
+    /// <summary>
+    ///     Gets or sets the collection of exercise sessions associated with this exercise.
+    /// </summary>
     public List<ExerciseSession> ExerciseSessions { get; set; } = new();
+
+    /// <summary>
+    ///     Gets or sets the equipment required for this exercise.
+    /// </summary>
     public Equipment Equipment { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the identifier for the required equipment.
+    /// </summary>
     public Guid EquipmentId { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the file path to the exercise image.
+    /// </summary>
     public string? ImagePath { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the URL reference for additional exercise information.
+    /// </summary>
     public string Url { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the mechanics type of the exercise (e.g., compound, isolation).
+    /// </summary>
     public string Mechanics { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the detailed instructions for performing the exercise.
+    /// </summary>
     public string Instructions { get; set; }
-}    
+}

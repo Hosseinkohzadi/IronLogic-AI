@@ -4,7 +4,7 @@ using IronLogic.Infrastructure.Services;
 using IronLogic.Infrastructure.Services.Parsing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting; 
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace IronLogic.Infrastructure;
@@ -12,65 +12,64 @@ namespace IronLogic.Infrastructure;
 public static class DependencyInjection
 {
     // IHostEnvironment parameter added to detect the environment
-    public static IServiceCollection AddInfrastructure(
-        this IServiceCollection services,
-        IConfiguration configuration,
-        IHostEnvironment environment)
+    extension(IServiceCollection services)
     {
-        services.AddPersistence(configuration, environment)
-            .AddRepositories()
-            .AddDomainServices()
-            .AddExternalProviders();
-
-        return services;
-    }
-
-    private static IServiceCollection AddPersistence(
-        this IServiceCollection services,
-        IConfiguration configuration,
-        IHostEnvironment environment)
-    {
-        var connectionString = configuration.GetConnectionString("DefaultConnection")
-                               ?? throw new InvalidOperationException("Connection string is missing!");
-
-        services.AddDbContextPool<AppDbContext>(options =>
+        public IServiceCollection AddInfrastructure(IConfiguration configuration,
+            IHostEnvironment environment)
         {
-            options.UseSqlite(connectionString);
+            services.AddPersistence(configuration, environment)
+                .AddRepositories()
+                .AddDomainServices()
+                .AddExternalProviders();
 
-            // Heavy logging is only enabled in Development environment
-            if (environment.IsDevelopment())
+            return services;
+        }
+
+        private IServiceCollection AddPersistence(IConfiguration configuration,
+            IHostEnvironment environment)
+        {
+            var connectionString = configuration.GetConnectionString("DefaultConnection")
+                                   ?? throw new InvalidOperationException("Connection string is missing!");
+
+            services.AddDbContextPool<AppDbContext>(options =>
             {
-                options.LogTo(Console.WriteLine, LogLevel.Information)
-                       .EnableSensitiveDataLogging()
-                       .EnableDetailedErrors();
-            }
-        });
+                options.UseSqlite(connectionString);
 
-        return services;
-    }
+                // Heavy logging is only enabled in Development environment
+                if (environment.IsDevelopment())
+                {
+                    options.LogTo(Console.WriteLine, LogLevel.Information)
+                        .EnableSensitiveDataLogging()
+                        .EnableDetailedErrors();
+                }
+            });
 
-    private static IServiceCollection AddRepositories(this IServiceCollection services)
-    {
-        services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-        services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();
-        return services;
-    }
+            return services;
+        }
 
-    private static IServiceCollection AddDomainServices(this IServiceCollection services)
-    {
-        services.AddScoped<IWorkoutImportService, WorkoutImportService>();
-        services.AddScoped<IWorkoutService, WorkoutService>();
+        private IServiceCollection AddRepositories()
+        {
+            services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+            services.AddScoped<IWorkoutSessionRepository, WorkoutSessionRepository>();
+            return services;
+        }
 
-        services.AddSingleton<IWorkoutParserService, WorkoutParserService>();
+        private IServiceCollection AddDomainServices()
+        {
+            services.AddScoped<IWorkoutImportService, WorkoutImportService>();
+            services.AddScoped<IWorkoutService, WorkoutService>();
 
-        return services;
-    }
+            services.AddSingleton<IWorkoutParserService, WorkoutParserService>();
 
-    private static void AddExternalProviders(this IServiceCollection services)
-    {
-        services.AddSingleton<IMuscleMapperService, MuscleMapperService>();
-        services.AddScoped<IExerciseCacheService, ExerciseCacheService>();
-        services.AddScoped<IPersonalRecordService, PersonalRecordService>();
-        services.AddScoped<IWorkoutPersistenceService, WorkoutPersistenceService>();
+            return services;
+        }
+
+        private void AddExternalProviders()
+        {
+            services.AddSingleton<IMuscleMapperService, MuscleMapperService>();
+            services.AddScoped<IExerciseCacheService, ExerciseCacheService>();
+            services.AddScoped<IPersonalRecordService, PersonalRecordService>();
+            services.AddScoped<IWorkoutPersistenceService, WorkoutPersistenceService>();
+        }
     }
 }

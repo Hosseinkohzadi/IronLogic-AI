@@ -1,4 +1,4 @@
-    public static class MuscleSeeder
+public static class MuscleSeeder
 {
     public static void SeedMuscles(ModelBuilder modelBuilder)
     {

@@ -22,7 +22,7 @@ public class AdminExerciseController(IGenericRepository<Exercise> repository) : 
     [HttpGet]
     [ProducesResponseType<IReadOnlyList<Exercise>>(StatusCodes.Status200OK)]
     public async Task<ActionResult<IReadOnlyList<Exercise>>> GetExercises(
-        [FromQuery] int pageNumber = 1, 
+        [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 20)
     {
         if (pageSize > 100) pageSize = 100;
@@ -63,7 +63,7 @@ public class AdminExerciseController(IGenericRepository<Exercise> repository) : 
 
         await repository.AddAsync(exercise);
         await repository.SaveChangesAsync();
-        
+
         return CreatedAtAction(nameof(GetExercise), new { id = exercise.Id }, exercise);
     }
 
@@ -91,7 +91,7 @@ public class AdminExerciseController(IGenericRepository<Exercise> repository) : 
 
         repository.Update(exercise);
         await repository.SaveChangesAsync();
-        
+
         return NoContent();
     }
 
@@ -113,7 +113,7 @@ public class AdminExerciseController(IGenericRepository<Exercise> repository) : 
 
         repository.Delete(exercise);
         await repository.SaveChangesAsync();
-        
+
         return NoContent();
     }
 
@@ -128,11 +128,11 @@ public class AdminExerciseController(IGenericRepository<Exercise> repository) : 
     public async Task<ActionResult<IReadOnlyList<Exercise>>> SearchExercises([FromQuery] string searchTerm)
     {
         var allExercises = await repository.ListAllAsync();
-        
+
         if (string.IsNullOrWhiteSpace(searchTerm))
             return Ok(allExercises);
 
-        var filtered = allExercises.Where(e => 
+        var filtered = allExercises.Where(e =>
             e.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
             (e.PrimaryMuscle != null && e.PrimaryMuscle.Name.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
         ).ToList();
@@ -159,9 +159,9 @@ public class AdminExerciseController(IGenericRepository<Exercise> repository) : 
         {
             await repository.AddAsync(exercise);
         }
-        
+
         await repository.SaveChangesAsync();
-        
+
         return Ok(new { ImportedCount = exercises.Count, Message = "Exercises imported successfully" });
     }
 }

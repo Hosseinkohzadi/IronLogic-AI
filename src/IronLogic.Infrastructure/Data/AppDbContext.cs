@@ -14,15 +14,15 @@ public class AppDbContext : IdentityDbContext<User>
     }
 
     public DbSet<Session> Sessions { get; set; }
-    
+
     public DbSet<IronLogic.Domain.Entities.Exercise> Exercises { get; set; }
-    
+
     public DbSet<ExerciseSession> ExerciseSessions { get; set; }
-   
+
     public DbSet<DailyWeight> DailyWeights { get; set; }
-   
+
     public DbSet<Muscle> Muscles { get; set; }
-   
+
     public DbSet<Equipment> Equipments { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)

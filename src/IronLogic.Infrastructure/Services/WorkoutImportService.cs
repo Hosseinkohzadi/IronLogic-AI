@@ -125,7 +125,7 @@ public class WorkoutImportService(AppDbContext context) : IWorkoutImportService
         var newEx = new Exercise
         {
             Name = name,
-            PrimaryMuscleId = generalId, 
+            PrimaryMuscleId = generalId,
             EquipmentId = generalId,
             Type = ExerciseType.WeightAndReps,
             HowTo = null,

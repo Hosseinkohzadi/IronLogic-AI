@@ -41,7 +41,7 @@ public class WorkoutServiceTests
         var parser = new WorkoutParserService();
         var logger = NullLogger<WorkoutService>.Instance;
         var cache = new MemoryCache(new MemoryCacheOptions());
-        
+
         // Create the db context and new service dependencies
         var mainDbContext = new AppDbContext(options);
         var muscleMapper = new MuscleMapperService(); // 🚀 Add the muscle mapper service
@@ -56,7 +56,7 @@ public class WorkoutServiceTests
             persistenceService,
             mainDbContext,
             logger);
-        
+
         var userId = "test-user";
 
         // Act

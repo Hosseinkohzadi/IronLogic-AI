@@ -23,15 +23,15 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     }
 
     /// <inheritdoc />
-    public async Task<T?> GetByIdAsync(int id) => 
+    public async Task<T?> GetByIdAsync(Guid id) =>
         await _context.Set<T>().FindAsync(id);
 
     /// <inheritdoc />
-    public async Task<IReadOnlyList<T>> ListAllAsync() => 
+    public async Task<IReadOnlyList<T>> ListAllAsync() =>
         await _context.Set<T>().ToListAsync();
 
     /// <inheritdoc />
-    public async Task AddAsync(T entity) => 
+    public async Task AddAsync(T entity) =>
         await _context.Set<T>().AddAsync(entity);
 
     /// <inheritdoc />
@@ -42,10 +42,10 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     }
 
     /// <inheritdoc />
-    public void Delete(T entity) => 
+    public void Delete(T entity) =>
         _context.Set<T>().Remove(entity);
 
     /// <inheritdoc />
-    public async Task<bool> SaveChangesAsync() => 
+    public async Task<bool> SaveChangesAsync() =>
         await _context.SaveChangesAsync() > 0;
 }

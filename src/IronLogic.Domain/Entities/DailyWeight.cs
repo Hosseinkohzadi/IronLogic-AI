@@ -6,7 +6,7 @@
 public class DailyWeight : BaseEntity
 {
 
-   public string UserId { get; set; }
+    public string UserId { get; set; }
     public User User { get; set; }
 
     public DateTime Date { get; set; }

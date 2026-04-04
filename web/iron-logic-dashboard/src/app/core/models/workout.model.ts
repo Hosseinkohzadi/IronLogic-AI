@@ -24,11 +24,12 @@ export interface AnalyzedWorkout {
   exercises: UIExercise[];
   aiInsights: string[];
 }
+
 export interface Exercise {
-  id: number;
+  id: string; // تغییر از number به string برای هماهنگی با GUID
   name: string;
-  primaryMuscleId?: number;
-  equipmentId?: number;
+  primaryMuscleId?: string; // این هم در Swagger به صورت Guid است
+  equipmentId?: string;    // این هم در Swagger به صورت Guid است
   mechanics?: string;
   instructions?: string;
   url?: string;

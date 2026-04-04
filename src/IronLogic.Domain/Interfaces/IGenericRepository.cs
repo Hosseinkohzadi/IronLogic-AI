@@ -13,7 +13,7 @@ public interface IGenericRepository<T> where T : BaseEntity
     /// </summary>
     /// <param name="id">The unique identifier of the entity.</param>
     /// <returns>The entity if found; otherwise, null.</returns>
-    Task<T?> GetByIdAsync(int id);
+    Task<T?> GetByIdAsync(Guid id);
 
     /// <summary>
     /// Retrieves all entities of type <typeparamref name="T"/>.

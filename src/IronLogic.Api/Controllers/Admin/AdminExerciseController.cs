@@ -13,7 +13,7 @@ namespace IronLogic.Api.Controllers.Admin;
 public class AdminExerciseController(IGenericRepository<Exercise> repository) : ControllerBase
 {
     /// <summary>
-    ///     Retrieves all exercises from the database with pagination support.
+    ///     Retrieves all exercises from the database with pagination support.GetExercise
     /// </summary>
     /// <param name="pageNumber">The page number (default: 1).</param>
     /// <param name="pageSize">The number of items per page (default: 20, max: 100).</param>

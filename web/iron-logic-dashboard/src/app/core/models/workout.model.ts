@@ -24,3 +24,13 @@ export interface AnalyzedWorkout {
   exercises: UIExercise[];
   aiInsights: string[];
 }
+export interface Exercise {
+  id: number;
+  name: string;
+  primaryMuscleId?: number;
+  equipmentId?: number;
+  mechanics?: string;
+  instructions?: string;
+  url?: string;
+  imagePath?: string | null;
+}

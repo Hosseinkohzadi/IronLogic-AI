@@ -23,7 +23,7 @@ public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     }
 
     /// <inheritdoc />
-    public async Task<T?> GetByIdAsync(int id) => 
+    public async Task<T?> GetByIdAsync(Guid id) => 
         await _context.Set<T>().FindAsync(id);
 
     /// <inheritdoc />

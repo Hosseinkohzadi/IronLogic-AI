@@ -1,4 +1,5 @@
-﻿using IronLogic.Infrastructure.Repositories;
+﻿using IronLogic.Domain.Interfaces;
+using IronLogic.Infrastructure.Repositories;
 using IronLogic.Infrastructure.Services;
 using IronLogic.Infrastructure.Services.Parsing;
 using Microsoft.Extensions.Configuration;

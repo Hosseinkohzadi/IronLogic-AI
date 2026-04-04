@@ -2,86 +2,78 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, shareReplay, tap } from 'rxjs';
 import { environment } from '@env/environment';
-import { Exercise, WorkoutStats } from '@core/models';
+import { Exercise, WorkoutStats } from '../models'; // استفاده از index.ts برای ایمپورت تمیز
 
 @Injectable({
   providedIn: 'root'
 })
 export class IronLogicApiService {
   private http = inject(HttpClient);
-  private readonly baseUrl = environment.apiUrl;
-  private apiUrl = `${this.baseUrl}/admin/exercises`;
-  private statsCache$: Observable<WorkoutStats> | undefined;
 
-  // مدیریت وضعیت با سیگنال‌ها
+  // آدرس‌های پایه بر اساس فایل OpenAPI
+  private readonly baseUrl = environment.apiUrl;
+  private adminUrl = `${this.baseUrl}/admin/exercises`;
+  private statsUrl = `${this.baseUrl}/Workouts/stats`;
+
+  // مدیریت وضعیت (State Management)
   exercises = signal<Exercise[]>([]);
   isLoading = signal<boolean>(false);
+  private statsCache$: Observable<WorkoutStats> | undefined;
 
   /**
-   * دریافت آمارهای تمرینی به همراه توصیه‌های مربی (AI Coach)
+   * دریافت آمارهای تمرینی و توصیه‌های هوش مصنوعی (AI Coach)
+   * مطابق با مدل WorkoutStats و فیلد advice: { advice: string }
    */
   getWorkoutStatsWithAdvice(): Observable<WorkoutStats> {
     if (!this.statsCache$) {
-      this.statsCache$ = this.http.get<WorkoutStats>(`${this.baseUrl}/workouts/stats`).pipe(
+      this.statsCache$ = this.http.get<WorkoutStats>(this.statsUrl).pipe(
         shareReplay(1)
       );
     }
     return this.statsCache$;
   }
+// اضافه کردن یک سیگنال جدید برای تعداد کل
+  totalExercises = signal<number>(0);
 
-  /**
-   * دریافت لیست حرکات ورزشی با پشتیبانی از صفحه‌بندی
-   */
-  getExercises(pageNumber: number = 1, pageSize: number = 20): Observable<Exercise[]> {
+  getExercises(pageNumber: number = 1, pageSize: number = 20): Observable<any> {
     this.isLoading.set(true);
     const params = new HttpParams()
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
 
-    return this.http.get<Exercise[]>(this.apiUrl, { params }).pipe(
-      tap((data: Exercise[]) => { // اضافه شدن تایپ صریح برای رفع خطای TS7006
-        this.exercises.set(data);
+    return this.http.get<{totalCount: number, items: Exercise[]}>(this.adminUrl, { params }).pipe(
+      tap(response => {
+        // ذخیره لیست حرکات صفحه فعلی
+        this.exercises.set(response.items);
+        // ذخیره تعداد کل حرکات دیتابیس
+        this.totalExercises.set(response.totalCount);
         this.isLoading.set(false);
       })
     );
   }
 
   /**
-   * جستجوی حرکات بر اساس نام یا عضله هدف
+   * جستجوی حرکات (Admin)
    */
   searchExercises(searchTerm: string): Observable<Exercise[]> {
-    return this.http.get<Exercise[]>(`${this.apiUrl}/search`, {
+    return this.http.get<Exercise[]>(`${this.adminUrl}/search`, {
       params: new HttpParams().set('searchTerm', searchTerm)
     });
   }
 
   /**
-   * ایجاد یک حرکت ورزشی جدید
+   * حذف حرکت (Admin) - استفاده از string برای GUID مطابق Swagger
    */
-  createExercise(exercise: Exercise): Observable<Exercise> {
-    return this.http.post<Exercise>(this.apiUrl, exercise);
+  deleteExercise(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.adminUrl}/${id}`);
   }
 
   /**
-   * ویرایش حرکت موجود
-   */
-  updateExercise(id: number, exercise: Exercise): Observable<void> {
-    return this.http.put<void>(`${this.apiUrl}/${id}`, exercise);
-  }
-
-  /**
-   * حذف یک حرکت
-   */
-  deleteExercise(id: number): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`);
-  }
-
-  /**
-   * وارد کردن دسته‌جمعی حرکات
+   * وارد کردن دسته‌جمعی (Admin)
    */
   bulkImport(exercises: Exercise[]): Observable<{ importedCount: number; message: string }> {
     return this.http.post<{ importedCount: number; message: string }>(
-      `${this.apiUrl}/bulk-import`,
+      `${this.adminUrl}/bulk-import`,
       exercises
     );
   }

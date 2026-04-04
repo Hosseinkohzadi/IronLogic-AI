@@ -1,0 +1,32 @@
+/* اطمینان از اینکه هدر روی محتوا باقی می‌ماند */
+.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* هایلایت متن جستجو */
+mark {
+  padding: 0.1em 0;
+  background-color: #e0e7ff; /* indigo-100 */
+  color: #4338ca; /* indigo-700 */
+  border-radius: 2px;
+}
+
+/* استایل اسکرول‌بار برای زیبایی بیشتر در پنل ادمین */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}

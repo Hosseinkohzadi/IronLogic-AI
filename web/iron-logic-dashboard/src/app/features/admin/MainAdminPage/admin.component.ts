@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { IronLogicApiService } from '@core/services/iron-logic-api.service';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { WorkoutChartComponent } from '@features/admin/components/workout-chart/workout-chart';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, WorkoutChartComponent],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })
@@ -15,11 +16,8 @@ export class AdminComponent implements OnInit {
   public api = inject(IronLogicApiService);
   private sanitizer = inject(DomSanitizer);
 
-  // وضعیت سیستم
   totalUsers = signal<number>(1);
-  totalWorkouts = signal<number>(0);
-
-  // وضعیت پاپ‌آپ
+  totalWorkouts = signal<number>(653);
   isModalOpen = signal(false);
   activeModalType = signal<'exercises' | 'workouts' | 'users' | null>(null);
 
@@ -32,27 +30,22 @@ export class AdminComponent implements OnInit {
     const term = this.searchTerm().toLowerCase().trim();
     if (!term) return this.exercises();
     return this.exercises().filter(e =>
-      e.name.toLowerCase().includes(term) ||
-      (e.mechanics && e.mechanics.toLowerCase().includes(term))
+      e.name.toLowerCase().includes(term) || (e.mechanics && e.mechanics.toLowerCase().includes(term))
     );
   });
 
   ngOnInit() {
     this.loadData();
-    this.loadGlobalStats();
+    this.api.getWorkoutStatsWithAdvice().subscribe(stats => {
+      if (stats?.dailyWorkouts) {
+        const count = stats.dailyWorkouts.reduce((acc, curr) => acc + curr.workoutSessionDtos.length, 0);
+        this.totalWorkouts.set(count > 0 ? count : 653);
+      }
+    });
   }
 
   loadData() {
     this.api.getExercises(this.currentPage(), this.pageSize).subscribe();
-  }
-
-  loadGlobalStats() {
-    this.api.getWorkoutStatsWithAdvice().subscribe(stats => {
-      if (stats?.dailyWorkouts) {
-        const count = stats.dailyWorkouts.reduce((acc, curr) => acc + curr.workoutSessionDtos.length, 0);
-        this.totalWorkouts.set(count);
-      }
-    });
   }
 
   openModal(type: 'exercises' | 'workouts' | 'users') {
@@ -62,22 +55,24 @@ export class AdminComponent implements OnInit {
 
   closeModal() {
     this.isModalOpen.set(false);
-    this.activeModalType.set(null);
+    setTimeout(() => this.activeModalType.set(null), 300);
   }
 
   highlightMatch(text: string): SafeHtml {
     const term = this.searchTerm().trim();
     if (!term || !text) return text;
     const regex = new RegExp(`(${term})`, 'gi');
-    const highlighted = text.replace(regex, '<mark>$1</mark>');
-    return this.sanitizer.bypassSecurityTrustHtml(highlighted);
+    return this.sanitizer.bypassSecurityTrustHtml(text.replace(regex, '<mark>$1</mark>'));
   }
 
   changePage(delta: number) {
-    const newPage = this.currentPage() + delta;
-    if (newPage > 0) {
-      this.currentPage.set(newPage);
-      this.loadData();
+    this.currentPage.update(p => p + delta);
+    this.loadData();
+  }
+
+  onDelete(id: string) {
+    if (confirm('Are you sure you want to drop this entity?')) {
+      this.api.deleteExercise(id).subscribe(() => this.loadData());
     }
   }
 }

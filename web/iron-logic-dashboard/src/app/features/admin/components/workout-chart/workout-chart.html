@@ -1,0 +1,51 @@
+<div class="mb-14">
+  <div class="flex justify-between items-end mb-6">
+    <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest">Yearly Activity Log</h2>
+    <div class="flex gap-2">
+      <button *ngFor="let series of multiYearTrend()" (click)="toggleYear(series.year)"
+              [class.opacity-30]="visibleYears().get(series.year) === false"
+              class="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100 transition-all hover:bg-white shadow-sm">
+        <span class="w-2.5 h-2.5 rounded-full" [style.backgroundColor]="series.color"></span>
+        <span class="text-[10px] font-black text-slate-600 uppercase">{{ series.year }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="relative h-48 w-full">
+    <svg class="absolute inset-0 w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none">
+      <path *ngFor="let series of multiYearTrend()"
+            [attr.d]="series.svgPath"
+            fill="none"
+            [attr.stroke]="series.color"
+            stroke-width="2"
+            vector-effect="non-scaling-stroke"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="chart-line"
+            [class.chart-item-hidden]="visibleYears().get(series.year) === false" />
+    </svg>
+
+    <ng-container *ngFor="let series of multiYearTrend()">
+      <div *ngFor="let data of series.points"
+           class="absolute w-2.5 h-2.5 bg-white border-2 rounded-full -ml-[5px] -mt-[5px] group cursor-pointer hover:scale-150 transition-all z-10 shadow-sm chart-dot"
+           [class.chart-item-hidden]="visibleYears().get(series.year) === false"
+           [style.borderColor]="series.color"
+           [style.left.%]="data.percentX"
+           [style.top.%]="data.percentY">
+        <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 bg-slate-800 text-white text-[10px] font-bold px-2 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-md z-20">
+          {{ series.year }} • {{ data.week }}: {{ data.count }} Sessions
+        </span>
+      </div>
+    </ng-container>
+
+    <div class="absolute top-full left-0 w-full mt-4">
+      <ng-container *ngFor="let week of chartWeeks(); let i = index">
+        <span *ngIf="i % 4 === 0 || i === 51"
+              class="absolute text-[9px] font-bold text-slate-400 transform -translate-x-1/2"
+              [style.left.%]="(i / 51) * 100">
+          {{ week }}
+        </span>
+      </ng-container>
+    </div>
+  </div>
+</div>

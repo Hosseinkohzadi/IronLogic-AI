@@ -1,0 +1,5 @@
+<div class="iron-grid">
+  <app-grid-header [columns]="columns"></app-grid-header>
+  <app-grid-body [columns]="columns" [data$]="gridDataService.data$"></app-grid-body>
+  <app-grid-footer [count]="(gridDataService.data$ | async)?.length || 0"></app-grid-footer>
+</div>

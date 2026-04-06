@@ -1,0 +1,19 @@
+/* shared/grid/components/grid-header/grid-header.css */
+.grid-header-row {
+  display: flex;
+  background-color: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+/* در هر دو فایل header و body */
+.header-cell, .grid-cell {
+  padding: 12px 16px;
+  flex: 1; /* این باعث می‌شود ستون‌ها فضای خالی را پر کنند و منظم شوند */
+  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* در حالت RTL محتوا را سمت راست نگه می‌دارد */
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis; /* اگر متن طولانی بود، سه نقطه بگذارد */
+}

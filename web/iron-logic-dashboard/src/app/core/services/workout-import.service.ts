@@ -10,7 +10,7 @@ export class WorkoutImportService {
   private apiUrl = environment.apiUrl;
 
   analyzeWorkoutText(text: string): Observable<AnalyzedWorkout> {
-    // رفع ارور 400 با ارسال آبجکت
+    // Fixed 400 error by sending as object
     return this.http.post<any>(`${this.apiUrl}/Workouts/import-text`, {workoutText: text})
       .pipe(
         map(response => {

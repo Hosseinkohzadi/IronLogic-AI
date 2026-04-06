@@ -26,10 +26,10 @@ export interface AnalyzedWorkout {
 }
 
 export interface Exercise {
-  id: string; // تغییر از number به string برای هماهنگی با GUID
+  id: string; // Changed from number to string for GUID compatibility
   name: string;
-  primaryMuscleId?: string; // این هم در Swagger به صورت Guid است
-  equipmentId?: string;    // این هم در Swagger به صورت Guid است
+  primaryMuscleId?: string; // Also GUID in Swagger
+  equipmentId?: string;     // Also GUID in Swagger
   mechanics?: string;
   instructions?: string;
   url?: string;

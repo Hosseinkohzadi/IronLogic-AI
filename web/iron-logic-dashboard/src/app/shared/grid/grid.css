@@ -1,0 +1,21 @@
+/* shared/grid/grid.css */
+:host {
+  display: block;
+  width: 100%;
+}
+
+.iron-grid {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: white;
+  overflow: hidden;
+  direction: rtl; /* برای نمایش درست فارسی */
+}
+
+/* نکته طلایی: تأثیر فلکس بر روی تگ‌های سفارشی */
+app-grid-header, app-grid-body {
+  display: block;
+  width: 100%;
+}

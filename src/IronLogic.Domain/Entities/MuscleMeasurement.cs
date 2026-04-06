@@ -53,8 +53,8 @@ public class ExerciseSession : BaseEntity
     /// </summary>
     public decimal? WeightKg
     {
-        get => Weight.HasValue ? (decimal?)Math.Round(Weight.Value / (decimal)IronAiConstants.LbsToKgFactor, 2) : null;
-        set => Weight = value.HasValue ? Math.Round(value.Value * (decimal)IronAiConstants.LbsToKgFactor, 2) : null;
+        get => Weight.HasValue ? (decimal?)Math.Round(Weight.Value / (decimal)IronAiConstants.KgToLbsFactor, 2) : null;
+        set => Weight = value.HasValue ? Math.Round(value.Value * (decimal)IronAiConstants.KgToLbsFactor, 2) : null;
     }
 
     /// <summary>

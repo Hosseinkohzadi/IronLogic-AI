@@ -7,7 +7,7 @@ import {DashboardComponent} from '@features/dashboard/dashboard.component';
 import {ImportWorkoutComponent} from '@features/import-workout/import-workout';
 import {FaqComponent} from './pages/faq/faq';
 import {ContactComponent} from './pages/contact/contact';
-import {AdminComponent} from '@features/admin/admin.component';
+import {AdminComponent} from '@features/admin/MainAdminPage/admin.component';
 
 export const routes: Routes = [
   { path: 'admin', component: AdminComponent },

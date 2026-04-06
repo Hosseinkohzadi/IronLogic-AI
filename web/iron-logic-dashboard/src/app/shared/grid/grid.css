@@ -8,14 +8,13 @@
   display: flex;
   flex-direction: column;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 12px;
   background: white;
   overflow: hidden;
-  direction: rtl; /* برای نمایش درست فارسی */
+  direction: rtl; /* راست‌چین برای ادمین فارسی */
 }
 
-/* نکته طلایی: تأثیر فلکس بر روی تگ‌های سفارشی */
-app-grid-header, app-grid-body {
-  display: block;
-  width: 100%;
+/* این بخش باعث می‌شود تگ‌های کامپوننت مزاحم چیدمان نشوند */
+app-grid-header, app-grid-body, app-grid-footer {
+  display: contents;
 }

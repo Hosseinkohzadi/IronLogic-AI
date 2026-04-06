@@ -12,9 +12,12 @@
   background: white;
   overflow: hidden;
   direction: rtl; /* راست‌چین برای ادمین فارسی */
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
-/* این بخش باعث می‌شود تگ‌های کامپوننت مزاحم چیدمان نشوند */
-app-grid-header, app-grid-body, app-grid-footer {
+/* جلوگیری از اختلال تگ‌های کامپوننت در چیدمان Flex */
+app-grid-header,
+app-grid-body,
+app-grid-footer {
   display: contents;
 }

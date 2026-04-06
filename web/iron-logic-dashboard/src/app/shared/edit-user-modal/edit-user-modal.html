@@ -1,0 +1,59 @@
+<div class="modal-backdrop" *ngIf="isOpen" (click)="onCancel()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h3 class="modal-title">ویرایش اطلاعات کاربر</h3>
+      <button class="close-btn" (click)="onCancel()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 6L6 18M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+
+    <div class="modal-body" *ngIf="editData">
+
+      <div class="form-group">
+        <label>نام کاربر</label>
+        <input type="text" class="form-input" [(ngModel)]="editData.name" placeholder="نام را وارد کنید">
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>نقش (Role)</label>
+          <select class="form-input" [(ngModel)]="editData.role">
+            <option value="Admin">Admin</option>
+            <option value="Athlete">Athlete</option>
+            <option value="Coach">Coach</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>وضعیت (Status)</label>
+          <select class="form-input" [(ngModel)]="editData.status">
+            <option value="Online">Online</option>
+            <option value="Offline">Offline</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>کد کشور</label>
+          <input type="text" class="form-input uppercase" [(ngModel)]="editData.country" maxlength="2"
+                 placeholder="مثال: ir">
+        </div>
+        <div class="form-group">
+          <label>دپارتمان</label>
+          <input type="text" class="form-input" [(ngModel)]="editData.division">
+        </div>
+      </div>
+
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-cancel" (click)="onCancel()">انصراف</button>
+      <button class="btn btn-primary" (click)="onSave()">ذخیره تغییرات</button>
+    </div>
+
+  </div>
+</div>

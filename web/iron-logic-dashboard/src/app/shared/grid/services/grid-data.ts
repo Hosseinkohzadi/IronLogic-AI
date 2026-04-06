@@ -4,7 +4,7 @@ import { map } from 'rxjs/operators';
 
 @Injectable()
 export class GridDataService {
-  // ۱. مخازن داده‌های خام و وضعیت‌ها
+  // ۱. مخازن داده‌های خام و وضعیت‌ها (Private)
   private _rawData$ = new BehaviorSubject<any[]>([]);
   private _sortConfig$ = new BehaviorSubject<{ field: string; order: 'asc' | 'desc' | null }>({ field: '', order: null });
   private _filters$ = new BehaviorSubject<{ [key: string]: string }>({});
@@ -21,16 +21,34 @@ export class GridDataService {
       // الف) فیلتر کردن
       let result = data.filter(row => {
         return Object.keys(filters).every(field => {
-          const term = filters[field].toLowerCase();
-          return String(row[field] || '').toLowerCase().includes(term);
+          const filterValue = filters[field];
+          if (!filterValue) return true;
+
+          const rowValue = row[field];
+
+          // فیلتر تاریخ
+          if (rowValue instanceof Date) {
+            const yyyy = rowValue.getFullYear();
+            const mm = String(rowValue.getMonth() + 1).padStart(2, '0');
+            const dd = String(rowValue.getDate()).padStart(2, '0');
+            const formattedDate = `${yyyy}-${mm}-${dd}`;
+            return formattedDate === filterValue;
+          }
+
+          const term = String(filterValue).toLowerCase();
+          return String(rowValue || '').toLowerCase().includes(term);
         });
       });
 
       // ب) مرتب‌سازی
       if (sort.order) {
         result = [...result].sort((a, b) => {
-          const valA = a[sort.field];
-          const valB = b[sort.field];
+          let valA = a[sort.field];
+          let valB = b[sort.field];
+          if (valA instanceof Date) valA = valA.getTime();
+          if (valB instanceof Date) valB = valB.getTime();
+          if (valA == null) return 1;
+          if (valB == null) return -1;
           if (valA < valB) return sort.order === 'asc' ? -1 : 1;
           if (valA > valB) return sort.order === 'asc' ? 1 : -1;
           return 0;
@@ -40,7 +58,9 @@ export class GridDataService {
     })
   );
 
-  // ۳. خروجی نهایی برای نمایش در صفحه (Paging)
+  // ۳. خروجی‌های عمومی (Public) - بعد از تعریف Observable اصلی تعریف شده‌اند تا ارور رفع شود
+  public processedData$ = this._processedData$;
+
   public pagedData$ = combineLatest([
     this._processedData$,
     this._currentPage$,
@@ -52,7 +72,6 @@ export class GridDataService {
     })
   );
 
-  // ۴. اطلاعات صفحه‌بندی برای فوتر
   public pagination$ = combineLatest([
     this._processedData$,
     this._currentPage$,
@@ -66,11 +85,9 @@ export class GridDataService {
     }))
   );
 
-  // --- متدهای عمومی برای تغییر وضعیت ---
-
   setData(data: any[]) {
     this._rawData$.next(data);
-    this._currentPage$.next(1); // بازگشت به صفحه اول با دیتای جدید
+    this._currentPage$.next(1);
   }
 
   applySort(field: string, order: 'asc' | 'desc' | null) {
@@ -80,15 +97,10 @@ export class GridDataService {
   updateFilter(field: string, value: string) {
     const current = this._filters$.value;
     this._filters$.next({ ...current, [field]: value });
-    this._currentPage$.next(1); // با فیلتر جدید به صفحه اول برگرد
+    this._currentPage$.next(1);
   }
 
   goToPage(page: number) {
     this._currentPage$.next(page);
-  }
-
-  // این متد را اضافه یا اصلاح کنید
-  applyChanges(field: string, order: 'asc' | 'desc' | null) {
-    this._sortConfig$.next({ field, order });
   }
 }

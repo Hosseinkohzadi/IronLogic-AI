@@ -1,48 +1,59 @@
 import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {CommonModule} from '@angular/common';
 import {ColumnConfig} from '../../models/column-config';
+import {Subject} from 'rxjs';
+import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 
 @Component({
   selector: 'app-grid-header',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <div class="grid-header-row">
-      <div *ngFor="let col of columns"
-           class="header-cell"
-           [style.width]="col.width"
-           (click)="onSort(col)">
-
-        <span>{{ col.title }}</span>
-
-        <span class="sort-icon" [ngClass]="{'active': col.sortOrder}">
-          <svg *ngIf="!col.sortOrder" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15l5 5 5-5M7 9l5-5 5 5"/></svg>
-
-          <svg *ngIf="col.sortOrder === 'asc'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 15l-6-6-6 6"/></svg>
-
-          <svg *ngIf="col.sortOrder === 'desc'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
-        </span>
-
-      </div>
-    </div>
-  `,
-  styleUrl: './grid-header.css'
+  templateUrl: './grid-header.html',
+  styleUrls: ['./grid-header.css']
 })
 export class GridHeaderComponent {
   @Input() columns: ColumnConfig[] = [];
   @Output() sortChange = new EventEmitter<ColumnConfig>();
+  @Output() filterChange = new EventEmitter<{ field: string, value: string }>();
+
+  private filterSubject = new Subject<{ field: string, value: string }>();
+
+  constructor() {
+    this.filterSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged((prev, curr) => prev.value === curr.value)
+    ).subscribe(filter => {
+      this.filterChange.emit(filter);
+    });
+  }
 
   onSort(column: ColumnConfig) {
-    // تغییر چرخه: null -> asc -> desc -> null
-    if (!column.sortOrder) column.sortOrder = 'asc';
-    else if (column.sortOrder === 'asc') column.sortOrder = 'desc';
-    else column.sortOrder = null;
+    // فقط ستون‌های فاقد داده (مثل دکمه‌ها و عکس) سورت نمی‌شوند
+    if (column.type === 'action' || column.field === 'avatar') return;
 
-    // ریست کردن سایر ستون‌ها (سورت تک‌ستونه)
+    // چرخه سورت: asc -> desc -> null
+    if (!column.sortOrder) {
+      column.sortOrder = 'asc';
+    } else if (column.sortOrder === 'asc') {
+      column.sortOrder = 'desc';
+    } else {
+      column.sortOrder = null;
+    }
+
+    // ریست کردن بقیه ستون‌ها
     this.columns.forEach(c => {
       if (c.field !== column.field) c.sortOrder = null;
     });
 
     this.sortChange.emit(column);
+  }
+
+  onTextInputFilter(event: any, field: string) {
+    this.filterSubject.next({field, value: event.target.value});
+  }
+
+  onSelectFilter(event: any, field: string) {
+    const value = event.target.value;
+    this.filterChange.emit({ field, value });
   }
 }

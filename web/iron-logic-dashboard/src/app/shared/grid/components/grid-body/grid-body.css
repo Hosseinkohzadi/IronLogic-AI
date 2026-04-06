@@ -1,31 +1,21 @@
 /* shared/grid/components/grid-body/grid-body.css */
 
-/* محفظه اصلی اسکرول مجازی */
-.viewport {
-  height: 400px; /* این ارتفاع را می‌توانید بنا به نیاز تغییر دهید */
+:host {
+  display: block;
   width: 100%;
-  outline: none;
-  /* شخصی‌سازی اسکرول‌بار برای هماهنگی با تم Dashboard */
-  overflow-y: auto;
 }
 
-.viewport::-webkit-scrollbar {
-  width: 6px;
-}
-
-.viewport::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 10px;
+.grid-body-container {
+  width: 100%;
+  min-height: 200px;
 }
 
 .grid-row {
   display: flex;
   width: 100%;
-  height: 48px; /* بسیار مهم: باید با itemSize در HTML یکی باشد */
   border-bottom: 1px solid #f1f5f9;
   background-color: white;
-  transition: background 0.2s;
-  box-sizing: border-box; /* برای اینکه padding باعث افزایش ارتفاع نشود */
+  transition: background 0.15s;
 }
 
 .grid-row:hover {
@@ -34,10 +24,9 @@
 
 .grid-cell {
   flex: 1;
-  padding: 0 16px; /* پدینگ عمودی را حذف کردیم چون ارتفاع ردیف ثابت است */
+  padding: 12px 16px;
   font-size: 13px;
-  color: #1e293b;
-  text-align: right;
+  color: #334155;
   display: flex;
   align-items: center;
   min-width: 0;
@@ -45,3 +34,34 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.no-data {
+  padding: 40px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+}
+
+.action-container {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  width: 100%;
+}
+
+.action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background-color: white;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.action-btn.edit:hover { border-color: #6366f1; color: #6366f1; background-color: #f5f3ff; }
+.action-btn.delete:hover { border-color: #ef4444; color: #ef4444; background-color: #fef2f2; }

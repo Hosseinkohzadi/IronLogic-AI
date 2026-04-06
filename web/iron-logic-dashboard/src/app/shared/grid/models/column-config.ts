@@ -2,7 +2,7 @@
   field: string;
   title: string;
   width?: string;
-  type?: 'text' | 'number' | 'date';
+  type?: 'text' | 'flag' | 'action' | 'number' | 'date' | 'badge' | 'image' | 'rate'|'calendar';
   sortable?: boolean; // آیا این ستون قابلیت سورت دارد؟
   sortOrder?: 'asc' | 'desc' | null; // وضعیت فعلی سورت
 }

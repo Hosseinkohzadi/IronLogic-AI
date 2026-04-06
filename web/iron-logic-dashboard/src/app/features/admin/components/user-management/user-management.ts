@@ -1,9 +1,9 @@
-import { Component, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { GridComponent } from '@shared/grid/grid';
-import { ColumnConfig } from '@shared/grid/models/column-config';
-import { ConfirmModalComponent } from '@shared/confirm-modal/confirm-modal';
-import { EditUserModalComponent } from '@shared/edit-user-modal/edit-user-modal';
+import {Component, signal} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {GridComponent} from '@shared/grid/grid';
+import {ColumnConfig} from '@shared/grid/models/column-config';
+import {ConfirmModalComponent} from '@shared/confirm-modal/confirm-modal';
+import {EditUserModalComponent} from '@shared/edit-user-modal/edit-user-modal';
 
 @Component({
   selector: 'app-user-management',
@@ -11,24 +11,25 @@ import { EditUserModalComponent } from '@shared/edit-user-modal/edit-user-modal'
   // ایمپورت‌های تکراری اصلاح شدند
   imports: [CommonModule, GridComponent, ConfirmModalComponent, EditUserModalComponent],
   templateUrl: './user-management.html',
-  styleUrl:'./user-management.css'
+  styleUrl: './user-management.css'
 })
 export class UserManagement {
   // ۱. تنظیمات ستون‌های گرید
   userColumns: ColumnConfig[] = [
-    { field: 'avatar', title: 'آواتار', width: '6%', type: 'image' }, // نوع تصویر
-    { field: 'name', title: 'نام کاربر', width: '18%' },
-    { field: 'country', title: 'کشور', width: '10%', type: 'flag' },
-    { field: 'role', title: 'نقش', width: '12%' },
-    { field: 'rating', title: 'عملکرد', width: '12%', type: 'rate' }, // نوع ستاره
-    { field: 'joinDate', title: 'تاریخ عضویت', width: '14%', type: 'calendar' }, // نوع تاریخ
-    { field: 'status', title: 'وضعیت', width: '10%', type: 'badge' },
-    { field: 'actions', title: 'عملیات', width: '8%', type: 'action' }
+    {field: 'selected', title: '', type: 'selection', width: '40px'}, // ستون جدید
+    {field: 'avatar', title: 'آواتار', width: '6%', type: 'image'}, // نوع تصویر
+    {field: 'name', title: 'نام کاربر', width: '18%'},
+    {field: 'country', title: 'کشور', width: '10%', type: 'flag'},
+    {field: 'role', title: 'نقش', width: '12%'},
+    {field: 'rating', title: 'عملکرد', width: '12%', type: 'rate'}, // نوع ستاره
+    {field: 'joinDate', title: 'تاریخ عضویت', width: '14%', type: 'calendar'}, // نوع تاریخ
+    {field: 'status', title: 'وضعیت', width: '10%', type: 'badge'},
+    {field: 'actions', title: 'عملیات', width: '8%', type: 'action'}
   ];
 
   // ۲. داده‌های فیک
   users = signal(
-    Array.from({ length: 1000 }).map((_, i) => {
+    Array.from({length: 1000}).map((_, i) => {
       const countries = ['ir', 'ca', 'us', 'gb', 'fr', 'de', 'br', 'jp'];
       const randomCountry = countries[i % countries.length];
 
@@ -65,8 +66,7 @@ export class UserManagement {
       this.selectedUserForDelete.set(event.row);
       this.deleteMessage.set(`آیا از حذف کاربر "${event.row.name}" اطمینان دارید؟ این عملیات غیرقابل بازگشت است.`);
       this.isDeleteModalOpen.set(true);
-    }
-    else if (event.type === 'edit') {
+    } else if (event.type === 'edit') {
       this.selectedUserForEdit.set(event.row);
       this.isEditModalOpen.set(true);
     }

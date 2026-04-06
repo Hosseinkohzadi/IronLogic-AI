@@ -10,18 +10,21 @@
   min-height: 200px;
 }
 
+/* --- ساختار اصلی ردیف --- */
 .grid-row {
   display: flex;
   width: 100%;
   border-bottom: 1px solid #f1f5f9;
   background-color: white;
-  transition: background 0.15s;
+  transition: all 0.2s ease;
+  position: relative; /* برای قرارگیری صحیح ::after */
 }
 
 .grid-row:hover {
   background-color: #f8fafc;
 }
 
+/* --- ساختار سلول‌ها --- */
 .grid-cell {
   flex: 1;
   padding: 12px 16px;
@@ -35,13 +38,7 @@
   text-overflow: ellipsis;
 }
 
-.no-data {
-  padding: 40px;
-  text-align: center;
-  color: #94a3b8;
-  font-size: 14px;
-}
-
+/* --- دکمه‌های عملیاتی --- */
 .action-container {
   display: flex;
   gap: 8px;
@@ -63,5 +60,46 @@
   transition: all 0.2s;
 }
 
-.action-btn.edit:hover { border-color: #6366f1; color: #6366f1; background-color: #f5f3ff; }
-.action-btn.delete:hover { border-color: #ef4444; color: #ef4444; background-color: #fef2f2; }
+.action-btn.edit:hover {
+  border-color: #6366f1;
+  color: #6366f1;
+  background-color: #f5f3ff;
+}
+
+.action-btn.delete:hover {
+  border-color: #ef4444;
+  color: #ef4444;
+  background-color: #fef2f2;
+}
+
+/* --- وضعیت انتخاب (Selection) --- */
+/* استفاده از کانتینر والد برای اطمینان از اعمال استایل */
+.grid-body-container .grid-row.row-selected {
+  background-color: #f5f3ff !important;
+  z-index: 1;
+}
+
+/* شفاف کردن سلول‌ها در حالت انتخاب برای نمایش رنگ ردیف */
+.grid-row.row-selected .grid-cell {
+  background-color: transparent !important;
+}
+
+/* خط عمودی نشانگر سمت راست (RTL) */
+.grid-row.row-selected::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background-color: #6366f1;
+  z-index: 2;
+}
+
+/* --- وضعیت نبود داده --- */
+.no-data {
+  padding: 40px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 14px;
+}

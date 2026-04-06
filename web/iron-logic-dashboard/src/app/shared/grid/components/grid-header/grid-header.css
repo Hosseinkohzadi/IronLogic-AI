@@ -1,13 +1,19 @@
 /* shared/grid/components/grid-header/grid-header.css */
+:host {
+  display: block;
+  z-index: 10; /* برای اینکه روی ردیف‌های در حال حرکت بماند */
+}
+
 .grid-header-row {
-  display: flex; /* کلیدی برای افقی شدن هدرها */
+  display: flex;
   width: 100%;
   background-color: #f8fafc;
   border-bottom: 2px solid #e2e8f0;
+  box-sizing: border-box;
 }
 
 .header-cell {
-  flex: 1; /* توزیع مساوی ستون‌ها */
+  flex: 1;
   padding: 14px 16px;
   display: flex;
   align-items: center;
@@ -20,15 +26,11 @@
   min-width: 0;
 }
 
-.header-cell:hover {
-  background-color: #f1f5f9;
-}
-
 .sort-icon {
   display: inline-flex;
   align-items: center;
   color: #cbd5e1;
-  margin-right: 8px; /* فاصله از متن */
+  margin-right: 8px;
 }
 
 .sort-icon.active {

@@ -1,0 +1,18 @@
+.user-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.user-card:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.bg-emerald-50 {
+  animation: pulse-online 2s infinite;
+}
+
+@keyframes pulse-online {
+  0% { opacity: 1; }
+  50% { opacity: 0.6; }
+  100% { opacity: 1; }
+}

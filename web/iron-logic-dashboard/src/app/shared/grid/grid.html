@@ -1,17 +1,32 @@
-<div class="iron-grid">
-  <app-grid-header
-    [columns]="columns"
-    (sortChange)="gridDataService.applyChanges($event.field, $event.sortOrder!)">
+<div class="iron-grid shadow-lg border border-slate-200 rounded-xl overflow-hidden bg-white flex flex-col">
+
+  <!-- نوار ابزار هوشمند -->
+  <div class="grid-toolbar flex justify-between items-center p-4 bg-slate-50 border-b border-slate-200">
+    <div class="flex gap-2">
+      <button (click)="export('excel')" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold hover:text-green-600 hover:border-green-200 transition-all flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+        <span>اکسل</span>
+      </button>
+      <button (click)="export('pdf')" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold hover:text-red-600 hover:border-red-200 transition-all flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+        <span>PDF</span>
+      </button>
+    </div>
+    <div class="flex flex-col items-end">
+      <span class="text-[10px] font-black text-indigo-500 uppercase tracking-tighter">IronLogic AI</span>
+      <span class="text-[9px] text-slate-400">مدیریت هوشمند داده‌ها</span>
+    </div>
+  </div>
+
+  <!-- هدر -->
+  <app-grid-header [columns]="columns"
+                   (sortChange)="gridDataService.applySort($event.field, $event.sortOrder!)"
+                   (filterChange)="gridDataService.updateFilter($event.field, $event.value)">
   </app-grid-header>
 
-  <app-grid-body
-    [columns]="columns"
-    [data$]="gridDataService.pagedData$">
-  </app-grid-body>
+  <!-- بدنه -->
+  <app-grid-body [columns]="columns" [data$]="gridDataService.pagedData$" (action)="actionTriggered.emit($event)"></app-grid-body>
 
-  <app-grid-footer
-    *ngIf="gridDataService.pagination$ | async as pg"
-    [pagination]="pg"
-    (pageChange)="gridDataService.goToPage($event)">
-  </app-grid-footer>
+  <!-- فوتر -->
+  <app-grid-footer *ngIf="gridDataService.pagination$ | async as pg" [pagination]="pg" (pageChange)="gridDataService.goToPage($event)"></app-grid-footer>
 </div>

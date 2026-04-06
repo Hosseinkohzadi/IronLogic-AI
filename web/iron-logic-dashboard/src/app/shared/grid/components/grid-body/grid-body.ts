@@ -1,25 +1,22 @@
-import { Component, Input } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
-import { ColumnConfig } from '../../models/column-config';
-import { ScrollingModule } from '@angular/cdk/scrolling'; // وارد کردن ماژول اسکرول
+import {Component, EventEmitter, Input, Output} from '@angular/core';
+import {CommonModule} from '@angular/common';
+import {Observable} from 'rxjs';
+import {ColumnConfig} from '../../models/column-config';
 
 @Component({
   selector: 'app-grid-body',
   standalone: true,
-  imports: [CommonModule,ScrollingModule],
-  template: `
-    <cdk-virtual-scroll-viewport itemSize="48" class="viewport">
-      <div *cdkVirtualFor="let row of data$ | async" class="grid-row">
-        <div *ngFor="let col of columns" class="grid-cell" [style.width]="col.width">
-          {{ row[col.field] }}
-        </div>
-      </div>
-    </cdk-virtual-scroll-viewport>
-  `,
+  imports: [CommonModule], // ScrollingModule حذف شد چون از Paging استفاده می‌کنیم
+  templateUrl: './grid-body.html',
   styleUrls: ['./grid-body.css']
 })
 export class GridBodyComponent {
   @Input() columns: ColumnConfig[] = [];
   @Input() data$!: Observable<any[]>;
+
+  @Output() action = new EventEmitter<{ type: 'edit' | 'delete', row: any }>();
+
+  onAction(type: 'edit' | 'delete', row: any) {
+    this.action.emit({type, row});
+  }
 }

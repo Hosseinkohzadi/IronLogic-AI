@@ -1,4 +1,3 @@
-/* shared/grid/grid.css */
 :host {
   display: block;
   width: 100%;
@@ -15,7 +14,60 @@
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
 
-/* جلوگیری از اختلال تگ‌های کامپوننت در چیدمان Flex */
+/* استایل نوار ابزار بالای گرید */
+.grid-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.toolbar-actions {
+  display: flex;
+  gap: 8px;
+}
+
+/* استایل دکمه‌های Export */
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #e2e8f0;
+  background: white;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.export-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05);
+  border-color: #cbd5e1;
+}
+
+.export-btn:active {
+  transform: translateY(0);
+}
+
+.export-btn.excel:hover {
+  background-color: #f0fdf4;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+.export-btn.pdf:hover {
+  background-color: #fef2f2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
+/* چیدمان کامپوننت‌های داخلی */
 app-grid-header,
 app-grid-body,
 app-grid-footer {

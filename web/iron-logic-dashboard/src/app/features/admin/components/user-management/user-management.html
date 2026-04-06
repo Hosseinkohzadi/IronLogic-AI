@@ -1,44 +1,22 @@
-<div class="user-list-container space-y-4 p-2">
-  <div class="flex justify-between items-center mb-4">
-    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Active Directory: {{ users().length }} Entries</p>
-    <button class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 uppercase tracking-widest">+ Invite User</button>
-  </div>
+<div class="p-4 h-full flex flex-col">
+  <app-grid
+    [columns]="userColumns"
+    [data]="users()"
+    (actionTriggered)="handleUserAction($event)">
+  </app-grid>
 
-  <div *ngFor="let u of users()"
-       class="user-card bg-white p-5 rounded-2xl border border-slate-100 flex items-center justify-between hover:border-indigo-100 transition-all group">
+  <app-confirm-modal
+    [isOpen]="isDeleteModalOpen()"
+    title="حذف کاربر"
+    [message]="deleteMessage()"
+    (confirm)="executeDelete()"
+    (cancel)="cancelDelete()">
+  </app-confirm-modal>
 
-    <div class="flex items-center gap-5">
-      <div class="w-12 h-12 rounded-full flex items-center justify-center font-black text-lg shadow-inner"
-           [ngClass]="{
-             'bg-indigo-50 text-indigo-600': u.color === 'indigo',
-             'bg-slate-100 text-slate-500': u.color === 'slate',
-             'bg-orange-50 text-orange-600': u.color === 'orange'
-           }">
-        {{ u.initial }}
-      </div>
-
-      <div>
-        <div class="flex items-center gap-2">
-          <p class="font-bold text-slate-800">{{ u.name }}</p>
-          <span class="text-[9px] px-2 py-0.5 rounded-md font-bold uppercase tracking-tighter"
-                [ngClass]="u.status === 'Online' ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-50 text-slate-400'">
-            {{ u.status }}
-          </span>
-        </div>
-        <p class="text-xs text-slate-400 font-medium mt-0.5">{{ u.role }} • {{ u.division }}</p>
-      </div>
-    </div>
-
-    <div class="flex items-center gap-6">
-      <div class="text-right hidden sm:block">
-        <p class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Last Activity</p>
-        <p class="text-xs font-bold text-slate-500">{{ u.lastActive }}</p>
-      </div>
-
-      <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button class="text-[10px] font-bold text-slate-400 hover:text-indigo-600 uppercase">Permissions</button>
-        <button (click)="revokeAccess(u.id)" class="text-[10px] font-bold text-slate-400 hover:text-red-500 uppercase">Revoke</button>
-      </div>
-    </div>
-  </div>
+  <app-edit-user-modal
+    [isOpen]="isEditModalOpen()"
+    [user]="selectedUserForEdit()"
+    (save)="executeEdit($event)"
+    (cancel)="cancelEdit()">
+  </app-edit-user-modal>
 </div>

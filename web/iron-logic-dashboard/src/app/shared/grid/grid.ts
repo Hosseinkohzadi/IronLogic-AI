@@ -57,4 +57,8 @@ export class GridComponent {
       }
     });
   }
+
+  applyAiFilter($event: any) {
+    
+  }
 }

@@ -15,6 +15,7 @@ export class GridHeaderComponent {
   @Input() columns: ColumnConfig[] = [];
   @Output() sortChange = new EventEmitter<ColumnConfig>();
   @Output() filterChange = new EventEmitter<{ field: string, value: string }>();
+  @Output() toggleAll = new EventEmitter<boolean>(); // رویداد جدید
 
   private filterSubject = new Subject<{ field: string, value: string }>();
 
@@ -27,11 +28,13 @@ export class GridHeaderComponent {
     });
   }
 
-  onSort(column: ColumnConfig) {
-    // فقط ستون‌های فاقد داده (مثل دکمه‌ها و عکس) سورت نمی‌شوند
-    if (column.type === 'action' || column.field === 'avatar') return;
+  onToggleAll(event: any) {
+    this.toggleAll.emit(event.target.checked);
+  }
 
-    // چرخه سورت: asc -> desc -> null
+  onSort(column: ColumnConfig) {
+    if (column.type === 'action' || column.type === 'selection' || column.field === 'avatar') return;
+
     if (!column.sortOrder) {
       column.sortOrder = 'asc';
     } else if (column.sortOrder === 'asc') {
@@ -40,7 +43,6 @@ export class GridHeaderComponent {
       column.sortOrder = null;
     }
 
-    // ریست کردن بقیه ستون‌ها
     this.columns.forEach(c => {
       if (c.field !== column.field) c.sortOrder = null;
     });
@@ -53,7 +55,6 @@ export class GridHeaderComponent {
   }
 
   onSelectFilter(event: any, field: string) {
-    const value = event.target.value;
-    this.filterChange.emit({ field, value });
+    this.filterChange.emit({ field, value: event.target.value });
   }
 }

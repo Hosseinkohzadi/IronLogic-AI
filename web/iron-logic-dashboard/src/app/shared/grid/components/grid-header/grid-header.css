@@ -111,3 +111,9 @@
   padding: 5px 8px; /* پدینگ بهینه‌تر برای هم‌ارتفاع شدن با بقیه اینپوت‌ها */
   cursor: pointer;
 }
+
+/* اضافه کردن به انتهای فایل grid-header.css */
+.header-cell:has(input[type="checkbox"]) {
+  padding-left: 16px; /* ریست کردن پدینگ برای ستون چک‌باکس */
+  justify-content: center;
+}

@@ -12,21 +12,28 @@
         <span>PDF</span>
       </button>
     </div>
+    <div class="flex-1 mx-4 relative group">
+      <input type="text"
+             (keyup.enter)="applyAiFilter($event)"
+             placeholder="جستجوی هوشمند (مثلاً: کاربران فعال با امتیاز بالا)..."
+             class="w-full bg-slate-100 border-none rounded-lg py-2 px-10 text-sm focus:ring-2 focus:ring-indigo-400 transition-all">
+      <svg class="w-4 h-4 absolute right-3 top-2.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+      </svg>
+    </div>
     <div class="flex flex-col items-end">
       <span class="text-[10px] font-black text-indigo-500 uppercase tracking-tighter">IronLogic AI</span>
       <span class="text-[9px] text-slate-400">مدیریت هوشمند داده‌ها</span>
     </div>
   </div>
 
-  <!-- هدر -->
   <app-grid-header [columns]="columns"
                    (sortChange)="gridDataService.applySort($event.field, $event.sortOrder!)"
-                   (filterChange)="gridDataService.updateFilter($event.field, $event.value)">
-  </app-grid-header>
+                   (filterChange)="gridDataService.updateFilter($event.field, $event.value)"
+                   (toggleAll)="gridDataService.toggleAllSelection($event)"> </app-grid-header>
 
-  <!-- بدنه -->
   <app-grid-body [columns]="columns" [data$]="gridDataService.pagedData$" (action)="actionTriggered.emit($event)"></app-grid-body>
 
-  <!-- فوتر -->
   <app-grid-footer *ngIf="gridDataService.pagination$ | async as pg" [pagination]="pg" (pageChange)="gridDataService.goToPage($event)"></app-grid-footer>
+
 </div>

@@ -1,6 +1,9 @@
 :host {
   display: block;
   width: 100%;
+  --iron-primary: #6366f1;
+  --iron-bg-soft: #f8fafc;
+  --iron-border: #e2e8f0;
 }
 
 .iron-grid {
@@ -73,3 +76,5 @@ app-grid-body,
 app-grid-footer {
   display: contents;
 }
+
+

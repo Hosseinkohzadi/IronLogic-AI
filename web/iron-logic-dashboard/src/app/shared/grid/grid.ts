@@ -23,6 +23,7 @@ import { GridFooterComponent } from './components/grid-footer/grid-footer';
 })
 export class GridComponent {
   @Input() columns: ColumnConfig[] = [];
+
   @Input() set data(value: any[]) {
     this.gridDataService.setData(value);
   }

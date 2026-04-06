@@ -1,10 +1,17 @@
 <div class="iron-grid">
   <app-grid-header
     [columns]="columns"
-    (sortChange)="gridDataService.sort($event.field, $event.sortOrder!)">
+    (sortChange)="gridDataService.applyChanges($event.field, $event.sortOrder!)">
   </app-grid-header>
 
-  <app-grid-body [columns]="columns" [data$]="gridDataService.data$"></app-grid-body>
+  <app-grid-body
+    [columns]="columns"
+    [data$]="gridDataService.pagedData$">
+  </app-grid-body>
 
-  <app-grid-footer [count]="(gridDataService.data$ | async)?.length || 0"></app-grid-footer>
+  <app-grid-footer
+    *ngIf="gridDataService.pagination$ | async as pg"
+    [pagination]="pg"
+    (pageChange)="gridDataService.goToPage($event)">
+  </app-grid-footer>
 </div>

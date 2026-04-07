@@ -3,9 +3,24 @@
     <div>
       <h1 class="text-2xl font-black text-slate-800 tracking-tight uppercase">Infrastructure Dashboard</h1>
     </div>
-    <div class="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-md">
-      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-      <span class="text-xs font-bold text-emerald-700 uppercase tracking-widest">SERVER: OPERATIONAL</span>
+    <div class="flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors duration-300"
+         [ngClass]="{
+           'bg-emerald-50': serverStatus() === 'OPERATIONAL',
+           'bg-red-50': serverStatus() === 'DOWN',
+           'bg-slate-100': serverStatus() === 'CHECKING'
+         }">
+      <span class="w-2 h-2 rounded-full"
+            [ngClass]="{
+              'bg-emerald-500 animate-pulse': serverStatus() === 'OPERATIONAL',
+              'bg-red-500': serverStatus() === 'DOWN',
+              'bg-slate-400 animate-pulse': serverStatus() === 'CHECKING'
+            }"></span>
+      <span class="text-xs font-bold uppercase tracking-widest transition-colors duration-300"
+            [ngClass]="{
+              'text-emerald-700': serverStatus() === 'OPERATIONAL',
+              'text-red-700': serverStatus() === 'DOWN',
+              'text-slate-500': serverStatus() === 'CHECKING'
+            }">SERVER: {{ serverStatus() }}</span>
     </div>
   </header>
 

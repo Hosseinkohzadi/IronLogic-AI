@@ -1,22 +1,29 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { IronLogicApiService } from '@core/services/iron-logic-api.service';
-import { FormsModule } from '@angular/forms';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { WorkoutChartComponent } from '@features/admin/components/workout-chart/workout-chart';
-import { UserDirectoryComponent } from '@features/admin/components/user-directory/user-directory';
-import { UserManagement } from '../components/user-management/user-management';
+import {Component, computed, DestroyRef, inject, OnInit, signal} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {CommonModule} from '@angular/common';
+import {interval, of} from 'rxjs';
+import {catchError, startWith, switchMap} from 'rxjs/operators';
+import {IronLogicApiService} from '@core/services/iron-logic-api.service';
+import {FormsModule} from '@angular/forms';
+import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
+import {WorkoutChartComponent} from '@features/admin/components/workout-chart/workout-chart';
+import {UserDirectoryComponent} from '@features/admin/components/user-directory/user-directory';
+import {UserManagement} from '../components/user-management/user-management';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, WorkoutChartComponent,UserDirectoryComponent,UserManagement],
+  imports: [CommonModule, FormsModule, WorkoutChartComponent, UserDirectoryComponent, UserManagement],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })
 export class AdminComponent implements OnInit {
   public api = inject(IronLogicApiService);
   private sanitizer = inject(DomSanitizer);
+  private destroyRef = inject(DestroyRef);
+
+  // Server Status Signal
+  serverStatus = signal<'OPERATIONAL' | 'DOWN' | 'CHECKING'>('CHECKING');
 
   totalUsers = signal<number>(1);
   totalWorkouts = signal<number>(653);
@@ -38,11 +45,26 @@ export class AdminComponent implements OnInit {
 
   ngOnInit() {
     this.loadData();
+    this.startHealthCheck();
+
     this.api.getWorkoutStatsWithAdvice().subscribe(stats => {
       if (stats?.dailyWorkouts) {
         const count = stats.dailyWorkouts.reduce((acc, curr) => acc + curr.workoutSessionDtos.length, 0);
         this.totalWorkouts.set(count > 0 ? count : 653);
       }
+    });
+  }
+
+  startHealthCheck() {
+    // Polls every 15 seconds (15000ms)
+    interval(15000).pipe(
+      startWith(0),
+      switchMap(() => this.api.pingServer().pipe(
+        catchError(() => of(false))
+      )),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((isUp: boolean) => {
+      this.serverStatus.set(isUp ? 'OPERATIONAL' : 'DOWN');
     });
   }
 

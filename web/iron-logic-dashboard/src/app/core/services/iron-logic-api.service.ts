@@ -1,6 +1,7 @@
 ﻿import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, shareReplay, tap } from 'rxjs';
+import { Observable, shareReplay, tap, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 import { environment } from '@env/environment';
 import { Exercise, WorkoutStats } from '../models'; // استفاده از index.ts برای ایمپورت تمیز
 
@@ -52,29 +53,28 @@ export class IronLogicApiService {
     );
   }
 
-  /**
-   * جستجوی حرکات (Admin)
-   */
   searchExercises(searchTerm: string): Observable<Exercise[]> {
     return this.http.get<Exercise[]>(`${this.adminUrl}/search`, {
       params: new HttpParams().set('searchTerm', searchTerm)
     });
   }
 
-  /**
-   * حذف حرکت (Admin) - استفاده از string برای GUID مطابق Swagger
-   */
   deleteExercise(id: string): Observable<void> {
     return this.http.delete<void>(`${this.adminUrl}/${id}`);
   }
 
-  /**
-   * وارد کردن دسته‌جمعی (Admin)
-   */
   bulkImport(exercises: Exercise[]): Observable<{ importedCount: number; message: string }> {
     return this.http.post<{ importedCount: number; message: string }>(
       `${this.adminUrl}/bulk-import`,
       exercises
+    );
+  }
+
+  pingServer() {
+    // Replace '/api/health' with a real, lightweight endpoint if you don't have a health check route
+    return this.http.get(`${this.baseUrl}/api/health`, { observe: 'response' }).pipe(
+      map(response => response.status === 200),
+      catchError(() => of(false))
     );
   }
 }

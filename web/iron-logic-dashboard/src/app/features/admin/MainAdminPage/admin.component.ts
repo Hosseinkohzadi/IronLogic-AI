@@ -1,5 +1,8 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
+import { interval, of } from 'rxjs';
+import { switchMap, catchError, startWith } from 'rxjs/operators';
 import { IronLogicApiService } from '@core/services/iron-logic-api.service';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
@@ -17,6 +20,10 @@ import { UserManagement } from '../components/user-management/user-management';
 export class AdminComponent implements OnInit {
   public api = inject(IronLogicApiService);
   private sanitizer = inject(DomSanitizer);
+  private destroyRef = inject(DestroyRef);
+
+  // Server Status Signal
+  serverStatus = signal<'OPERATIONAL' | 'DOWN' | 'CHECKING'>('CHECKING');
 
   totalUsers = signal<number>(1);
   totalWorkouts = signal<number>(653);
@@ -38,11 +45,26 @@ export class AdminComponent implements OnInit {
 
   ngOnInit() {
     this.loadData();
+    this.startHealthCheck();
+
     this.api.getWorkoutStatsWithAdvice().subscribe(stats => {
       if (stats?.dailyWorkouts) {
         const count = stats.dailyWorkouts.reduce((acc, curr) => acc + curr.workoutSessionDtos.length, 0);
         this.totalWorkouts.set(count > 0 ? count : 653);
       }
+    });
+  }
+
+  startHealthCheck() {
+    // Polls every 15 seconds (15000ms)
+    interval(15000).pipe(
+      startWith(0),
+      switchMap(() => this.api.pingServer().pipe(
+        catchError(() => of(false))
+      )),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe((isUp: boolean) => {
+      this.serverStatus.set(isUp ? 'OPERATIONAL' : 'DOWN');
     });
   }
 

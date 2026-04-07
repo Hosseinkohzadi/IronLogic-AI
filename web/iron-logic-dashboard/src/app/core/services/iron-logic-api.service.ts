@@ -1,9 +1,9 @@
-﻿import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, shareReplay, tap, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
-import { environment } from '@env/environment';
-import { Exercise, WorkoutStats } from '../models'; // استفاده از index.ts برای ایمپورت تمیز
+import {inject, Injectable, signal} from '@angular/core';
+import {HttpClient, HttpParams} from '@angular/common/http';
+import {Observable, of, shareReplay, tap} from 'rxjs';
+import {catchError, map} from 'rxjs/operators';
+import {environment} from '@env/environment';
+import {Exercise, WorkoutStats} from '../models'; // استفاده از index.ts برای ایمپورت تمیز
 
 @Injectable({
   providedIn: 'root'
@@ -33,6 +33,7 @@ export class IronLogicApiService {
     }
     return this.statsCache$;
   }
+
 // اضافه کردن یک سیگنال جدید برای تعداد کل
   totalExercises = signal<number>(0);
 
@@ -42,7 +43,7 @@ export class IronLogicApiService {
       .set('pageNumber', pageNumber.toString())
       .set('pageSize', pageSize.toString());
 
-    return this.http.get<{totalCount: number, items: Exercise[]}>(this.adminUrl, { params }).pipe(
+    return this.http.get<{ totalCount: number, items: Exercise[] }>(this.adminUrl, {params}).pipe(
       tap(response => {
         // ذخیره لیست حرکات صفحه فعلی
         this.exercises.set(response.items);
@@ -71,10 +72,17 @@ export class IronLogicApiService {
   }
 
   pingServer() {
-    // Replace '/api/health' with a real, lightweight endpoint if you don't have a health check route
-    return this.http.get(`${this.baseUrl}/api/health`, { observe: 'response' }).pipe(
+    const healthUrl = this.baseUrl.replace('/v1', '');
+
+    return this.http.get(`${healthUrl}/health`, {
+      observe: 'response',
+      responseType: 'text' 
+    }).pipe(
       map(response => response.status === 200),
-      catchError(() => of(false))
+      catchError((error) => {
+        console.error('Health Check Error:', error); 
+        return of(false);
+      })
     );
   }
 }

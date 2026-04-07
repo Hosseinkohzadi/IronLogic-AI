@@ -76,11 +76,11 @@ export class IronLogicApiService {
 
     return this.http.get(`${healthUrl}/health`, {
       observe: 'response',
-      responseType: 'text' 
+      responseType: 'text'
     }).pipe(
       map(response => response.status === 200),
       catchError((error) => {
-        console.error('Health Check Error:', error); 
+        console.error('Health Check Error:', error);
         return of(false);
       })
     );

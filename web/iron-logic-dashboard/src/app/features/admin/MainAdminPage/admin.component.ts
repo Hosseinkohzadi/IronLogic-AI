@@ -1,19 +1,19 @@
-import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { CommonModule } from '@angular/common';
-import { interval, of } from 'rxjs';
-import { switchMap, catchError, startWith } from 'rxjs/operators';
-import { IronLogicApiService } from '@core/services/iron-logic-api.service';
-import { FormsModule } from '@angular/forms';
-import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { WorkoutChartComponent } from '@features/admin/components/workout-chart/workout-chart';
-import { UserDirectoryComponent } from '@features/admin/components/user-directory/user-directory';
-import { UserManagement } from '../components/user-management/user-management';
+import {Component, computed, DestroyRef, inject, OnInit, signal} from '@angular/core';
+import {takeUntilDestroyed} from '@angular/core/rxjs-interop';
+import {CommonModule} from '@angular/common';
+import {interval, of} from 'rxjs';
+import {catchError, startWith, switchMap} from 'rxjs/operators';
+import {IronLogicApiService} from '@core/services/iron-logic-api.service';
+import {FormsModule} from '@angular/forms';
+import {DomSanitizer, SafeHtml} from '@angular/platform-browser';
+import {WorkoutChartComponent} from '@features/admin/components/workout-chart/workout-chart';
+import {UserDirectoryComponent} from '@features/admin/components/user-directory/user-directory';
+import {UserManagement} from '../components/user-management/user-management';
 
 @Component({
   selector: 'app-admin',
   standalone: true,
-  imports: [CommonModule, FormsModule, WorkoutChartComponent,UserDirectoryComponent,UserManagement],
+  imports: [CommonModule, FormsModule, WorkoutChartComponent, UserDirectoryComponent, UserManagement],
   templateUrl: './admin.component.html',
   styleUrl: './admin.component.css'
 })

@@ -28,14 +28,39 @@ export class UserManagementComponent implements OnInit {
 
   userColumns: ColumnConfig[] = [
     { field: 'selection', title: '', type: 'selection', width: '50px' },
-    { field: 'name', title: 'NAME', type: 'profile', sortable: true, width: '220px' },
-    { field: 'status', title: 'STATUS', type: 'badge', sortable: true, width: '120px' },
-    { field: 'tier', title: 'TIER', type: 'tier', sortable: true, width: '100px' },
-    { field: 'sessions', title: 'SESSIONS', type: 'text', sortable: true, width: '100px' },
-    { field: 'dailyWeights', title: 'WEIGHTS', type: 'text', sortable: true, width: '100px' },
-    { field: 'email', title: 'EMAIL', type: 'email', sortable: true, width: '220px' },
-    // تغییر نوع به calendar
-    { field: 'lastLogin', title: 'LAST LOGIN', type: 'calendar', sortable: true, width: '140px' }, 
+    { field: 'name', title: 'NAME', type: 'profile', sortable: true, width: '220px', filterType: 'text' },
+    {
+      field: 'status',
+      title: 'STATUS',
+      type: 'badge',
+      sortable: true,
+      width: '120px',
+      filterType: 'select',
+      filterOptions: [
+        { label: 'Active', value: 'Active' },
+        { label: 'Review', value: 'Review' },
+        { label: 'Suspended', value: 'Suspended' }
+      ]
+    },
+    {
+      field: 'tier',
+      title: 'TIER',
+      type: 'tier',
+      sortable: true,
+      width: '100px',
+      filterType: 'select',
+      filterOptions: [
+        { label: 'Elite', value: 'Elite' },
+        { label: 'Premium', value: 'Premium' },
+        { label: 'Pro', value: 'Pro' },
+        { label: 'Basic', value: 'Basic' },
+        { label: 'Free', value: 'Free' }
+      ]
+    },
+    { field: 'sessions', title: 'SESSIONS', type: 'text', sortable: true, width: '100px', filterType: 'number', filterMode: 'compare' },
+    { field: 'dailyWeights', title: 'WEIGHTS', type: 'text', sortable: true, width: '100px', filterType: 'number', filterMode: 'compare' },
+    { field: 'email', title: 'EMAIL', type: 'email', sortable: true, width: '220px', filterType: 'text' },
+    { field: 'lastLogin', title: 'LAST LOGIN', type: 'calendar', sortable: true, width: '140px', filterType: 'date', filterMode: 'exact' },
     { field: 'actions', title: 'ACTION', type: 'action', width: '80px' }
   ];
 
@@ -86,9 +111,45 @@ export class UserManagementComponent implements OnInit {
               lastLogin: mockDate.toISOString() 
             };
           });
-          
-          this.users.set(enrichedData);
-          this.filteredUsers.set(enrichedData);
+
+          const targetRecordCount = 100;
+          const expandedData = enrichedData.length
+            ? Array.from({ length: targetRecordCount }, (_, index) => {
+                const source = enrichedData[index % enrichedData.length];
+                const uniqueSuffix = String(index + 1).padStart(3, '0');
+                const duplicateWave = Math.floor(index / enrichedData.length);
+
+                const loginDate = new Date();
+                loginDate.setDate(loginDate.getDate() - index);
+
+                const baseSessions = Number(source.sessions ?? 0);
+                const nextSessions = baseSessions + (index % 9);
+
+                const baseEmail = String(source.email ?? '').trim();
+                let nextEmail = `user${uniqueSuffix}@example.com`;
+                if (baseEmail.includes('@')) {
+                  const [local, domain] = baseEmail.split('@');
+                  nextEmail = `${local}+${uniqueSuffix}@${domain}`;
+                }
+
+                return {
+                  ...source,
+                  id: source.id ? `${source.id}-${uniqueSuffix}` : `usr-${uniqueSuffix}`,
+                  userName: source.userName
+                    ? `${source.userName}${duplicateWave > 0 ? `_${duplicateWave + 1}` : ''}`
+                    : `user_${uniqueSuffix}`,
+                  name: source.name ? `${source.name} ${uniqueSuffix}` : `User ${uniqueSuffix}`,
+                  email: nextEmail,
+                  sessions: nextSessions,
+                  dailyWeights: Math.floor(nextSessions * 0.6),
+                  lastLogin: loginDate.toISOString(),
+                  isSelected: false
+                };
+              })
+            : [];
+
+          this.users.set(expandedData);
+          this.filteredUsers.set(expandedData);
         }
         this.isLoading.set(false);
       },

@@ -21,7 +21,7 @@
         </button>
       </ng-container>
 
-      <button (click)="refresh.emit()" class="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-[12px] transition-all whitespace-nowrap">
+      <button (click)="onRefreshClick()" class="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-[12px] transition-all whitespace-nowrap">
         <lucide-icon name="refresh-cw" [class.animate-spin]="isLoading" class="w-4 h-4"></lucide-icon> Refresh
       </button>
 
@@ -33,8 +33,9 @@
 
   <app-grid-header [columns]="columns"
                    [showFilters]="showFilters"
+                   [filterResetKey]="filterResetKey"
                    (sortChange)="gridDataService.applySort($event.field, $event.sortOrder!)"
-                   (filterChange)="gridDataService.updateFilter($event.field, $event.value)"
+                   (filterChange)="gridDataService.updateFilter($event)"
                    (toggleAll)="gridDataService.toggleAllSelection($event)">
   </app-grid-header>
 

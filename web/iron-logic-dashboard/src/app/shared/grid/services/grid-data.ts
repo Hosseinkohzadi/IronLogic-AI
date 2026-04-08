@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
+import { GridFilterPayload, GridNumberOperator } from '../models/column-config';
 
 @Injectable()
 export class GridDataService {
   // ۱. مخازن داده‌های خام و وضعیت‌ها (Private)
   private _rawData$ = new BehaviorSubject<any[]>([]);
   private _sortConfig$ = new BehaviorSubject<{ field: string; order: 'asc' | 'desc' | null }>({ field: '', order: null });
-  private _filters$ = new BehaviorSubject<{ [key: string]: string }>({});
+  private _filters$ = new BehaviorSubject<Record<string, GridFilterPayload>>({});
   private _currentPage$ = new BehaviorSubject<number>(1);
   private _pageSize$ = new BehaviorSubject<number>(10);
 
@@ -23,20 +24,9 @@ export class GridDataService {
   ]).pipe(
     map(([data, sort, filters]) => {
       let result = data.filter(row => {
-        return Object.keys(filters).every(field => {
-          const filterValue = filters[field];
-          if (!filterValue) return true;
-          const rowValue = row[field];
-
-          if (rowValue instanceof Date) {
-            const yyyy = rowValue.getFullYear();
-            const mm = String(rowValue.getMonth() + 1).padStart(2, '0');
-            const dd = String(rowValue.getDate()).padStart(2, '0');
-            return `${yyyy}-${mm}-${dd}` === filterValue;
-          }
-
-          const term = String(filterValue).toLowerCase();
-          return String(rowValue || '').toLowerCase().includes(term);
+        return Object.values(filters).every(filter => {
+          const rowValue = row[filter.field];
+          return this.matchesFilter(rowValue, filter);
         });
       });
 
@@ -93,11 +83,25 @@ export class GridDataService {
     this._sortConfig$.next({ field, order });
   }
 
-  updateFilter(field: string, value: string) {
+  updateFilter(filter: GridFilterPayload) {
     const current = this._filters$.value;
-    this._filters$.next({ ...current, [field]: value });
+    const next = { ...current };
+
+    if (this.isFilterEmpty(filter)) {
+      delete next[filter.field];
+    } else {
+      next[filter.field] = filter;
+    }
+
+    this._filters$.next(next);
     this._currentPage$.next(1);
     this._selectedItems$.next([]); // ریست کردن انتخاب‌ها هنگام تغییر فیلتر
+  }
+
+  clearFilters() {
+    this._filters$.next({});
+    this._currentPage$.next(1);
+    this._selectedItems$.next([]);
   }
 
   goToPage(page: number) {
@@ -122,6 +126,127 @@ export class GridDataService {
       currentSelected.splice(index, 1);
     }
     this._selectedItems$.next(currentSelected);
+  }
+
+  private matchesFilter(rowValue: any, filter: GridFilterPayload): boolean {
+    switch (filter.filterType) {
+      case 'number':
+        return this.matchesNumberFilter(rowValue, filter);
+      case 'date':
+        return this.matchesDateFilter(rowValue, filter);
+      case 'select':
+        return this.matchesSelectFilter(rowValue, filter.value);
+      case 'text':
+      default:
+        return this.matchesTextFilter(rowValue, filter.value, filter.mode);
+    }
+  }
+
+  private matchesTextFilter(rowValue: any, value: string | number | undefined, mode: string): boolean {
+    const term = String(value ?? '').trim().toLowerCase();
+    if (!term) return true;
+
+    const normalizedRow = String(rowValue ?? '').toLowerCase();
+    if (mode === 'equals') {
+      return normalizedRow === term;
+    }
+
+    return normalizedRow.includes(term);
+  }
+
+  private matchesSelectFilter(rowValue: any, value: string | number | undefined): boolean {
+    const selected = String(value ?? '').trim().toLowerCase();
+    if (!selected) return true;
+    return String(rowValue ?? '').trim().toLowerCase() === selected;
+  }
+
+  private matchesNumberFilter(rowValue: any, filter: GridFilterPayload): boolean {
+    const rowNumber = Number(rowValue);
+    if (Number.isNaN(rowNumber)) return false;
+
+    if (filter.mode === 'range') {
+      const hasMin = filter.min != null;
+      const hasMax = filter.max != null;
+      if (!hasMin && !hasMax) return true;
+      if (hasMin && rowNumber < (filter.min as number)) return false;
+      if (hasMax && rowNumber > (filter.max as number)) return false;
+      return true;
+    }
+
+    if (filter.value == null || filter.value === '') return true;
+    const value = Number(filter.value);
+    if (Number.isNaN(value)) return false;
+
+    return this.compareNumbers(rowNumber, value, filter.operator || 'eq');
+  }
+
+  private compareNumbers(row: number, value: number, operator: GridNumberOperator): boolean {
+    switch (operator) {
+      case 'gt':
+        return row > value;
+      case 'gte':
+        return row >= value;
+      case 'lt':
+        return row < value;
+      case 'lte':
+        return row <= value;
+      case 'eq':
+      default:
+        return row === value;
+    }
+  }
+
+  private matchesDateFilter(rowValue: any, filter: GridFilterPayload): boolean {
+    const normalizedRowDate = this.normalizeDate(rowValue);
+    if (!normalizedRowDate) return false;
+
+    if (filter.mode === 'range') {
+      const from = (filter.from || '').trim();
+      const to = (filter.to || '').trim();
+      if (!from && !to) return true;
+      if (from && normalizedRowDate < from) return false;
+      if (to && normalizedRowDate > to) return false;
+      return true;
+    }
+
+    const exactDate = String(filter.value ?? '').trim();
+    if (!exactDate) return true;
+    return normalizedRowDate === exactDate;
+  }
+
+  private normalizeDate(value: any): string | null {
+    if (!value) return null;
+
+    if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+      return value;
+    }
+
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return null;
+
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  private isFilterEmpty(filter: GridFilterPayload): boolean {
+    switch (filter.filterType) {
+      case 'number':
+        if (filter.mode === 'range') {
+          return filter.min == null && filter.max == null;
+        }
+        return filter.value == null || filter.value === '';
+      case 'date':
+        if (filter.mode === 'range') {
+          return !(filter.from || '').trim() && !(filter.to || '').trim();
+        }
+        return !String(filter.value ?? '').trim();
+      case 'select':
+      case 'text':
+      default:
+        return !String(filter.value ?? '').trim();
+    }
   }
 
 

@@ -30,6 +30,8 @@ export class GridComponent implements OnInit {
   @Input() showFilters: boolean = false; // نمایش فیلترهای زیر هدر
   @Input() showSearch: boolean = true;   // نمایش نوار جستجوی بالا
 
+  filterResetKey = 0;
+
   @Output() actionTriggered = new EventEmitter<{type: string, row: any}>();
   @Output() selectionChanged = new EventEmitter<any[]>();
   @Output() refresh = new EventEmitter<void>();
@@ -49,5 +51,12 @@ export class GridComponent implements OnInit {
       if (type === 'excel') this.exportService.exportToExcel(data, 'Grid_Export');
       else if (type === 'pdf') this.exportService.exportToPdf(data, titles, fields, 'Grid_Export');
     });
+  }
+
+  onRefreshClick() {
+    this.gridDataService.clearFilters();
+    this.filterResetKey += 1;
+    this.search.emit('');
+    this.refresh.emit();
   }
 }

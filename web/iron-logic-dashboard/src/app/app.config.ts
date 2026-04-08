@@ -31,7 +31,9 @@ import {
   Weight,
   Wrench,
   X,
-  MoreHorizontal
+  MoreHorizontal,
+   FileSpreadsheet,
+        FileText
 } from 'lucide-angular';
 
 export const appConfig: ApplicationConfig = {
@@ -50,7 +52,7 @@ export const appConfig: ApplicationConfig = {
         Layers,
         Wrench,
         Pencil,
-        Trash2, // نام صحیح کلاس آیکون
+        Trash2, 
         ShieldCheck,
         Settings,
         Gauge,
@@ -67,7 +69,9 @@ export const appConfig: ApplicationConfig = {
         Filter,
         ChevronDown,
         Check,
-        MoreHorizontal
+        MoreHorizontal,
+        FileSpreadsheet,
+        FileText
       })
     )
   ]

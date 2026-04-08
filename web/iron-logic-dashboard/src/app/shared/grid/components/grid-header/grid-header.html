@@ -15,14 +15,91 @@
       </div>
     </div>
   </div>
-
   <div *ngIf="showFilters" class="flex w-full px-2 mt-2 animate-in fade-in duration-300">
     <div *ngFor="let col of columns" class="px-2" [style.width]="col.width || '150px'">
-      <input *ngIf="!['selection', 'action', 'image'].includes(col.type!)"
-             type="text"
-             [placeholder]="'Filter ' + col.title + '...'"
-             (input)="onTextInputFilter($event, col.field)"
-             class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-3 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all placeholder:text-slate-300 shadow-sm">
+      <ng-container *ngIf="!['selection', 'action', 'image'].includes(col.type!)">
+        <input *ngIf="!col.filterType || col.filterType === 'text'"
+               type="text"
+               [value]="textFilterValues[col.field] || ''"
+               [placeholder]="'Filter ' + col.title + '...'"
+               (input)="onTextInputFilter($event, col.field)"
+               class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-3 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all placeholder:text-slate-300 shadow-sm">
+
+        <select *ngIf="col.filterType === 'select'"
+          [value]="selectFilterValues[col.field] || ''"
+                (change)="onSelectFilter($event, col.field)"
+                class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-3 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all shadow-sm">
+          <option value="">All</option>
+          <option *ngFor="let option of col.filterOptions || []" [value]="option.value">{{ option.label }}</option>
+        </select>
+
+        <div *ngIf="col.filterType === 'date'" class="space-y-1.5">
+          <select
+            [value]="getDateMode(col.field, col.filterMode)"
+            (change)="onDateModeChange($event, col.field)"
+            class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider focus:border-indigo-300 outline-none transition-all shadow-sm">
+            <option value="exact">Exact date</option>
+            <option value="range">Date range</option>
+          </select>
+
+          <input *ngIf="getDateMode(col.field, col.filterMode) === 'exact'"
+                 type="date"
+               [value]="dateExact[col.field] || ''"
+                 (change)="onDateExactChange($event, col.field)"
+                 class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all shadow-sm">
+
+          <div *ngIf="getDateMode(col.field, col.filterMode) === 'range'" class="grid grid-cols-1 gap-1.5">
+            <input type="date"
+                 [value]="dateFrom[col.field] || ''"
+                   (change)="onDateFromChange($event, col.field)"
+                   class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all shadow-sm">
+            <input type="date"
+                 [value]="dateTo[col.field] || ''"
+                   (change)="onDateToChange($event, col.field)"
+                   class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all shadow-sm">
+          </div>
+        </div>
+
+        <div *ngIf="col.filterType === 'number'" class="space-y-1.5">
+          <select
+            [value]="getNumberMode(col.field, col.filterMode)"
+            (change)="onNumberModeChange($event, col.field)"
+            class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider focus:border-indigo-300 outline-none transition-all shadow-sm">
+            <option value="compare">Compare</option>
+            <option value="range">Range</option>
+          </select>
+
+          <div *ngIf="getNumberMode(col.field, col.filterMode) === 'compare'" class="grid grid-cols-2 gap-1.5">
+            <select
+              [value]="getNumberOperator(col.field)"
+              (change)="onNumberOperatorChange($event, col.field)"
+              class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all shadow-sm">
+              <option value="eq">=</option>
+              <option value="gt">&gt;</option>
+              <option value="gte">&gt;=</option>
+              <option value="lt">&lt;</option>
+              <option value="lte">&lt;=</option>
+            </select>
+            <input type="number"
+                   [value]="numberValue[col.field] ?? ''"
+                   (input)="onNumberValueChange($event, col.field)"
+                   class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all shadow-sm">
+          </div>
+
+          <div *ngIf="getNumberMode(col.field, col.filterMode) === 'range'" class="grid grid-cols-2 gap-1.5">
+            <input type="number"
+                   [value]="numberMin[col.field] ?? ''"
+                   (input)="onNumberMinChange($event, col.field)"
+                   placeholder="Min"
+                   class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all placeholder:text-slate-300 shadow-sm">
+            <input type="number"
+                   [value]="numberMax[col.field] ?? ''"
+                   (input)="onNumberMaxChange($event, col.field)"
+                   placeholder="Max"
+                   class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all placeholder:text-slate-300 shadow-sm">
+          </div>
+        </div>
+      </ng-container>
     </div>
   </div>
 </div>

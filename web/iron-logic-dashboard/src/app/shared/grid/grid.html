@@ -1,36 +1,43 @@
-<div class="iron-grid shadow-lg border border-slate-200 rounded-xl overflow-hidden bg-white flex flex-col">
+<div class="flex flex-col w-full gap-2">
 
-  <!-- نوار ابزار هوشمند -->
-  <div class="grid-toolbar flex justify-between items-center p-4 bg-slate-50 border-b border-slate-200">
-    <div class="flex gap-2">
-      <button (click)="export('excel')" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold hover:text-green-600 hover:border-green-200 transition-all flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-        <span>اکسل</span>
-      </button>
-      <button (click)="export('pdf')" class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold hover:text-red-600 hover:border-red-200 transition-all flex items-center gap-2">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-        <span>PDF</span>
-      </button>
-    </div>
-    <div class="flex-1 mx-4 relative group">
+  <div class="flex flex-col xl:flex-row justify-between items-center gap-4 mb-4">
+
+    <div *ngIf="showSearch" class="relative w-full xl:w-[400px]">
+      <lucide-icon name="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></lucide-icon>
       <input type="text"
-             (keyup.enter)="applyAiFilter($event)"
-             placeholder="جستجوی هوشمند (مثلاً: کاربران فعال با امتیاز بالا)..."
-             class="w-full bg-slate-100 border-none rounded-lg py-2 px-10 text-sm focus:ring-2 focus:ring-indigo-400 transition-all">
-      <svg class="w-4 h-4 absolute right-3 top-2.5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path d="M13 10V3L4 14h7v7l9-11h-7z" />
-      </svg>
+             [ngModel]="searchTerm" (ngModelChange)="search.emit($event)"
+             placeholder="Search current view..."
+             class="w-full bg-white border border-slate-200 rounded-[12px] py-2.5 pl-11 pr-4 text-[13px] font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all placeholder:text-slate-400">
     </div>
-    <div class="flex flex-col items-end">
-      <span class="text-[10px] font-black text-indigo-500 uppercase tracking-tighter">IronLogic AI</span>
-      <span class="text-[9px] text-slate-400">مدیریت هوشمند داده‌ها</span>
+
+    <div class="flex items-center gap-2 overflow-x-auto w-full xl:w-auto pb-2 xl:pb-0">
+
+      <ng-container *ngIf="showExport">
+        <button (click)="export('excel')" class="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-[12px] transition-all whitespace-nowrap border border-emerald-100">
+          <lucide-icon name="file-spreadsheet" class="w-4 h-4"></lucide-icon> Excel
+        </button>
+        <button (click)="export('pdf')" class="flex items-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-[12px] transition-all whitespace-nowrap border border-rose-100">
+          <lucide-icon name="file-text" class="w-4 h-4"></lucide-icon> PDF
+        </button>
+      </ng-container>
+
+      <button (click)="onRefreshClick()" class="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-[12px] transition-all whitespace-nowrap">
+        <lucide-icon name="refresh-cw" [class.animate-spin]="isLoading" class="w-4 h-4"></lucide-icon> Refresh
+      </button>
+
+      <div class="hidden md:flex items-center gap-2 ml-2 border-l border-slate-200 pl-4">
+        <span class="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[11px] font-bold text-slate-600">{{ (gridDataService.processedData$ | async)?.length || 0 }} matched</span>
+      </div>
     </div>
   </div>
 
   <app-grid-header [columns]="columns"
+                   [showFilters]="showFilters"
+                   [filterResetKey]="filterResetKey"
                    (sortChange)="gridDataService.applySort($event.field, $event.sortOrder!)"
-                   (filterChange)="gridDataService.updateFilter($event.field, $event.value)"
-                   (toggleAll)="gridDataService.toggleAllSelection($event)"> </app-grid-header>
+                   (filterChange)="gridDataService.updateFilter($event)"
+                   (toggleAll)="gridDataService.toggleAllSelection($event)">
+  </app-grid-header>
 
   <app-grid-body [columns]="columns" [data$]="gridDataService.pagedData$" (action)="actionTriggered.emit($event)"></app-grid-body>
 

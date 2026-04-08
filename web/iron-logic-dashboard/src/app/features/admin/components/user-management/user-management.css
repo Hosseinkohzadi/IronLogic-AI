@@ -1,26 +1,77 @@
+:host {
+  display: block;
+}
+
+/* افکت مات شدن لایه زیرین */
+.blur-md {
+  filter: blur(6px);
+  opacity: 0.6;
+}
+
+/* استایل Badge ها */
 .badge-active {
-  @apply inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[9px] font-black text-emerald-700 ring-1 ring-inset ring-emerald-600/20 uppercase tracking-tighter;
+  @apply inline-flex items-center rounded-lg bg-emerald-50/50 px-3 py-1 text-[10px] font-black text-emerald-600 ring-1 ring-inset ring-emerald-500/10 uppercase tracking-tighter;
 }
 
 .badge-review {
-  @apply inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-[9px] font-black text-amber-700 ring-1 ring-inset ring-amber-600/20 uppercase tracking-tighter;
+  @apply inline-flex items-center rounded-lg bg-slate-50 px-3 py-1 text-[10px] font-black text-slate-600 ring-1 ring-inset ring-slate-200 uppercase tracking-tighter;
 }
 
 .badge-suspended {
-  @apply inline-flex items-center rounded-md bg-red-50 px-2 py-0.5 text-[9px] font-black text-red-700 ring-1 ring-inset ring-red-600/20 uppercase tracking-tighter;
+  @apply inline-flex items-center rounded-lg bg-red-50/50 px-3 py-1 text-[10px] font-black text-red-500 ring-1 ring-inset ring-red-500/10 uppercase tracking-tighter;
 }
 
+/* انیمیشن لود صفحه */
 .animate-in {
-  animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes slideIn {
+/* انیمیشن ورود دراور از راست */
+.animate-in-drawer {
+  animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: none;
   }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* اسکرول بار */
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+
+/* Badge Styles for Account Tiers / Plans */
+.badge-tier-elite, .badge-tier-premium {
+  @apply inline-flex items-center rounded-lg bg-purple-50/80 px-3 py-1 text-[10px] font-black text-purple-700 ring-1 ring-inset ring-purple-500/20 uppercase tracking-tighter;
+}
+
+.badge-tier-pro {
+  @apply inline-flex items-center rounded-lg bg-blue-50/80 px-3 py-1 text-[10px] font-black text-blue-700 ring-1 ring-inset ring-blue-500/20 uppercase tracking-tighter;
+}
+
+.badge-tier-basic, .badge-tier-free {
+  @apply inline-flex items-center rounded-lg bg-slate-100 px-3 py-1 text-[10px] font-black text-slate-600 ring-1 ring-inset ring-slate-200 uppercase tracking-tighter;
 }

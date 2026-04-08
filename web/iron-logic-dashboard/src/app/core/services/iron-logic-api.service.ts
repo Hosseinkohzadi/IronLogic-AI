@@ -1,6 +1,6 @@
 import {inject, Injectable, signal} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
-import {Observable, of, shareReplay, tap} from 'rxjs';
+import {delay, Observable, of, shareReplay, tap} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
 import {environment} from '@env/environment';
 import {Exercise, WorkoutStats} from '../models';
@@ -22,10 +22,6 @@ export class IronLogicApiService {
   isLoading = signal<boolean>(false);
   private statsCache$: Observable<WorkoutStats> | undefined;
 
-  /**
-   * دریافت آمارهای تمرینی و توصیه‌های هوش مصنوعی (AI Coach)
-   * مطابق با مدل WorkoutStats و فیلد advice: { advice: string }
-   */
   getWorkoutStatsWithAdvice(): Observable<WorkoutStats> {
     if (!this.statsCache$) {
       this.statsCache$ = this.http.get<WorkoutStats>(this.statsUrl).pipe(
@@ -35,7 +31,6 @@ export class IronLogicApiService {
     return this.statsCache$;
   }
 
-// اضافه کردن یک سیگنال جدید برای تعداد کل
   totalExercises = signal<number>(0);
 
   getExercises(pageNumber: number = 1, pageSize: number = 20): Observable<any> {
@@ -87,14 +82,76 @@ export class IronLogicApiService {
     );
   }
 
-  private mockUsers: UserRow[] = [
-    { id: 'USR-1001', name: 'Hossein K.', email: 'hossein@example.com', status: 'Active', tier: 'Pro', sessions: 184, weights: 121, lastSeen: '2h ago', emailConfirmed: true },
-    { id: 'USR-1002', name: 'Marcus Lee', email: 'marcus@example.com', status: 'Review', tier: 'Elite', sessions: 96, weights: 78, lastSeen: '5h ago', emailConfirmed: true },
-    { id: 'USR-1003', name: 'Sara Bennett', email: 'sara@example.com', status: 'Suspended', tier: 'Basic', sessions: 41, weights: 22, lastSeen: '1d ago', emailConfirmed: false },
-    { id: 'USR-1004', name: 'Daniel Park', email: 'daniel@example.com', status: 'Active', tier: 'Elite', sessions: 210, weights: 144, lastSeen: '12m ago', emailConfirmed: true },
-  ];
+  getUsers(): Observable<UserRow[]> {
+    const mockUsers: UserRow[] = [
+      { 
+        id: 'USR-1001', 
+        name: 'Hossein K.', 
+        userName: 'hossein_k', 
+        email: 'hossein@example.com', 
+        emailConfirmed: true,
+        phoneNumberConfirmed: true, 
+        twoFactorEnabled: true,     
+        accessFailedCount: 0,       
+        status: 'Active', 
+        tier: 'Pro', 
+        sessions: 184,
+        dailyWeights: 121,
+        weights: 121,
+        lastSeen: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+      },
+      { 
+        id: 'USR-1002', 
+        name: 'Marcus Lee', 
+        userName: 'marcus_lee',
+        email: 'marcus@example.com', 
+        emailConfirmed: false,      
+        phoneNumberConfirmed: false,
+        twoFactorEnabled: false,
+        accessFailedCount: 1,
+        status: 'Review', 
+        tier: 'Elite', 
+        sessions: 96,
+        dailyWeights: 78,
+        weights: 78,
+        lastSeen: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString()
+      },
+      { 
+        id: 'USR-1003', 
+        name: 'Sara Bennett', 
+        userName: 'sara_b',
+        email: 'sara@example.com', 
+        emailConfirmed: false,
+        phoneNumberConfirmed: false,
+        twoFactorEnabled: false,
+        accessFailedCount: 5,       
+        lockoutEnd: new Date(Date.now() + 86400000).toISOString(), 
+        status: 'Suspended', 
+        tier: 'Basic', 
+        sessions: 41,
+        dailyWeights: 22,
+        weights: 22,
+        lastSeen: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+      },
+      { 
+        id: 'USR-1004', 
+        name: 'Daniel Park', 
+        userName: 'dpark99',
+        email: 'daniel@example.com', 
+        emailConfirmed: true,
+        phoneNumberConfirmed: true,
+        twoFactorEnabled: true,
+        accessFailedCount: 0,
+        status: 'Active', 
+        tier: 'Elite', 
+        sessions: 210,
+        dailyWeights: 144,
+        weights: 144,
+        lastSeen: new Date(Date.now() - 15 * 60 * 1000).toISOString()
+      }
+    ];
 
-  getUsers() {
-    return of(this.mockUsers);
-  }
+    return of(mockUsers).pipe(delay(500));
+  
+}
 }

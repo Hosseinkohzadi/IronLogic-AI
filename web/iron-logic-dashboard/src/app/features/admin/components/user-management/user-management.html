@@ -2,78 +2,46 @@
 
   <div [class.blur-md]="isDrawerOpen()"
        [class.pointer-events-none]="isDrawerOpen()"
-       class="space-y-8 animate-in transition-all duration-500 ease-in-out">
+       class="space-y-6 animate-in transition-all duration-500 ease-in-out">
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-      @for (card of [
-      { label: 'Active Users', val: stats().active.count, g: stats().active.growth, icon: 'users', color: 'emerald' },
-      { label: 'Suspended', val: stats().suspended.count, g: stats().suspended.growth, icon: 'shield-off', color: 'red'
-      },
-      {
-      label: 'Email Confirmed', val: stats().confirmed.count, g: stats().confirmed.growth, icon: 'mail', color: 'indigo'
-      },
-      {
-      label: 'Password Resets', val: stats().resets.count, g: stats().resets.growth, icon: 'refresh-cw', color: 'slate'
-      }
-      ]; track card.label) {
-      <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:shadow-md">
-        <div class="flex justify-between items-start mb-6">
-          <p class="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">{{ card.label }}</p>
-            <div [class]="'p-2 rounded-xl bg-' + card.color + '-50 text-' + card.color + '-200'">
-              <lucide-icon [name]="card.icon" class="w-4 h-4"></lucide-icon>
-            </div>
+    <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4 pt-2">
+      <div>
+        <h1 class="text-[28px] font-black text-slate-900 tracking-tight">Users Directory</h1>
+        <p class="text-[13px] font-medium text-slate-500 mt-1">Search, review, and take action on account records</p>
+      </div>
+
+    </div>
+
+    <div class="flex flex-col gap-4">
+      @if (selectedUsers().length > 0) {
+      <div class="flex justify-between items-center bg-white border border-slate-200 rounded-[16px] p-4 shadow-sm animate-in transition-all">
+        <div>
+          <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Selection</p>
+          <p class="text-sm font-bold text-slate-800">{{ selectedUsers().length }} account selected</p>
           </div>
-          <p class="text-4xl font-black text-slate-800 tracking-tighter">{{ card.val }}</p>
-          <p class="text-[10px] font-bold mt-3 flex items-center gap-1">
-            <span [class]="card.g.startsWith('+') ? 'text-emerald-500' : 'text-red-500'">{{ card.g }}</span>
-            <span class="text-slate-400 tracking-tight">vs last 7 days</span>
-          </p>
+          <div class="flex gap-2">
+            <button class="px-5 py-2.5 bg-black text-white text-[11px] font-bold rounded-xl hover:bg-slate-800 transition-all">Suspend</button>
+            <button class="px-5 py-2.5 bg-slate-100 text-slate-700 text-[11px] font-bold rounded-xl hover:bg-slate-200 transition-all">Reset Password</button>
+            <button class="px-5 py-2.5 bg-slate-100 text-slate-700 text-[11px] font-bold rounded-xl hover:bg-slate-200 transition-all">Assign Role</button>
+          </div>
         </div>
       }
     </div>
 
-    <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
-      @if (isLoading()) {
-      <div class="p-24 text-center flex flex-col items-center gap-4">
-        <lucide-icon name="refresh-cw" class="w-8 h-8 animate-spin text-slate-200"></lucide-icon>
-        <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Infrastructure_Sync...</p>
-      </div>
-      } @else {
-      <table class="w-full text-left border-collapse">
-        <thead>
-          <tr class="text-[10px] font-black text-slate-300 uppercase tracking-[0.25em]">
-            <th class="px-8 py-8 w-12"></th>
-            <th class="px-8 py-8">Identity_Profile</th>
-            <th class="px-8 py-8">Status_Node</th>
-            <th class="px-8 py-8 text-right">Activity_Metric</th>
-          </tr>
-        </thead>
-        <tbody class="divide-y divide-slate-50/50">
-          @for (user of filteredUsers(); track user.id; let i = $index) {
-      <tr (click)="selectUser(user)" class="group cursor-pointer hover:bg-slate-50/50 transition-all">
-        <td class="px-8 py-6" (click)="$event.stopPropagation()">
-          <input type="checkbox" [checked]="selectedUserIndices().includes(i)" (change)="toggleSelection($event, i)"
-                 class="h-4 w-4 rounded-md border-slate-200 text-black focus:ring-black transition-all">
-        </td>
-        <td class="px-8 py-6">
-          <div class="font-black text-slate-700 text-sm tracking-tight">{{ user.name }}</div>
-          <div class="text-[9px] font-mono text-slate-400 mt-1 tracking-tighter uppercase">
-            ID: {{ user.id.startsWith('USR-') ? user.id : 'USR-' + user.id.substring(0, 4) }}
-          </div>
-        </td>
-        <td class="px-8 py-6">
-          <span [class]="'badge-' + user.status.toLowerCase()">{{ user.status }}</span>
-        </td>
-        <td class="px-8 py-6 text-right">
-          <div class="text-sm font-black text-slate-800 tracking-tighter">{{ user.sessions }} SESS</div>
-          <div class="text-[9px] font-bold text-slate-300 uppercase tracking-widest mt-1">Logged_Activity</div>
-        </td>
-      </tr>
-      }
-      </tbody>
-    </table>
-      }
-    </div>
+    <app-grid
+      [columns]="userColumns"
+      [data]="filteredUsers()"
+      [isLoading]="isLoading()"
+      [searchTerm]="searchTerm()"
+      [showExport]="true"
+      [showFilters]="true"
+      [showSearch]="false"
+      (search)="onSearch($event)"
+      (refresh)="loadData()"
+      (actionTriggered)="handleGridAction($event)"
+      (selectionChanged)="selectedUsers.set($event)">
+    </app-grid>
+
   </div>
 
   @if (isDrawerOpen()) {
@@ -88,99 +56,69 @@
         <div>
           <div class="flex items-center gap-3 mb-1.5">
             <h2 class="text-2xl font-black text-slate-900 tracking-tight">{{ activeUserDetails()?.name }}</h2>
-            <div class="flex gap-1.5">
-              <span class="px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold rounded-md ring-1 ring-emerald-500/20">Active</span>
-              <span class="px-2 py-0.5 bg-slate-900 text-white text-[10px] font-bold rounded-md">{{
-  activeUserDetails()?.tier }} Tier</span>
             </div>
+            <p class="text-xs font-medium text-slate-500">{{ activeUserDetails()?.tier }} account overview and recent linked activity</p>
           </div>
-          <p class="text-xs font-medium text-slate-500">{{ activeUserDetails()?.tier }} account overview and recent linked activity</p>
-        </div>
-        <button (click)="closeDrawer()" class="p-2 hover:bg-slate-200/50 rounded-xl transition-all font-bold text-slate-600">✕</button>
-      </div>
-
-      <div class="space-y-4 flex-1 pb-10">
-
-        <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
-          <h3 class="text-sm font-black text-slate-900 mb-3.5">Identity</h3>
-          <div class="space-y-2.5 text-xs font-medium text-slate-600">
-            <p>User ID: USR-{{ activeUserDetails()?.id ? activeUserDetails()!.id.substring(0,6) : '......' }}</p>
-            <p>Email: {{ activeUserDetails()?.email }}</p>
-            <p>Roles: {{ activeUserDetails()?.roles }}</p>
-            <p>Confirmed: {{ activeUserDetails()?.confirmed }}</p>
-          </div>
+          <button (click)="closeDrawer()" class="p-2 hover:bg-slate-200/50 rounded-xl transition-all font-bold text-slate-600">✕</button>
         </div>
 
-        <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
-          <h3 class="text-sm font-black text-slate-900 mb-3.5">Activity Summary</h3>
-          <div class="space-y-2.5 text-xs font-medium text-slate-600">
-            <p>Sessions logged: {{ activeUserDetails()?.sessions }}</p>
-            <p>Daily weight entries: {{ activeUserDetails()?.dailyWeights }}</p>
-            <p>Last active: {{ activeUserDetails()?.lastActive }}</p>
-            <p>Account created: {{ activeUserDetails()?.accountCreated }}</p>
-          </div>
-        </div>
+        <div class="space-y-4 flex-1 pb-10">
 
-        <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
-          <h3 class="text-sm font-black text-slate-900 mb-3.5">Linked Entities</h3>
-          <div class="space-y-2.5">
-            <div class="flex justify-between items-center">
-              <span class="text-xs font-medium text-slate-600">Sessions</span>
-              <button class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors">
-                <lucide-icon name="eye" class="w-3.5 h-3.5"></lucide-icon> View
-              </button>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-xs font-medium text-slate-600">Daily Weights</span>
-              <button class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors">
-                <lucide-icon name="trending-up" class="w-3.5 h-3.5"></lucide-icon> Trend
-              </button>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-xs font-medium text-slate-600">Exercise Sessions</span>
-              <button class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors">
-                <lucide-icon name="panel-left" class="w-3.5 h-3.5"></lucide-icon> Inspect
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
-          <h3 class="text-sm font-black text-slate-900 mb-3.5">Account Risk</h3>
-          <div class="space-y-2.5 text-xs font-medium text-slate-600">
-            <p>Support priority: {{ activeUserDetails()?.supportPriority }}</p>
-            <p>Sync complaints in last 30d: {{ activeUserDetails()?.syncComplaints }}</p>
-            <p>Billing friction: {{ activeUserDetails()?.billingFriction }}</p>
-            <p>Retention flag: {{ activeUserDetails()?.retentionFlag }}</p>
-          </div>
-        </div>
-
-        <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
-          <h3 class="text-sm font-black text-slate-900 mb-3.5">Audit Trail</h3>
-          <div class="space-y-2.5 text-xs font-medium text-slate-600">
-            @for (log of activeUserDetails()?.auditTrail || []; track log) {
-  <p>{{ log }}</p>
-  }
-  </div>
+          <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
+            <h3 class="text-sm font-black text-slate-900 mb-3.5">Identity & Security</h3>
+            <div class="space-y-3 text-xs font-medium text-slate-600">
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Username</span>
+                <span class="font-bold text-slate-800">{{ activeUserDetails()?.userName }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Email</span>
+                <div class="flex items-center gap-1.5">
+                  <span>{{ activeUserDetails()?.email }}</span>
+                  <lucide-icon *ngIf="activeUserDetails()?.emailConfirmed" name="check-circle-2" class="w-3.5 h-3.5 text-emerald-500"></lucide-icon>
+                  <lucide-icon *ngIf="!activeUserDetails()?.emailConfirmed" name="alert-circle" class="w-3.5 h-3.5 text-amber-500"></lucide-icon>
+                </div>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Phone</span>
+                <span>{{ activeUserDetails()?.phoneNumber || 'Not provided' }}</span>
+              </div>
+              <div class="flex justify-between items-center pt-2 border-t border-slate-50">
+                <span class="text-slate-400">Two-Factor Auth (2FA)</span>
+                <span [class]="activeUserDetails()?.twoFactorEnabled ? 'text-emerald-600 font-bold' : 'text-slate-400'">
+  {{ activeUserDetails()?.twoFactorEnabled ? 'Enabled' : 'Disabled' }}
+  </span>
+</div>
+</div>
 </div>
 
 <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
-  <h3 class="text-sm font-black text-slate-900 mb-4">Admin Actions</h3>
-  <div class="flex flex-wrap gap-2.5">
-    <button class="flex items-center gap-1.5 px-4 py-2 bg-black text-white rounded-lg text-[11px] font-bold hover:bg-slate-800 transition-colors">
-      <lucide-icon name="edit-3" class="w-3.5 h-3.5"></lucide-icon> Edit
-    </button>
-    <button class="flex items-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-800 rounded-lg text-[11px] font-bold hover:bg-slate-200 transition-colors">
-      <lucide-icon name="shield-off" class="w-3.5 h-3.5"></lucide-icon> Suspend
-    </button>
-    <button class="flex items-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-800 rounded-lg text-[11px] font-bold hover:bg-slate-200 transition-colors">
-      <lucide-icon name="refresh-cw" class="w-3.5 h-3.5"></lucide-icon> Reset
-    </button>
-  </div>
-</div>
+<h3 class="text-sm font-black text-slate-900 mb-3.5">Account Risk & Lockout</h3>
+<div class="space-y-3 text-xs font-medium text-slate-600">
+<div class="flex justify-between items-center">
+  <span class="text-slate-400">Failed Login Attempts</span>
+  <span [class]="activeUserDetails()?.accessFailedCount > 3 ? 'text-red-500 font-bold' : 'text-slate-800'">
+  {{ activeUserDetails()?.accessFailedCount }} / 5
+                </span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-slate-400">Lockout Status</span>
+                <span *ngIf="activeUserDetails()?.status === 'Suspended'" class="px-2 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-bold uppercase tracking-widest">
+                  Locked Out
+                </span>
+                <span *ngIf="activeUserDetails()?.status !== 'Suspended'" class="text-emerald-500 font-bold">
+                  Clear
+                </span>
+              </div>
+              <div *ngIf="activeUserDetails()?.lockoutEnd" class="flex justify-between items-center pt-2 border-t border-slate-50">
+                <span class="text-slate-400">Lockout Ends At</span>
+                <span class="text-red-600 font-mono text-[10px]">{{ activeUserDetails()?.lockoutEnd | date:'medium' }}</span>
+              </div>
+            </div>
+          </div>
 
-</div>
-</div>
-</div>
+        </div>
+      </div>
+    </div>
   }
 </div>

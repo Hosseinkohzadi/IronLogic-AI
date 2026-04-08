@@ -2,14 +2,23 @@ export type UserStatus = 'Active' | 'Review' | 'Suspended';
 
 export interface UserRow {
   id: string;
-  name: string;
+  userName: string;
   email: string;
+  emailConfirmed: boolean;
+  phoneNumber?: string;
+  phoneNumberConfirmed: boolean;
+  twoFactorEnabled: boolean;
+  lockoutEnd?: string | null;
+  accessFailedCount: number;
+
+  name: string;
   status: UserStatus;
-  tier: string;
   sessions: number;
   weights: number;
+  /** ISO 8601 datetime string, e.g. 2026-04-08T14:22:31.123Z */
   lastSeen: string;
-  emailConfirmed: boolean;
+  tier: 'Free' | 'Basic' | 'Pro' | 'Elite';
+  dailyWeights?: number;
 }
 export interface UserAdminStats {
   activeUsers: number;

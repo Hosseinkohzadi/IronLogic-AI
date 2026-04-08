@@ -2,9 +2,9 @@
   field: string;
   title: string;
   width?: string;
-  type?: 'text' | 'flag' | 'action' | 'number' | 'date' | 'badge' | 'image' | 'rate' | 'calendar' | 'selection';
-  sortable?: boolean; // آیا این ستون قابلیت سورت دارد؟
-  sortOrder?: 'asc' | 'desc' | null; // وضعیت فعلی سورت
+  type?: 'text' | 'flag' | 'action' | 'number' | 'date' | 'badge' | 'image' | 'rate' | 'calendar' | 'selection' | 'profile' | 'tier' | 'email';
+  sortable?: boolean;
+  sortOrder?: 'asc' | 'desc' | null;
 }
 
 export interface GridPagination {

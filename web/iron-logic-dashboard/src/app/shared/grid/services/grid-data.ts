@@ -84,8 +84,9 @@ export class GridDataService {
   );
 
   setData(data: any[]) {
-    this._rawData$.next(data);
+    this._rawData$.next(data || []); // ایمن‌سازی دیتا
     this._currentPage$.next(1);
+    this._selectedItems$.next([]); // ریست کردن تیک‌ها هنگام لود جدید
   }
 
   applySort(field: string, order: 'asc' | 'desc' | null) {

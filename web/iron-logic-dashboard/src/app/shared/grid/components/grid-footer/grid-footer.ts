@@ -6,57 +6,36 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="grid-footer flex justify-between items-center px-4 py-3 bg-slate-50 border-t border-slate-200">
-      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-        Total Records: {{ pagination.totalItems }}
+    <div class="flex flex-col md:flex-row justify-between items-center py-6 border-t border-slate-200 mt-4">
+      <span class="text-[13px] font-medium text-slate-500">
+        Showing page {{ pagination.currentPage }} of {{ pagination.totalPages }} &middot; {{ pagination.totalItems | number }} total records
       </span>
 
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-1.5 mt-4 md:mt-0">
         <button (click)="pageChange.emit(pagination.currentPage - 1)"
                 [disabled]="pagination.currentPage === 1"
-                class="pager-btn">PREV</button>
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200 disabled:opacity-40 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        </button>
 
-        <span class="text-xs font-black text-slate-600">
-          PAGE {{ pagination.currentPage }} OF {{ pagination.totalPages }}
-        </span>
+        <button class="w-8 h-8 rounded-lg bg-black text-white text-xs font-bold shadow-md">{{ pagination.currentPage }}</button>
+
+        <button *ngIf="pagination.currentPage < pagination.totalPages"
+                (click)="pageChange.emit(pagination.currentPage + 1)"
+                class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 text-xs font-bold hover:bg-slate-200 transition-colors">
+          {{ pagination.currentPage + 1 }}
+        </button>
 
         <button (click)="pageChange.emit(pagination.currentPage + 1)"
                 [disabled]="pagination.currentPage === pagination.totalPages"
-                class="pager-btn">NEXT</button>
+                class="w-8 h-8 flex items-center justify-center rounded-lg bg-slate-100 text-slate-500 hover:bg-slate-200 disabled:opacity-40 transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        </button>
       </div>
     </div>
-  `,
-  styles: [`
-    .pager-btn {
-      padding: 4px 12px;
-      border-radius: 4px;
-      border: 1px solid #e2e8f0;
-      background: white;
-      font-size: 10px;
-      font-weight: 900;
-      color: #64748b;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .pager-btn:hover:not(:disabled) {
-      background-color: #f1f5f9;
-      color: #6366f1;
-    }
-    .pager-btn:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
-    }
-  `]
+  `
 })
 export class GridFooterComponent {
-  // این همان بخشی است که خطای NG8002 را رفع می‌کند
-  @Input() pagination: any = {
-    currentPage: 1,
-    pageSize: 10,
-    totalItems: 0,
-    totalPages: 1
-  };
-
-  // مشخص کردن نوع number خطای TS2345 را رفع می‌کند
+  @Input() pagination: any = { currentPage: 1, pageSize: 10, totalItems: 0, totalPages: 1 };
   @Output() pageChange = new EventEmitter<number>();
 }

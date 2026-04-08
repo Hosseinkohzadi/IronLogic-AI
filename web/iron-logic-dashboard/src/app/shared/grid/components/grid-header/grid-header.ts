@@ -14,6 +14,10 @@ import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-
 })
 export class GridHeaderComponent {
   @Input() columns: ColumnConfig[] = [];
+
+  // این خط اضافه شد تا ارورهای TS2339 و NG8002 برطرف شوند
+  @Input() showFilters: boolean = false;
+
   @Output() sortChange = new EventEmitter<ColumnConfig>();
   @Output() filterChange = new EventEmitter<{ field: string, value: string }>();
   @Output() toggleAll = new EventEmitter<boolean>();

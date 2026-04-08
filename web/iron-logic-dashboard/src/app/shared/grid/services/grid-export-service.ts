@@ -17,7 +17,7 @@ export class GridExportService {
     const worksheet = XLSX.utils.json_to_sheet(data);
     const workbook = XLSX.utils.book_new();
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'گزارش');
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'report');
     XLSX.writeFile(workbook, `${fileName}.xlsx`);
   }
 

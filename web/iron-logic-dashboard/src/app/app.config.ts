@@ -7,11 +7,14 @@ import {
   Activity,
   ArrowUpRight,
   Calendar,
+  Check,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Dumbbell,
   Edit3,
   Eye,
+  Filter,
   Gauge,
   Layers,
   LayoutDashboard,
@@ -53,12 +56,18 @@ export const appConfig: ApplicationConfig = {
         Gauge,
         ArrowUpRight,
         ChevronLeft,
-        Search, ShieldOff, Mail,
+        Search,
+        ShieldOff,
+        Mail,
         RefreshCw,
         Eye,
         Edit3,
         ChevronRight,
-        X
+        X,
+        Filter,
+        ChevronDown,
+        Check,
+        MoreHorizontal
       })
     )
   ]

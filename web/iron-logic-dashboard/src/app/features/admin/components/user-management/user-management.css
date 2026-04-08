@@ -1,18 +1,26 @@
-.user-card {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.badge-active {
+  @apply inline-flex items-center rounded-md bg-emerald-50 px-2 py-0.5 text-[9px] font-black text-emerald-700 ring-1 ring-inset ring-emerald-600/20 uppercase tracking-tighter;
 }
 
-.user-card:hover {
-  transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+.badge-review {
+  @apply inline-flex items-center rounded-md bg-amber-50 px-2 py-0.5 text-[9px] font-black text-amber-700 ring-1 ring-inset ring-amber-600/20 uppercase tracking-tighter;
 }
 
-.bg-emerald-50 {
-  animation: pulse-online 2s infinite;
+.badge-suspended {
+  @apply inline-flex items-center rounded-md bg-red-50 px-2 py-0.5 text-[9px] font-black text-red-700 ring-1 ring-inset ring-red-600/20 uppercase tracking-tighter;
 }
 
-@keyframes pulse-online {
-  0% { opacity: 1; }
-  50% { opacity: 0.6; }
-  100% { opacity: 1; }
+.animate-in {
+  animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }

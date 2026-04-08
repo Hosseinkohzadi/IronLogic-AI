@@ -1,119 +1,78 @@
-/* shared/grid/components/grid-header/grid-header.css */
-
-:host {
-  display: block;
-  width: 100%;
-}
-
 .grid-header-container {
   display: flex;
   flex-direction: column;
   width: 100%;
 }
 
-.grid-header-row {
-  display: flex;
+.grid-header-row, .grid-filter-row {
+  display: flex !important;
+  flex-direction: row !important;
   width: 100%;
   background-color: #f8fafc;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-.grid-filter-row {
-  display: flex;
-  width: 100%;
-  background-color: #f1f5f9;
-  border-bottom: 1px solid #e2e8f0;
 }
 
 .header-cell, .filter-cell {
-  flex: 1;
-  min-width: 0;
-  box-sizing: border-box;
-}
-
-/* استایل سلول هدر */
-.header-cell {
-  padding: 12px 16px;
-  /* پدینگ چپ را زیاد کردیم تا جا برای آیکون باز شود (چون سایت راست‌چین است) */
-  padding-left: 28px;
+  flex: 0 0 auto; /* حیاتی برای جلوگیری از فشرده شدن ناخواسته */
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: relative; /* بسیار مهم برای ثابت ماندن آیکون */
-  user-select: none;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* آیکون سورت */
-.sort-icon {
-  position: absolute;
-  left: 8px; /* در حالت راست‌چین، آیکون می‌چسبد به سمت چپ سلول */
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: #cbd5e1; /* رنگ طوسی کم‌رنگ پیش‌فرض */
-}
-
-.sort-icon.active {
-  opacity: 1;
-}
-
-/* استایل سلول‌های فیلتر */
-.filter-cell {
-  padding: 8px;
-}
-
-/* ========================================================
-   استایل پایه مشترک برای تمامی فیلترها (متن، دراپ‌داون، تاریخ)
-   ======================================================== */
-.filter-input,
-.filter-select,
-.filter-date {
-  width: 100%;
-  padding: 6px 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  font-size: 11px;
-  color: #334155;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  background-color: white;
+  border-left: 1px solid #e2e8f0;
   box-sizing: border-box;
-  font-family: inherit;
+  padding: 0 12px;
+  overflow: hidden;
+  position: relative; /* برای قرارگیری صحیح Resizer */
 }
 
-.filter-input:focus,
-.filter-select:focus,
-.filter-date:focus {
+/* --- ستون‌های ثابت --- */
+.col-selection { width: 50px !important; min-width: 50px !important; justify-content: center; }
+.col-avatar { width: 80px !important; min-width: 80px !important; justify-content: center; }
+.col-action { width: 100px !important; min-width: 100px !important; justify-content: center; }
+
+/* --- استایل فیلترها --- */
+.filter-input, .filter-select, .filter-date {
+  width: 100%;
+  font-size: 11px;
+  padding: 4px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background-color: white;
+  color: #475569;
+  outline: none;
+}
+
+.filter-input:focus, .filter-select:focus, .filter-date:focus {
   border-color: #6366f1;
-  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.1);
 }
 
-/* اختصاصی برای select تا ظاهر یکدستی داشته باشد */
-.filter-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%2394a3b8%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
-  background-repeat: no-repeat, repeat;
-  background-position: left .7em top 50%, 0 0; /* فلش سمت چپ (راست‌چین) */
-  background-size: .65em auto, 100%;
-  padding-left: 24px;
-  cursor: pointer;
+/* --- استایل‌های Resizer --- */
+.resizer {
+  position: absolute;
+  left: 0; /* در محیط RTL سمت چپ قرار می‌گیرد */
+  top: 0;
+  width: 5px;
+  height: 100%;
+  cursor: col-resize;
+  z-index: 10;
+  transition: background-color 0.2s;
 }
 
-/* اختصاصی برای فیلتر تاریخ (رفع بهم‌ریختگی UI تقویم) */
-.filter-date {
-  direction: ltr; /* در محیط‌های راست‌چین، تقویم مرورگر بهم می‌ریزد. این خط آن را حل می‌کند */
-  text-align: left;
-  padding: 5px 8px; /* پدینگ بهینه‌تر برای هم‌ارتفاع شدن با بقیه اینپوت‌ها */
-  cursor: pointer;
+.resizer:hover, .resizer:active {
+  background-color: #6366f1;
 }
 
-/* اضافه کردن به انتهای فایل grid-header.css */
-.header-cell:has(input[type="checkbox"]) {
-  padding-left: 16px; /* ریست کردن پدینگ برای ستون چک‌باکس */
+/* --- استایل‌های Drag & Drop --- */
+.cdk-drag-preview {
+  background: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
   justify-content: center;
+}
+
+.drag-placeholder {
+  opacity: 0.2;
+  background: #6366f1;
 }

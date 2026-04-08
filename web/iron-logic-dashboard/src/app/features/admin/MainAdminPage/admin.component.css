@@ -1,18 +1,9 @@
-.modal-enter {
-  animation: fadeInScale 0.2s ease-out forwards;
+:host {
+  display: block;
+  background-color: #ffffff;
 }
 
-@keyframes fadeInScale {
-  from {
-    opacity: 0;
-    transform: scale(0.98) translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
+/* افکت هایلایت برای متن‌های جستجو شده در کامپوننت‌های فرزند */
 :host ::ng-deep mark {
   background-color: #e0e7ff;
   color: #4338ca;
@@ -20,11 +11,26 @@
   border-radius: 4px;
 }
 
-.overflow-y-auto::-webkit-scrollbar {
-  width: 5px;
+/* انیمیشن ورود کلی صفحه */
+.animate-in {
+  animation: fadeIn 0.5s ease-out forwards;
 }
 
-.overflow-y-auto::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* استایل مخصوص اسکرول بار بدنه اصلی */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #f1f5f9;
   border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #e2e8f0;
 }

@@ -1,115 +1,23 @@
-<div class="p-8 bg-white min-h-screen">
+<div class="p-8 bg-white min-h-screen animate-in fade-in duration-700">
   <header class="flex justify-between items-start mb-10 border-b border-slate-100 pb-6">
     <div>
-      <h1 class="text-2xl font-black text-slate-800 tracking-tight uppercase">Infrastructure Dashboard</h1>
+      <h1 class="text-2xl font-black text-slate-800 tracking-tighter uppercase">Infrastructure Dashboard</h1>
+      <p class="text-[10px] font-bold text-slate-400 tracking-[0.2em] mt-1">CORE_SYSTEM_MONITOR</p>
     </div>
-    <div class="flex items-center gap-2 px-3 py-1.5 rounded-md transition-colors duration-300"
-         [ngClass]="{
-           'bg-emerald-50': serverStatus() === 'OPERATIONAL',
-           'bg-red-50': serverStatus() === 'DOWN',
-           'bg-slate-100': serverStatus() === 'CHECKING'
-         }">
-      <span class="w-2 h-2 rounded-full"
-            [ngClass]="{
-              'bg-emerald-500 animate-pulse': serverStatus() === 'OPERATIONAL',
-              'bg-red-500': serverStatus() === 'DOWN',
-              'bg-slate-400 animate-pulse': serverStatus() === 'CHECKING'
-            }"></span>
-      <span class="text-xs font-bold uppercase tracking-widest transition-colors duration-300"
-            [ngClass]="{
-              'text-emerald-700': serverStatus() === 'OPERATIONAL',
-              'text-red-700': serverStatus() === 'DOWN',
-              'text-slate-500': serverStatus() === 'CHECKING'
-            }">SERVER: {{ serverStatus() }}</span>
+
+    <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-100"
+         [ngClass]="{'bg-emerald-50 border-emerald-100': serverStatus() === 'OPERATIONAL', 'bg-red-50 border-red-100': serverStatus() === 'DOWN'}">
+      <span class="w-2 h-2 rounded-full shadow-sm"
+            [ngClass]="{'bg-emerald-500 animate-pulse': serverStatus() === 'OPERATIONAL', 'bg-red-500': serverStatus() === 'DOWN', 'bg-slate-300': serverStatus() === 'CHECKING'}"></span>
+      <span class="text-[10px] font-black uppercase tracking-widest"
+            [ngClass]="{'text-emerald-700': serverStatus() === 'OPERATIONAL', 'text-red-700': serverStatus() === 'DOWN', 'text-slate-500': serverStatus() === 'CHECKING'}">
+        NODE_STATUS: {{ serverStatus() }}
+      </span>
     </div>
   </header>
 
-  <app-workout-chart></app-workout-chart>
 
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 mt-8">
-    <div (click)="openModal('exercises')"
-         class="bg-white p-6 rounded-xl border border-slate-100 border-l-4 border-l-indigo-600 shadow-sm cursor-pointer hover:shadow-md transition-all active:scale-95">
-      <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">LIBRARY_ENTRIES</p>
-      <p class="text-4xl font-black text-slate-800 mb-6">{{ api.totalExercises() }}</p>
-      <p class="text-[11px] font-bold text-indigo-700 uppercase tracking-widest">ACCESS_DATABASE -></p>
-    </div>
-
-    <div (click)="openModal('workouts')"
-         class="bg-white p-6 rounded-xl border border-slate-100 border-l-4 border-l-emerald-600 shadow-sm cursor-pointer hover:shadow-md transition-all active:scale-95">
-      <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">SESSION_LOGS</p>
-      <p class="text-4xl font-black text-slate-800 mb-6">{{ totalWorkouts() }}</p>
-      <p class="text-[11px] font-bold text-emerald-700 uppercase tracking-widest">VIEW_RECORDS -></p>
-    </div>
-
-    <div (click)="openModal('users')"
-         class="bg-white p-6 rounded-xl border border-slate-100 border-l-4 border-l-orange-500 shadow-sm cursor-pointer hover:shadow-md transition-all active:scale-95">
-      <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4">USER_ACCOUNTS</p>
-      <p class="text-4xl font-black text-slate-800 mb-6">{{ totalUsers() }}</p>
-      <p class="text-[11px] font-bold text-orange-600 uppercase tracking-widest">MANAGE_AUTH -></p>
-    </div>
+  <div class="mt-8 pt-8 border-t border-slate-50">
+    <router-outlet></router-outlet>
   </div>
-
-  <ng-container *ngIf="isModalOpen()">
-    <div class="fixed inset-0 z-[100] flex items-center justify-center p-6 modal-enter">
-      <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" (click)="closeModal()"></div>
-
-      @defer (on immediate) {
-      <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col overflow-hidden">
-        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-white z-10">
-          <h2 class="text-xl font-black text-slate-800 uppercase tracking-wide">
-      {{
-      activeModalType() === 'exercises' ? 'Database_View' : activeModalType() === 'workouts' ? 'System_Logs' : 'Auth_Management'
-      }}
-      </h2>
-      <div class="flex items-center gap-4">
-       <app-user-directory></app-user-directory>
-
-        <input *ngIf="activeModalType() === 'exercises'" type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm outline-none focus:border-indigo-500 w-64" placeholder="Search records...">
-        <button (click)="closeModal()" class="text-slate-400 hover:text-red-500 font-bold p-2 transition-colors">✕</button>
-      </div>
-    </div>
-
-    <div class="overflow-y-auto flex-1 p-6 bg-slate-50/50">
-      <ng-container [ngSwitch]="activeModalType()">
-        <div *ngSwitchCase="'exercises'" class="bg-white border border-slate-100 rounded-xl overflow-hidden shadow-sm">
-          <table class="w-full text-left">
-            <thead class="bg-slate-50 sticky top-0 z-10">
-              <tr class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                <th class="px-6 py-4">Entity_Name</th>
-                <th class="px-6 py-4">Metadata</th>
-                <th class="px-6 py-4 text-right">Action</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-50">
-              <tr *ngFor="let ex of filteredExercises()" class="hover:bg-slate-50 transition-colors">
-                <td class="px-6 py-4 font-bold text-slate-700 text-sm" [innerHTML]="highlightMatch(ex.name)"></td>
-                <td class="px-6 py-4 text-xs font-bold text-slate-500">{{ ex.mechanics || 'N/A' }}</td>
-                      <td class="px-6 py-4 text-right space-x-4">
-                        <button class="text-xs font-bold text-indigo-600 uppercase">Edit</button>
-                        <button (click)="onDelete(ex.id)" class="text-xs font-bold text-red-500 uppercase">Drop</button>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-              <div *ngSwitchCase="'users'">
-                <app-user-management></app-user-management>
-              </div>
-              <div *ngSwitchDefault class="p-10 text-center text-slate-400 font-bold uppercase tracking-widest">
-                Data module synchronization in progress...
-              </div>
-            </ng-container>
-          </div>
-
-          <div *ngIf="activeModalType() === 'exercises'" class="p-4 bg-white border-t border-slate-100 flex justify-between items-center">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Page_Ref: {{ currentPage() }}</p>
-            <div class="flex gap-2">
-              <button (click)="changePage(-1)" [disabled]="currentPage() === 1" class="px-4 py-2 rounded-lg border border-slate-200 font-bold text-xs disabled:opacity-50 transition-all">PREV</button>
-              <button (click)="changePage(1)" [disabled]="filteredExercises().length < pageSize" class="px-4 py-2 rounded-lg bg-indigo-600 text-white font-bold text-xs shadow-sm">NEXT</button>
-            </div>
-          </div>
-        </div>
-      }
-    </div>
-  </ng-container>
 </div>

@@ -27,7 +27,8 @@ import {
   Users,
   Weight,
   Wrench,
-  X
+  X,
+  MoreHorizontal
 } from 'lucide-angular';
 
 export const appConfig: ApplicationConfig = {

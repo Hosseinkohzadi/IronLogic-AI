@@ -8,18 +8,16 @@ import {FormsModule} from '@angular/forms';
 @Component({
   selector: 'app-grid-body',
   standalone: true,
-  imports: [CommonModule, FormsModule], // ScrollingModule حذف شد چون از Paging استفاده می‌کنیم
+  imports: [CommonModule, FormsModule],
   templateUrl: './grid-body.html',
   styleUrls: ['./grid-body.css']
 })
 export class GridBodyComponent {
   @Input() columns: ColumnConfig[] = [];
   @Input() data$!: Observable<any[]>;
-
   @Output() action = new EventEmitter<{ type: 'edit' | 'delete', row: any }>();
 
-  constructor(private gridDataService: GridDataService) {
-  }
+  constructor(private gridDataService: GridDataService) {}
 
   onAction(type: 'edit' | 'delete', row: any) {
     this.action.emit({type, row});

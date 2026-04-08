@@ -1,60 +1,26 @@
-:host {
-  display: block;
-  width: 16rem;
-  background-color: #fff;
-  border-right: 1px solid #f1f5f9;
+/* نمایش آیکون فلش فقط در وضعیت فعال */
+.active-link .active-arrow {
+  opacity: 1 !important;
 }
 
-.logo-text {
-  font-size: 1.5rem;
-  font-weight: 900;
-  letter-spacing: -0.01562em;
+/* اسکرول‌بار ظریف برای بخش منو */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: 10px;
+}
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background: #f1f5f9;
 }
 
-.logo-highlight {
-  color: #4f46e5;
+/* کلاس استخراج شده برای کارت سیستم */
+.system-card {
+  background-color: #161b22;
+  transition: transform 0.3s ease;
 }
 
-.menu-header {
-  padding: 0 1rem;
-  font-size: 10px;
-  font-weight: bold;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: 0.75rem;
-}
-
-.profile-card {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  background-color: #f8fafc;
-  padding: 0.75rem;
-  border-radius: 1rem;
-  border: 1px solid #f1f5f9;
-}
-
-.profile-avatar {
-  width: 2.5rem;
-  height: 2.5rem;
-  border-radius: 0.75rem;
-  background-color: #e0e7ff;
-  color: #4338ca;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-}
-
-.profile-name {
-  font-size: 0.875rem;
-  font-weight: bold;
-  color: #1e293b;
-}
-
-.profile-title {
-  font-size: 11px;
-  font-weight: 500;
-  color: #64748b;
+.system-card:hover {
+  transform: translateY(-2px);
 }

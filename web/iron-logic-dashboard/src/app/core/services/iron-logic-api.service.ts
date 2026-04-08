@@ -3,7 +3,8 @@ import {HttpClient, HttpParams} from '@angular/common/http';
 import {Observable, of, shareReplay, tap} from 'rxjs';
 import {catchError, map} from 'rxjs/operators';
 import {environment} from '@env/environment';
-import {Exercise, WorkoutStats} from '../models'; // استفاده از index.ts برای ایمپورت تمیز
+import {Exercise, WorkoutStats} from '../models';
+import {UserRow} from '@core/models';
 
 @Injectable({
   providedIn: 'root'
@@ -84,5 +85,16 @@ export class IronLogicApiService {
         return of(false);
       })
     );
+  }
+
+  private mockUsers: UserRow[] = [
+    { id: 'USR-1001', name: 'Hossein K.', email: 'hossein@example.com', status: 'Active', tier: 'Pro', sessions: 184, weights: 121, lastSeen: '2h ago', emailConfirmed: true },
+    { id: 'USR-1002', name: 'Marcus Lee', email: 'marcus@example.com', status: 'Review', tier: 'Elite', sessions: 96, weights: 78, lastSeen: '5h ago', emailConfirmed: true },
+    { id: 'USR-1003', name: 'Sara Bennett', email: 'sara@example.com', status: 'Suspended', tier: 'Basic', sessions: 41, weights: 22, lastSeen: '1d ago', emailConfirmed: false },
+    { id: 'USR-1004', name: 'Daniel Park', email: 'daniel@example.com', status: 'Active', tier: 'Elite', sessions: 210, weights: 144, lastSeen: '12m ago', emailConfirmed: true },
+  ];
+
+  getUsers() {
+    return of(this.mockUsers);
   }
 }

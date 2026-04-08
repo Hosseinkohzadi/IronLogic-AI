@@ -1,105 +1,53 @@
-/* shared/grid/components/grid-body/grid-body.css */
+:host { display: block; width: 100%; }
 
-:host {
-  display: block;
-  width: 100%;
-}
+.grid-body-container { width: 100%; min-height: 200px; }
 
-.grid-body-container {
-  width: 100%;
-  min-height: 200px;
-}
-
-/* --- ساختار اصلی ردیف --- */
 .grid-row {
   display: flex;
   width: 100%;
   border-bottom: 1px solid #f1f5f9;
   background-color: white;
   transition: all 0.2s ease;
-  position: relative; /* برای قرارگیری صحیح ::after */
+  position: relative;
 }
 
-.grid-row:hover {
-  background-color: #f8fafc;
-}
+.grid-row:hover { background-color: #f8fafc; }
 
-/* --- ساختار سلول‌ها --- */
 .grid-cell {
-  flex: 1;
+  flex: 0 0 auto; /* حیاتی‌ترین خط برای جلوگیری از له شدن ستون‌ها */
   padding: 12px 16px;
   font-size: 13px;
   color: #334155;
   display: flex;
   align-items: center;
-  min-width: 0;
-  white-space: nowrap;
+  box-sizing: border-box;
   overflow: hidden;
+  white-space: nowrap;
   text-overflow: ellipsis;
+  border-left: 1px solid #f1f5f9; /* خط عمودی برای زیبایی و تراز */
 }
 
-/* --- دکمه‌های عملیاتی --- */
-.action-container {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  width: 100%;
-}
+/* ستون‌های ثابت (باید دقیقا با هدر یکسان باشد) */
+.col-selection { width: 50px !important; min-width: 50px !important; justify-content: center; padding: 0 !important; }
+.col-avatar { width: 80px !important; min-width: 80px !important; justify-content: center; }
+.col-action { width: 100px !important; min-width: 100px !important; justify-content: center; }
 
+/* دکمه‌های عملیاتی */
+.action-container { display: flex; gap: 8px; justify-content: center; width: 100%; }
 .action-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 30px;
-  height: 30px;
-  border-radius: 6px;
-  border: 1px solid #e2e8f0;
-  background-color: white;
-  color: #64748b;
-  cursor: pointer;
-  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px; border-radius: 6px; border: 1px solid #e2e8f0;
+  background-color: white; color: #64748b; cursor: pointer; transition: all 0.2s;
 }
+.action-btn.edit:hover { border-color: #6366f1; color: #6366f1; background-color: #f5f3ff; }
+.action-btn.delete:hover { border-color: #ef4444; color: #ef4444; background-color: #fef2f2; }
 
-.action-btn.edit:hover {
-  border-color: #6366f1;
-  color: #6366f1;
-  background-color: #f5f3ff;
-}
-
-.action-btn.delete:hover {
-  border-color: #ef4444;
-  color: #ef4444;
-  background-color: #fef2f2;
-}
-
-/* --- وضعیت انتخاب (Selection) --- */
-/* استفاده از کانتینر والد برای اطمینان از اعمال استایل */
-.grid-body-container .grid-row.row-selected {
-  background-color: #f5f3ff !important;
-  z-index: 1;
-}
-
-/* شفاف کردن سلول‌ها در حالت انتخاب برای نمایش رنگ ردیف */
-.grid-row.row-selected .grid-cell {
-  background-color: transparent !important;
-}
-
-/* خط عمودی نشانگر سمت راست (RTL) */
+/* وضعیت انتخاب (Selection) */
+.grid-body-container .grid-row.row-selected { background-color: #f5f3ff !important; z-index: 1; }
+.grid-row.row-selected .grid-cell { background-color: transparent !important; }
 .grid-row.row-selected::after {
-  content: '';
-  position: absolute;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 4px;
-  background-color: #6366f1;
-  z-index: 2;
+  content: ''; position: absolute; right: 0; top: 0; bottom: 0;
+  width: 4px; background-color: #6366f1; z-index: 2;
 }
 
-/* --- وضعیت نبود داده --- */
-.no-data {
-  padding: 40px;
-  text-align: center;
-  color: #94a3b8;
-  font-size: 14px;
-}
+.no-data { padding: 40px; text-align: center; color: #94a3b8; font-size: 14px; }

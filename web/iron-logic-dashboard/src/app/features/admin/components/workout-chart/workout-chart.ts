@@ -7,7 +7,7 @@ import { IronLogicApiService } from '@core/services/iron-logic-api.service';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './workout-chart.html',
-  styleUrl: './workout-chart.css'
+  styles: ''
 })
 export class WorkoutChartComponent implements OnInit {
   private api = inject(IronLogicApiService);

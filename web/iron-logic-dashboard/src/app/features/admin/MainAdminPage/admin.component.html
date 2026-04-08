@@ -1,23 +1,165 @@
-<div class="p-8 bg-white min-h-screen animate-in fade-in duration-700">
-  <header class="flex justify-between items-start mb-10 border-b border-slate-100 pb-6">
-    <div>
-      <h1 class="text-2xl font-black text-slate-800 tracking-tighter uppercase">Infrastructure Dashboard</h1>
-      <p class="text-[10px] font-bold text-slate-400 tracking-[0.2em] mt-1">CORE_SYSTEM_MONITOR</p>
+<div class="relative min-h-[90vh]">
+
+  <div [class.blur-md]="isDrawerOpen()"
+       [class.pointer-events-none]="isDrawerOpen()"
+       class="space-y-8 animate-in transition-all duration-500 ease-in-out">
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+      @for (card of [
+      { label: 'Active Users', val: stats().active.count, g: stats().active.growth, icon: 'users', color: 'emerald' },
+      { label: 'Suspended', val: stats().suspended.count, g: stats().suspended.growth, icon: 'shield-off', color: 'red' },
+      { label: 'Email Confirmed', val: stats().confirmed.count, g: stats().confirmed.growth, icon: 'mail', color: 'indigo' },
+      { label: 'Password Resets', val: stats().resets.count, g: stats().resets.growth, icon: 'refresh-cw', color: 'slate' }
+      ]; track card.label) {
+      <div class="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm transition-all hover:shadow-md">
+        <div class="flex justify-between items-start mb-6">
+          <p class="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em]">{{ card.label }}</p>
+            <div [class]="'p-2 rounded-xl bg-' + card.color + '-50 text-' + card.color + '-200'">
+              <lucide-icon [name]="card.icon" class="w-4 h-4"></lucide-icon>
+            </div>
+          </div>
+          <p class="text-4xl font-black text-slate-800 tracking-tighter">{{ card.val }}</p>
+          <p class="text-[10px] font-bold mt-3 flex items-center gap-1">
+            <span [class]="card.g.startsWith('+') ? 'text-emerald-500' : 'text-red-500'">{{ card.g }}</span>
+            <span class="text-slate-400 tracking-tight">vs last 7 days</span>
+          </p>
+        </div>
+      }
     </div>
 
-    <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-100"
-         [ngClass]="{'bg-emerald-50 border-emerald-100': serverStatus() === 'OPERATIONAL', 'bg-red-50 border-red-100': serverStatus() === 'DOWN'}">
-      <span class="w-2 h-2 rounded-full shadow-sm"
-            [ngClass]="{'bg-emerald-500 animate-pulse': serverStatus() === 'OPERATIONAL', 'bg-red-500': serverStatus() === 'DOWN', 'bg-slate-300': serverStatus() === 'CHECKING'}"></span>
-      <span class="text-[10px] font-black uppercase tracking-widest"
-            [ngClass]="{'text-emerald-700': serverStatus() === 'OPERATIONAL', 'text-red-700': serverStatus() === 'DOWN', 'text-slate-500': serverStatus() === 'CHECKING'}">
-        NODE_STATUS: {{ serverStatus() }}
-      </span>
+    <div class="bg-white rounded-[2.5rem] border border-slate-100 shadow-sm overflow-hidden">
+
+      <div class="flex flex-col md:flex-row justify-between items-center gap-4 p-6 border-b border-slate-100 bg-slate-50/50">
+        <div class="relative w-full md:w-96">
+          <lucide-icon name="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></lucide-icon>
+          <input type="text" [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)"
+                 placeholder="Search by name, email, or ID..."
+                 class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all placeholder:text-slate-400">
+        </div>
+
+        <div class="flex items-center gap-3 w-full md:w-auto relative">
+
+          @if (isStatusMenuOpen() || isTierMenuOpen()) {
+          <div class="fixed inset-0 z-10" (click)="closeMenus()"></div>
+          }
+
+          <div class="relative z-20">
+            <button (click)="isStatusMenuOpen.set(!isStatusMenuOpen()); isTierMenuOpen.set(false)"
+                    class="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-[11px] font-black text-slate-600 hover:bg-slate-50 transition-all uppercase tracking-widest">
+              <lucide-icon name="filter" class="w-3.5 h-3.5 text-slate-400"></lucide-icon>
+              {{ selectedStatus() }}
+              <lucide-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400 ml-2"></lucide-icon>
+            </button>
+            @if (isStatusMenuOpen()) {
+            <div class="absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 animate-in-drawer">
+              @for (status of ['All Status', 'Active', 'Review', 'Suspended']; track status) {
+            <button (click)="setStatus(status)" class="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 flex justify-between items-center">
+              {{ status }}
+              @if (selectedStatus() === status) { <lucide-icon name="check" class="w-3.5 h-3.5 text-indigo-600"></lucide-icon> }
+            </button>
+            }
+            </div>
+            }
+          </div>
+
+          <div class="relative z-20">
+            <button (click)="isTierMenuOpen.set(!isTierMenuOpen()); isStatusMenuOpen.set(false)"
+                    class="flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-[11px] font-black text-slate-600 hover:bg-slate-50 transition-all uppercase tracking-widest">
+              {{ selectedTier() }}
+              <lucide-icon name="chevron-down" class="w-3.5 h-3.5 text-slate-400 ml-2"></lucide-icon>
+            </button>
+            @if (isTierMenuOpen()) {
+            <div class="absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-2xl shadow-xl py-2 animate-in-drawer">
+              @for (tier of ['All Plans', 'Basic', 'Pro', 'Elite']; track tier) {
+            <button (click)="setTier(tier)" class="w-full text-left px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-50 flex justify-between items-center">
+              {{ tier }}
+              @if (selectedTier() === tier) { <lucide-icon name="check" class="w-3.5 h-3.5 text-indigo-600"></lucide-icon> }
+            </button>
+            }
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      @if (isLoading()) {
+      <div class="p-24 text-center flex flex-col items-center gap-4">
+        <lucide-icon name="refresh-cw" class="w-8 h-8 animate-spin text-slate-200"></lucide-icon>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em]">Infrastructure_Sync...</p>
+      </div>
+      } @else {
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="text-[10px] font-black text-slate-300 uppercase tracking-[0.25em]">
+            <th class="px-8 py-6 w-12 border-b border-slate-50"></th>
+            <th class="px-8 py-6 border-b border-slate-50">User Profile</th>
+            <th class="px-8 py-6 border-b border-slate-50">Status</th>
+            <th class="px-8 py-6 border-b border-slate-50">Plan</th>
+            <th class="px-8 py-6 text-right border-b border-slate-50">Activity</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-50/80">
+          @for (user of filteredUsers(); track user.id; let i = $index) {
+      <tr (click)="selectUser(user)" class="group cursor-pointer hover:bg-slate-50/50 transition-all">
+        <td class="px-8 py-5" (click)="$event.stopPropagation()">
+          <input type="checkbox" [checked]="selectedUserIndices().includes(i)" (change)="toggleSelection($event, i)"
+                 class="h-4 w-4 rounded-md border-slate-200 text-black focus:ring-black transition-all">
+        </td>
+        <td class="px-8 py-5">
+          <div class="font-black text-slate-700 text-sm tracking-tight">{{ user.name }}</div>
+          <div class="text-[10px] font-medium text-slate-400 mt-0.5">{{ user.email }}</div>
+        </td>
+        <td class="px-8 py-5">
+          <span [class]="'badge-' + user.status.toLowerCase()">{{ user.status }}</span>
+        </td>
+        <td class="px-8 py-5">
+          <span [class]="'badge-tier-' + user.tier.toLowerCase()">{{ user.tier }}</span>
+        </td>
+        <td class="px-8 py-5 text-right">
+          <div class="text-sm font-black text-slate-800 tracking-tighter">{{ user.sessions }} SESS</div>
+          <div class="text-[9px] font-bold text-slate-300 uppercase tracking-widest mt-1">Imports</div>
+        </td>
+      </tr>
+      } @empty {
+      <tr>
+        <td colspan="5" class="p-12 text-center text-[11px] font-black text-slate-400 uppercase tracking-widest">
+          No records found matching filters
+        </td>
+      </tr>
+      }
+      </tbody>
+    </table>
+      }
     </div>
-  </header>
-
-
-  <div class="mt-8 pt-8 border-t border-slate-50">
-    <router-outlet></router-outlet>
   </div>
+
+  @if (isDrawerOpen()) {
+  <div (click)="closeDrawer()" class="fixed inset-0 z-40 bg-slate-900/5 backdrop-blur-[2px] transition-opacity"></div>
+  }
+
+  @if (isDrawerOpen() && activeUserDetails()) {
+  <div class="fixed top-0 right-0 h-full w-full max-w-[420px] z-50 animate-in-drawer p-4">
+    <div class="h-full bg-slate-50/95 backdrop-blur-2xl rounded-[2.5rem] border border-white shadow-2xl p-8 overflow-y-auto flex flex-col">
+       <div class="flex justify-between items-start mb-8 shrink-0">
+        <div>
+          <div class="flex items-center gap-3 mb-1.5">
+            <h2 class="text-2xl font-black text-slate-900 tracking-tight">{{ activeUserDetails()?.name }}</h2>
+          </div>
+          <p class="text-xs font-medium text-slate-500">{{ activeUserDetails()?.tier }} account overview and recent linked activity</p>
+        </div>
+        <button (click)="closeDrawer()" class="p-2 hover:bg-slate-200/50 rounded-xl transition-all font-bold text-slate-600">✕</button>
+      </div>
+
+      <div class="space-y-4 flex-1 pb-10">
+        <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
+          <h3 class="text-sm font-black text-slate-900 mb-3.5">Identity</h3>
+          <div class="space-y-2.5 text-xs font-medium text-slate-600">
+            <p>User ID: USR-{{ activeUserDetails()?.id ? activeUserDetails()!.id.substring(0,6) : '......' }}</p>
+            <p>Email: {{ activeUserDetails()?.email }}</p>
+          </div>
+        </div>
+        </div>
+    </div>
+  </div>
+  }
 </div>

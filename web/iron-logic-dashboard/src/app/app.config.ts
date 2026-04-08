@@ -1,27 +1,33 @@
-import { ApplicationConfig, importProvidersFrom, provideZonelessChangeDetection } from '@angular/core';
-import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
-import { routes } from './app.routes';
+import {ApplicationConfig, importProvidersFrom, provideZonelessChangeDetection} from '@angular/core';
+import {provideRouter} from '@angular/router';
+import {provideHttpClient} from '@angular/common/http';
+import {routes} from './app.routes';
 
-// ایمپورت آیکون‌ها با نام‌های استاندارد کتابخانه
 import {
-  LayoutDashboard,
-  Users,
-  Calendar,
-  Dumbbell,
   Activity,
-  Weight,
-  Layers,
-  Wrench,
-  Pencil,
-  Trash2, // اصلاح شده از Trash-2
-  ShieldCheck,
-  Settings,
-  Gauge,
   ArrowUpRight,
+  Calendar,
   ChevronLeft,
+  ChevronRight,
+  Dumbbell,
+  Edit3,
+  Eye,
+  Gauge,
+  Layers,
+  LayoutDashboard,
+  LucideAngularModule,
+  Mail,
+  Pencil,
+  RefreshCw,
   Search,
-  LucideAngularModule
+  Settings,
+  ShieldCheck,
+  ShieldOff,
+  Trash2,
+  Users,
+  Weight,
+  Wrench,
+  X
 } from 'lucide-angular';
 
 export const appConfig: ApplicationConfig = {
@@ -46,7 +52,12 @@ export const appConfig: ApplicationConfig = {
         Gauge,
         ArrowUpRight,
         ChevronLeft,
-        Search
+        Search, ShieldOff, Mail,
+        RefreshCw,
+        Eye,
+        Edit3,
+        ChevronRight,
+        X
       })
     )
   ]

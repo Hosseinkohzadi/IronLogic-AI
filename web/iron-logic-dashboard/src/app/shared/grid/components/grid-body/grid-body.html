@@ -9,6 +9,13 @@
     <div *ngFor="let col of columns"
          class="flex items-center px-4 overflow-hidden whitespace-nowrap"
          [style.width]="col.width || '150px'"
+         [class.sticky]="!!col.locked"
+          [class.left-0]="!!col.locked"
+         [style.left]="col.locked ? getLockedOffset(col.field) : null"
+         [class.z-30]="!!col.locked"
+         [class.bg-white]="!!col.locked"
+         [class.border-r-2]="!!col.locked && isLastLocked(col.field)"
+         [class.border-slate-200]="!!col.locked && isLastLocked(col.field)"
          [class.justify-center]="col.type === 'selection'"
          [class.justify-end]="col.type === 'action'"
          [class.pr-4]="col.type === 'action'">

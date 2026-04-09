@@ -115,6 +115,13 @@ export class GridDataService {
     this._selectedItems$.next([]);
   }
 
+  clearAllStates() {
+    this._filters$.next({});
+    this._sortConfig$.next([]);
+    this._currentPage$.next(1);
+    this._selectedItems$.next([]);
+  }
+
   goToPage(page: number) {
     this._currentPage$.next(page);
   }

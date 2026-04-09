@@ -62,6 +62,14 @@ export class GridComponent implements OnInit {
     return this.gridDataService.pagination$;
   }
 
+  get visibleColumns(): ColumnConfig[] {
+    return this.columns.filter((column) => column.hidden !== true);
+  }
+
+  get toggleableColumns(): ColumnConfig[] {
+    return this.columns.filter((column) => column.field !== 'selection' && column.field !== 'actions');
+  }
+
   ngOnInit() {
     this.gridDataService.selectedItems$.subscribe(items => this.selectionChanged.emit(items));
   }
@@ -81,14 +89,36 @@ export class GridComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
-  onRefreshClick() {
-    this.gridDataService.clearSorts();
-    this.gridDataService.clearFilters();
+  toggleColumn(col: ColumnConfig) {
+    col.hidden = !col.hidden;
+    this.columns = [...this.columns];
+    this.cdr.markForCheck();
+  }
+
+  shouldShowColumnField(col: ColumnConfig): boolean {
+    if (!col.field) {
+      return false;
+    }
+
+    const headerName = (col.title || '').trim().toLowerCase();
+    const fieldName = col.field.trim().toLowerCase();
+
+    if (!headerName) {
+      return true;
+    }
+
+    return fieldName !== headerName;
+  }
+
+  handleRefresh() {
+    this.columns = this.columns.map((column) => ({ ...column, hidden: false }));
+    this.gridDataService.clearAllStates();
     this.columns.forEach((column) => {
       column.sortOrder = null;
     });
     this.filterResetKey += 1;
     this.search.emit('');
     this.refresh.emit();
+    this.cdr.markForCheck();
   }
 }

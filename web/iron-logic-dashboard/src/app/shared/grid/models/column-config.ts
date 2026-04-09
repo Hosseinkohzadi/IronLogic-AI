@@ -63,6 +63,8 @@ export interface ColumnConfig {
   field: string;
   /** Column header title */
   title: string;
+  /** Whether column is hidden in the grid */
+  hidden?: boolean;
   /** Column width (CSS value) */
   width?: string;
   /** Cell renderer type (text, profile, image, badge, tier, email, calendar, action, selection, etc.) */

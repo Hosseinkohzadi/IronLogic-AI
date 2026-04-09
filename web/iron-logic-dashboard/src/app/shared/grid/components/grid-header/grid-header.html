@@ -1,8 +1,8 @@
-<div class="flex flex-col w-full mb-3 overflow-visible">
+<div class="flex flex-col w-full mb-3 overflow-visible" >
   <div class="flex w-full px-2 overflow-visible bg-slate-50">
     <div *ngFor="let col of columns; let i = index"
          class="relative flex items-center px-4 overflow-visible bg-slate-50"
-         [style.width]="col.width || '150px'"
+          [style.width]="col.width || '200px'"
          [ngClass]="{'justify-center': col.type === 'selection', 'justify-end pr-6': col.type === 'action'}">
 
       <ng-container *ngIf="col.type === 'selection'">

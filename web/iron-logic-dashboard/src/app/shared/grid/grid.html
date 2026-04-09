@@ -22,7 +22,7 @@
         </button>
       </ng-container>
 
-      <button (click)="onRefreshClick()" class="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-[12px] transition-all whitespace-nowrap">
+      <button (click)="handleRefresh()" class="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-[12px] transition-all whitespace-nowrap">
         <lucide-icon name="refresh-cw" [class.animate-spin]="isLoading" class="w-4 h-4"></lucide-icon> Refresh
       </button>
 

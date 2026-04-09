@@ -22,6 +22,12 @@ interface GridEditSettings {
 })
 export class GridBodyComponent {
   @Input() columns: ColumnConfig[] = [];
+  @Input() fitViewportMode: boolean = false;
+
+  get visibleColumns(): ColumnConfig[] {
+    return this.columns.filter((col) => !col.hidden);
+  }
+
   @Input() data$!: Observable<any[]>;
   @Input() editSettings: GridEditSettings = { mode: 'None', allowEditing: false };
   @Output() action = new EventEmitter<{ type: 'edit' | 'delete' | 'row-click', row: any }>();

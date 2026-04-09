@@ -1,41 +1,67 @@
-<div class="flex flex-col w-full mb-3 overflow-visible">
-  <div class="flex w-full px-2 overflow-visible bg-slate-50">
-    <div *ngFor="let col of columns; let i = index"
-         class="relative flex items-center px-4 overflow-visible bg-slate-50"
-         [style.width]="col.width || '150px'"
-         [ngClass]="{'justify-center': col.type === 'selection', 'justify-end pr-6': col.type === 'action'}">
+<div>
+  <div class="flex flex-nowrap items-center justify-start h-14 py-3 bg-slate-50/50 border-b border-slate-200 px-2 overflow-visible"
+       [class.min-w-full]="!fitViewportMode"
+       [class.w-max]="!fitViewportMode"
+       [style.width]="fitViewportMode ? '100%' : null"
+       [style.max-width]="fitViewportMode ? '100%' : null"
+       style="display: flex; flex-wrap: nowrap;">
+            <div *ngFor="let col of visibleColumns; let i = index"
+              class="header-cell flex h-full items-center px-4 overflow-visible transition-[width] duration-300 ease-out"
+             [attr.data-field]="col.field"
+         [style.width]="fitViewportMode ? (col.width || 'auto') : (col.width || '200px')"
+         [style.max-width]="fitViewportMode ? (col.width || 'auto') : null"
+         [style.flex]="fitViewportMode ? '1 1 auto' : null"
+         [style.position]="col.locked ? 'sticky' : 'relative'"
+         [style.left]="col.locked ? getLockedOffset(col.field) : 'auto'"
+         [style.z-index]="col.locked ? '50' : '1'"
+         [style.background-color]="col.locked ? '#f8fafc' : 'transparent'"
+          [class.sticky-column]="!!col.locked"
+         [class.border-r-2]="!!col.locked && isLastLocked(col.field)"
+         [class.border-slate-200]="!!col.locked && isLastLocked(col.field)"
+           [ngClass]="{
+             'justify-center': ['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || ''),
+             'justify-start': !['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || '') && col.type !== 'action',
+             'justify-end pr-6': col.type === 'action'
+           }">
 
       <ng-container *ngIf="col.type === 'selection'">
         <input type="checkbox" (change)="onToggleAll($event)" class="w-4 h-4 rounded border-slate-300 text-black focus:ring-black cursor-pointer">
       </ng-container>
 
-      <div *ngIf="col.type !== 'selection'" class="flex items-center gap-1.5 cursor-pointer group select-none" (click)="handleSort(col, $event)">
+       <div *ngIf="col.type !== 'selection'"
+         class="flex items-center w-full h-full group select-none cursor-pointer"
+         [class.justify-center]="['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || '')"
+         [class.justify-between]="!['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || '')"
+         (click)="handleSort(col, $event)">
         <span class="text-[11px] font-bold text-slate-500 uppercase tracking-[0.15em]">{{ col.title }}</span>
-        <ng-container *ngIf="col.sortable">
-          <span *ngIf="getSortOrder(col.field) as sortOrder"
-                class="text-[10px] font-bold text-blue-500">
-            {{ sortOrder === 'asc' ? '↑' : '↓' }}
-            <span *ngIf="hasMultiSort()">{{ getSortPriority(col.field) }}</span>
-          </span>
-          <svg *ngIf="!getSortOrder(col.field)"
-               class="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500 transition-colors"
-               viewBox="0 0 24 24"
-               fill="none"
-               stroke="currentColor"
-               stroke-width="2.5">
-            <path d="M7 15l5 5 5-5M7 9l5-5 5 5"/>
-          </svg>
-        </ng-container>
-        <button *ngIf="showFilters && col.type !== 'action' && col.type !== 'image'"
-          (click)="$event.stopPropagation(); toggleFilterMenu(col)"
-          class="relative p-1 hover:bg-slate-100 rounded transition-colors">
-          <lucide-icon name="filter"
-                 class="w-3.5 h-3.5"
-                 [class.text-blue-600]="isColumnFiltered(col.field)"
-                 [class.text-slate-400]="!isColumnFiltered(col.field)"></lucide-icon>
-          <span *ngIf="isColumnFiltered(col.field)"
-          class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white"></span>
-        </button>
+
+        <div class="flex items-center gap-1.5">
+          <ng-container *ngIf="col.sortable">
+            <span *ngIf="getSortOrder(col.field) as sortOrder"
+                  class="text-[10px] font-bold text-blue-500">
+              {{ sortOrder === 'asc' ? '↑' : '↓' }}
+              <span *ngIf="hasMultiSort()">{{ getSortPriority(col.field) }}</span>
+            </span>
+            <svg *ngIf="!getSortOrder(col.field)"
+                 class="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500 transition-colors"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2.5">
+              <path d="M7 15l5 5 5-5M7 9l5-5 5 5"/>
+            </svg>
+          </ng-container>
+          <button *ngIf="showFilters && col.type !== 'action' && col.type !== 'image'"
+            (click)="$event.stopPropagation(); toggleFilterMenu(col)"
+            class="relative flex items-center p-1 hover:bg-slate-100 rounded transition-colors">
+            <lucide-icon name="filter"
+                   class="w-3.5 h-3.5"
+                   [class.text-blue-600]="isColumnFiltered(col.field)"
+                   [class.text-slate-400]="!isColumnFiltered(col.field)"></lucide-icon>
+            <span *ngIf="isColumnFiltered(col.field)"
+            class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white"></span>
+          </button>
+        </div>
       </div>
 
        <div *ngIf="activeFilterMenu() === col.field"

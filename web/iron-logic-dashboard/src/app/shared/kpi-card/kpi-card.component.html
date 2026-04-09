@@ -1,0 +1,59 @@
+<div
+  class="bg-white p-6 rounded-[1.5rem] border border-slate-100 shadow-sm transition-all hover:shadow-md flex flex-col h-full group"
+  [class.cursor-pointer]="actionType() !== 'none'"
+  (click)="handleClick()">
+  <!-- Header: Label and Icons -->
+  <div class="flex items-center justify-between">
+    <!-- Label -->
+    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-1">
+      {{ label() }}
+    </span>
+
+    <!-- Icons Container -->
+    <div class="flex items-center gap-2">
+      <!-- Main Icon -->
+      <div class="p-2.5 bg-slate-50 group-hover:bg-slate-100 transition-colors rounded-[14px] text-slate-700">
+        <lucide-icon [name]="mainIcon()" class="w-5 h-5"></lucide-icon>
+      </div>
+
+      <!-- Info Icon & Popover (Conditional) -->
+      @if (showInfoIcon()) {
+        <div class="relative group/info">
+          <!-- Info Icon -->
+          <div class="w-6 h-6 flex items-center justify-center rounded-full bg-slate-50 text-slate-400 hover:text-slate-600 transition-colors">
+            <lucide-icon name="info" class="w-4 h-4"></lucide-icon>
+          </div>
+
+          <!-- Hover Popover -->
+          <div
+            class="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-72 p-5 bg-slate-900 rounded-xl shadow-xl z-50 opacity-0 group-hover/info:opacity-100 invisible group-hover/info:visible transition-all duration-200">
+            <p class="text-xs font-medium text-white">
+              {{ infoText() }}
+            </p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Value -->
+  <h3 class="text-[32px] font-black text-slate-900 mt-2 tracking-tight">
+    {{ value() }}
+  </h3>
+
+  <!-- Footer: Trend and Context -->
+  <div class="flex items-center justify-between mt-4">
+    <!-- Trend -->
+    <span
+      class="text-xs font-bold"
+      [class.text-emerald-600]="trend().startsWith('+')"
+      [class.text-rose-600]="trend().startsWith('-')">
+      {{ trend() }}
+    </span>
+
+    <!-- Context -->
+    <span class="text-[11px] font-medium text-slate-400">
+      {{ context() }}
+    </span>
+  </div>
+</div>

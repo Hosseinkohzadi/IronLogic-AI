@@ -4,19 +4,22 @@ import { IronLogicApiService } from '@core/services/iron-logic-api.service';
 import { UserRow } from '@core/models/user.model';
 import { LucideAngularModule } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
 import { GridComponent } from '@shared/grid/grid'; 
 import { ColumnConfig } from '@shared/grid/models/column-config';
+import { KpiCardComponent } from '@shared/kpi-card/kpi-card.component';
 
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [CommonModule, LucideAngularModule, FormsModule, GridComponent],
+  imports: [CommonModule, LucideAngularModule, FormsModule, GridComponent, KpiCardComponent],
   templateUrl: './user-management.html',
   styleUrl: './user-management.css'
 })
 export class UserManagementComponent implements OnInit {
   private apiService = inject(IronLogicApiService);
+  private router = inject(Router);
 
   cards = [
     {
@@ -218,5 +221,24 @@ export class UserManagementComponent implements OnInit {
     this.isDrawerOpen.set(false);
     document.body.style.overflow = 'auto';
     setTimeout(() => { this.selectedUserId.set(null); }, 300);
+  }
+
+  navigateToEntity(entityType: 'sessions' | 'weights' | 'exercises') {
+    const currentId = this.selectedUserId();
+    if (!currentId) return;
+
+    this.closeDrawer();
+
+    const routeMap: Record<'sessions' | 'weights' | 'exercises', string[]> = {
+      sessions: ['/admin/sessions'],
+      weights: ['/admin/weights'],
+      exercises: ['/admin/exercises']
+    };
+
+    this.router.navigate(routeMap[entityType], { queryParams: { userId: currentId } });
+  }
+
+  MapsToEntity(entityType: 'sessions' | 'weights' | 'exercises') {
+    this.navigateToEntity(entityType);
   }
 }

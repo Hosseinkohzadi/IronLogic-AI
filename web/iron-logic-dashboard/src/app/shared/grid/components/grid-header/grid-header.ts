@@ -1,15 +1,17 @@
-import { Component, EventEmitter, Input, Output, HostListener, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, Output, HostListener, OnChanges, SimpleChanges, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ColumnConfig, GridFilterPayload, GridNumberOperator, GridTextOperator } from '../../models/column-config';
+import { ColumnConfig, GridDateOperator, GridFilterPayload, GridNumberOperator, GridSortDescriptor, GridTextOperator } from '../../models/column-config';
 import { Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, take } from 'rxjs/operators';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { LucideAngularModule } from 'lucide-angular';
+import { FormsModule } from '@angular/forms';
+import { GridDataService } from '../../services/grid-data';
 
 @Component({
   selector: 'app-grid-header',
   standalone: true,
-  imports: [CommonModule, DragDropModule, LucideAngularModule],
+  imports: [CommonModule, FormsModule, DragDropModule, LucideAngularModule],
   templateUrl: './grid-header.html',
   styleUrls: ['./grid-header.css']
 })
@@ -20,9 +22,20 @@ export class GridHeaderComponent implements OnChanges {
   @Input() showFilters: boolean = false;
   @Input() filterResetKey: number = 0;
 
-  @Output() sortChange = new EventEmitter<ColumnConfig>();
+  @Output() sortChange = new EventEmitter<GridSortDescriptor[]>();
   @Output() filterChange = new EventEmitter<GridFilterPayload>();
   @Output() toggleAll = new EventEmitter<boolean>();
+
+  activeFilterMenu = signal<string | null>(null);
+  activeSorts = signal<GridSortDescriptor[]>([]);
+  tempFilterValue = signal<any>('');
+  tempFilterOperator = signal<string>('contains');
+  tempSelectedOptions = signal<string[]>([]);
+  tempRangeStart = signal<string>('');
+  tempRangeEnd = signal<string>('');
+  tempDate = signal<string>('');
+  tempTime = signal<string>('00:00');
+  uniqueColumnValues = signal<Record<string, string[]>>({});
 
   private textFilterSubject = new Subject<GridFilterPayload>();
 
@@ -45,7 +58,10 @@ export class GridHeaderComponent implements OnChanges {
   private startX = 0;
   private startWidth = 0;
 
-  constructor() {
+  constructor(
+    private elementRef: ElementRef<HTMLElement>,
+    private gridDataService: GridDataService
+  ) {
     this.textFilterSubject.pipe(
       debounceTime(300),
       distinctUntilChanged((prev, curr) => 
@@ -105,16 +121,329 @@ export class GridHeaderComponent implements OnChanges {
     }
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (!this.elementRef.nativeElement.contains(event.target as Node)) {
+      this.activeFilterMenu.set(null);
+    }
+  }
+
   // --- سایر متدها ---
   onToggleAll(event: any) {
     this.toggleAll.emit(event.target.checked);
   }
 
-  onSort(column: ColumnConfig) {
-    if (['action', 'selection', 'image'].includes(column.type!) || column.field === 'avatar') return;
-    column.sortOrder = column.sortOrder === 'asc' ? 'desc' : (column.sortOrder === 'desc' ? null : 'asc');
-    this.columns.forEach(c => { if (c.field !== column.field) c.sortOrder = null; });
-    this.sortChange.emit(column);
+  handleSort(column: ColumnConfig, event: MouseEvent) {
+    if (['action', 'selection', 'image'].includes(column.type!) || column.field === 'avatar' || !column.sortable) return;
+
+    const currentSorts = [...this.activeSorts()];
+    const existingIndex = currentSorts.findIndex((item) => item.field === column.field);
+
+    if (!event.ctrlKey) {
+      const nextOrder = this.getNextSortOrder(currentSorts[existingIndex]?.order);
+      const nextSorts: GridSortDescriptor[] = [{
+        field: column.field,
+        order: nextOrder,
+        priority: 1
+      }];
+
+      this.activeSorts.set(nextSorts);
+      this.syncColumnSortOrders(nextSorts);
+      this.sortChange.emit(nextSorts);
+      return;
+    }
+
+    if (existingIndex >= 0) {
+      const existing = currentSorts[existingIndex];
+      currentSorts[existingIndex] = {
+        ...existing,
+        order: this.getNextSortOrder(existing.order)
+      };
+    } else {
+      currentSorts.push({
+        field: column.field,
+        order: 'asc',
+        priority: currentSorts.length + 1
+      });
+    }
+
+    const normalized = currentSorts
+      .map((item, index) => ({ ...item, priority: index + 1 }));
+
+    this.activeSorts.set(normalized);
+    this.syncColumnSortOrders(normalized);
+    this.sortChange.emit(normalized);
+  }
+
+  getSortPriority(field: string): number | null {
+    const sort = this.activeSorts().find((item) => item.field === field);
+    return sort ? sort.priority : null;
+  }
+
+  getSortOrder(field: string): 'asc' | 'desc' | null {
+    const sort = this.activeSorts().find((item) => item.field === field);
+    return sort ? sort.order : null;
+  }
+
+  hasMultiSort(): boolean {
+    return this.activeSorts().length > 1;
+  }
+
+  private getNextSortOrder(current?: 'asc' | 'desc' | null): 'asc' | 'desc' {
+    return current === 'asc' ? 'desc' : 'asc';
+  }
+
+  private syncColumnSortOrders(sorts: GridSortDescriptor[]): void {
+    this.columns.forEach((column) => {
+      const sort = sorts.find((item) => item.field === column.field);
+      column.sortOrder = sort ? sort.order : null;
+    });
+  }
+
+  toggleFilterMenu(col: ColumnConfig): void {
+    if (this.activeFilterMenu() === col.field) {
+      this.activeFilterMenu.set(null);
+      return;
+    }
+
+    this.resetTempFilterState();
+
+    if (this.isCalendarType(col.type)) {
+      this.tempFilterOperator.set('equals');
+      this.parseExistingCalendarFilter(col.field);
+    } else if (this.isNumericType(col.type)) {
+      this.tempFilterOperator.set('eq');
+    } else if (this.isDateType(col.type)) {
+      this.tempFilterOperator.set('equals');
+    } else if (this.isSelectionType(col.type)) {
+      this.tempFilterOperator.set('equals');
+      this.loadUniqueColumnValues(col.field);
+    } else if (this.isTextType(col.type)) {
+      this.tempFilterOperator.set('contains');
+    } else {
+      this.tempFilterOperator.set('contains');
+    }
+
+    this.activeFilterMenu.set(col.field);
+  }
+
+  applyFilter(field: string): void {
+    const col = this.columns.find((item) => item.field === field);
+    if (!col) {
+      this.activeFilterMenu.set(null);
+      return;
+    }
+
+    if (this.isCalendarType(col.type)) {
+      const operator = this.toDateOperator(this.tempFilterOperator());
+
+      if (operator === 'isNull' || operator === 'isNotNull') {
+        sessionStorage.removeItem(`calendar_${field}`);
+        sessionStorage.setItem(`calendar_operator_${field}`, operator);
+
+        this.filterChange.emit({
+          field,
+          filterType: 'date',
+          mode: 'exact',
+          dateOperator: operator
+        });
+        this.activeFilterMenu.set(null);
+        return;
+      }
+
+      const dateStr = this.tempDate();
+      const timeStr = this.tempTime() || '00:00';
+
+      if (!dateStr) {
+        this.activeFilterMenu.set(null);
+        return;
+      }
+
+      const combinedValue = `${dateStr}T${timeStr}:00`;
+
+      sessionStorage.setItem(`calendar_${field}`, combinedValue);
+      sessionStorage.setItem(`calendar_operator_${field}`, operator);
+
+      this.filterChange.emit({
+        field,
+        filterType: 'date',
+        mode: 'exact',
+        value: combinedValue,
+        dateOperator: operator
+      });
+      this.activeFilterMenu.set(null);
+      return;
+    }
+
+    if (this.isNumericType(col.type)) {
+      const op = this.tempFilterOperator();
+      if (op === 'between') {
+        const min = this.tempRangeStart() === '' ? undefined : Number(this.tempRangeStart());
+        const max = this.tempRangeEnd() === '' ? undefined : Number(this.tempRangeEnd());
+        this.filterChange.emit({
+          field,
+          filterType: 'number',
+          mode: 'range',
+          min,
+          max
+        });
+      } else {
+        const operator: GridNumberOperator = op === 'gt' ? 'gt' : op === 'lt' ? 'lt' : 'eq';
+        const value = this.tempFilterValue() === '' ? undefined : Number(this.tempFilterValue());
+        this.filterChange.emit({
+          field,
+          filterType: 'number',
+          mode: 'compare',
+          operator,
+          value
+        });
+      }
+      this.activeFilterMenu.set(null);
+      return;
+    }
+
+    if (this.isDateType(col.type)) {
+      const op = this.tempFilterOperator();
+      if (op === 'range') {
+        this.filterChange.emit({
+          field,
+          filterType: 'date',
+          mode: 'range',
+          from: this.tempRangeStart(),
+          to: this.tempRangeEnd()
+        });
+      } else if (op === 'before') {
+        this.filterChange.emit({
+          field,
+          filterType: 'date',
+          mode: 'range',
+          to: String(this.tempFilterValue() || '')
+        });
+      } else if (op === 'after') {
+        this.filterChange.emit({
+          field,
+          filterType: 'date',
+          mode: 'range',
+          from: String(this.tempFilterValue() || '')
+        });
+      } else {
+        this.filterChange.emit({
+          field,
+          filterType: 'date',
+          mode: 'exact',
+          value: String(this.tempFilterValue() || '')
+        });
+      }
+      this.activeFilterMenu.set(null);
+      return;
+    }
+
+    if (this.isSelectionType(col.type)) {
+      const selected = this.tempSelectedOptions();
+      this.filterChange.emit({
+        field,
+        filterType: 'select',
+        mode: 'equals',
+        value: selected.length > 0 ? selected[0] : ''
+      });
+      this.activeFilterMenu.set(null);
+      return;
+    }
+
+    const textOperator = this.toTextOperator(this.tempFilterOperator());
+    this.filterChange.emit({
+      field,
+      filterType: 'text',
+      mode: 'contains',
+      value: String(this.tempFilterValue() || ''),
+      textOperator
+    });
+
+    this.activeFilterMenu.set(null);
+  }
+
+  clearFilter(field: string): void {
+    const col = this.columns.find((item) => item.field === field);
+    this.resetTempFilterState();
+
+    if (this.isCalendarType(col?.type)) {
+      sessionStorage.removeItem(`calendar_${field}`);
+      sessionStorage.removeItem(`calendar_operator_${field}`);
+      this.filterChange.emit({
+        field,
+        filterType: 'date',
+        mode: 'exact',
+        value: '',
+        dateOperator: 'equals'
+      });
+    } else if (this.isNumericType(col?.type)) {
+      this.filterChange.emit({
+        field,
+        filterType: 'number',
+        mode: 'compare',
+        operator: 'eq',
+        value: undefined
+      });
+    } else if (this.isDateType(col?.type)) {
+      this.filterChange.emit({
+        field,
+        filterType: 'date',
+        mode: 'exact',
+        value: ''
+      });
+    } else if (this.isSelectionType(col?.type)) {
+      this.filterChange.emit({
+        field,
+        filterType: 'select',
+        mode: 'equals',
+        value: ''
+      });
+    } else {
+      this.filterChange.emit({
+        field,
+        filterType: 'text',
+        mode: 'contains',
+        value: '',
+        textOperator: 'contains'
+      });
+    }
+
+    this.activeFilterMenu.set(null);
+  }
+
+  toggleOption(value: string): void {
+    this.tempSelectedOptions.update((current) =>
+      current.includes(value)
+        ? current.filter((item) => item !== value)
+        : [...current, value]
+    );
+  }
+
+  getUniqueColumnValues(field: string): string[] {
+    return this.uniqueColumnValues()[field] || [];
+  }
+
+  private loadUniqueColumnValues(field: string): void {
+    this.gridDataService.processedData$.pipe(take(1)).subscribe((rows) => {
+      const values = [...new Set(
+        rows
+          .map((row) => String(row[field] ?? '').trim())
+          .filter((value) => value.length > 0)
+      )];
+
+      this.uniqueColumnValues.update((current) => ({
+        ...current,
+        [field]: values
+      }));
+    });
+  }
+
+  private toTextOperator(operator: string): GridTextOperator {
+    if (operator === 'startsWith' || operator === 'endsWith' || operator === 'equals' || operator === 'contains') {
+      return operator;
+    }
+
+    return 'contains';
   }
 
   getDateMode(field: string, defaultMode?: string): 'exact' | 'range' {
@@ -139,6 +468,125 @@ export class GridHeaderComponent implements OnChanges {
       this.textOperators[field] = 'contains';
     }
     return this.textOperators[field];
+  }
+
+  // Type categorization helpers
+  isTextType(type?: string): boolean {
+    return ['text', 'profile', 'email', 'link'].includes(type || '');
+  }
+
+  isCalendarType(type?: string): boolean {
+    return type === 'calendar';
+  }
+
+  isDateType(type?: string): boolean {
+    return type === 'date';
+  }
+
+  isNumericType(type?: string): boolean {
+    return ['number', 'rate', 'progress', 'currency'].includes(type || '');
+  }
+
+  isSelectionType(type?: string): boolean {
+    return ['badge', 'tier', 'status', 'flag', 'boolean', 'tags'].includes(type || '');
+  }
+
+  getLockedOffset(field: string): string {
+    let offset = 0;
+
+    for (const column of this.columns) {
+      if (column.field === field) {
+        break;
+      }
+
+      if (column.locked) {
+        offset += this.getSafeWidth(column.width);
+      }
+    }
+
+    return `${offset}px`;
+  }
+
+  isLastLocked(field: string): boolean {
+    const lockedColumns = this.columns.filter((column) => column.locked);
+    if (lockedColumns.length === 0) {
+      return false;
+    }
+
+    return lockedColumns[lockedColumns.length - 1].field === field;
+  }
+
+  private getSafeWidth(width?: string): number {
+    const parsed = Number.parseInt(String(width ?? '150').replace('px', ''), 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 150;
+  }
+
+  isColumnFiltered(field: string): boolean {
+    return !!this.gridDataService.getFilter(field);
+  }
+
+  isPopupAlignedRight(columnIndex: number): boolean {
+    return columnIndex >= Math.max(this.columns.length - 2, 0);
+  }
+
+  shouldShowCalendarInputs(): boolean {
+    const operator = this.toDateOperator(this.tempFilterOperator());
+    return operator !== 'isNull' && operator !== 'isNotNull';
+  }
+
+  private resetTempFilterState(): void {
+    this.tempFilterValue.set('');
+    this.tempSelectedOptions.set([]);
+    this.tempRangeStart.set('');
+    this.tempRangeEnd.set('');
+    this.tempDate.set('');
+    this.tempTime.set('00:00');
+  }
+
+  /**
+   * Parses an existing calendar filter value (ISO 8601 string) and populates tempDate and tempTime signals.
+   * Expected format: "2026-04-15T13:00:00" or "2026-04-15T13:00"
+   */
+  private parseExistingCalendarFilter(field: string): void {
+    const storedOperator = sessionStorage.getItem(`calendar_operator_${field}`);
+    if (storedOperator) {
+      this.tempFilterOperator.set(storedOperator);
+    }
+
+    const storedValue = sessionStorage.getItem(`calendar_${field}`);
+    if (!storedValue) {
+      return;
+    }
+
+    try {
+      const dateTimeRegex = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/;
+      const match = storedValue.match(dateTimeRegex);
+
+      if (match) {
+        this.tempDate.set(match[1]);
+        this.tempTime.set(match[2]);
+      }
+    } catch (error) {
+      console.warn('Failed to parse calendar filter:', error);
+      this.tempDate.set('');
+      this.tempTime.set('00:00');
+    }
+  }
+
+  private toDateOperator(operator: string): GridDateOperator {
+    switch (operator) {
+      case 'notEqual':
+      case 'after':
+      case 'afterEqual':
+      case 'before':
+      case 'beforeEqual':
+      case 'isNull':
+      case 'isNotNull':
+      case 'equals':
+        return operator;
+      default:
+        return 'equals';
+    }
   }
 
   onTextOperatorChange(field: string, operator: GridTextOperator) {
@@ -322,6 +770,11 @@ export class GridHeaderComponent implements OnChanges {
   }
 
   private resetFilterUiState() {
+    this.activeSorts.set([]);
+    this.columns.forEach((column) => {
+      column.sortOrder = null;
+    });
+
     this.textFilterValues = {};
     this.textOperators = {};
     this.selectFilterValues = {};
@@ -344,11 +797,6 @@ export class GridHeaderComponent implements OnChanges {
         column.width = `${minWidth}px`;
       }
     }
-  }
-
-  private getSafeWidth(width?: string): number {
-    const parsed = parseInt(width || '150', 10);
-    return Number.isNaN(parsed) ? 150 : parsed;
   }
 
   private getMinWidth(column: ColumnConfig): number {

@@ -63,6 +63,31 @@ export class GridBodyComponent {
     this.action.emit({ type: 'row-click', row });
   }
 
+  getLockedOffset(field: string): string {
+    let offset = 0;
+
+    for (const column of this.columns) {
+      if (column.field === field) {
+        break;
+      }
+
+      if (column.locked) {
+        offset += this.getSafeWidth(column.width);
+      }
+    }
+
+    return `${offset}px`;
+  }
+
+  isLastLocked(field: string): boolean {
+    const lockedColumns = this.columns.filter((column) => column.locked);
+    if (lockedColumns.length === 0) {
+      return false;
+    }
+
+    return lockedColumns[lockedColumns.length - 1].field === field;
+  }
+
   isEditableColumn(col: ColumnConfig): boolean {
     return col.type === 'text' || col.type === 'email' || col.type === 'number';
   }
@@ -208,5 +233,10 @@ export class GridBodyComponent {
 
   cancelBatchEdit(): void {
     this.batchChanges.clear();
+  }
+
+  private getSafeWidth(width?: string): number {
+    const parsed = Number.parseInt(String(width ?? '150').replace('px', ''), 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 150;
   }
 }

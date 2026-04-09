@@ -41,7 +41,6 @@
         </div>
       }
     </div>
-
     <app-grid
       [columns]="userColumns"
       [data]="filteredUsers()"
@@ -55,7 +54,6 @@
       (actionTriggered)="handleGridAction($event)"
       (selectionChanged)="selectedUsers.set($event)">
     </app-grid>
-
   </div>
 
   @if (isDrawerOpen()) {

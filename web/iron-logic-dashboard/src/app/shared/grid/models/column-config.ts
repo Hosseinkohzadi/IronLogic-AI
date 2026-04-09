@@ -7,8 +7,18 @@ export type GridFilterMode = 'contains' | 'equals' | 'exact' | 'compare' | 'rang
 /** Grid number comparison operators */
 export type GridNumberOperator = 'eq' | 'gt' | 'gte' | 'lt' | 'lte';
 
+/** Grid date comparison operators */
+export type GridDateOperator = 'equals' | 'notEqual' | 'after' | 'afterEqual' | 'before' | 'beforeEqual' | 'isNull' | 'isNotNull';
+
 /** Grid text comparison operators */
 export type GridTextOperator = 'contains' | 'notContains' | 'startsWith' | 'endsWith' | 'equals';
+
+/** Multi-column sort descriptor */
+export interface GridSortDescriptor {
+  field: string;
+  order: 'asc' | 'desc';
+  priority: number;
+}
 
 /** Filter option configuration */
 export interface GridFilterOption {
@@ -30,6 +40,8 @@ export interface GridFilterPayload {
   value?: string | number;
   /** Number operator (for numeric filters) */
   operator?: GridNumberOperator;
+  /** Date operator (for date/calendar filters) */
+  dateOperator?: GridDateOperator;
   /** Text operator (for text filters) */
   textOperator?: GridTextOperator;
   /** Range start value */
@@ -54,7 +66,7 @@ export interface ColumnConfig {
   /** Column width (CSS value) */
   width?: string;
   /** Cell renderer type (text, profile, image, badge, tier, email, calendar, action, selection, etc.) */
-  type?: 'text' | 'flag' | 'action' | 'number' | 'date' | 'badge' | 'image' | 'rate' | 'calendar' | 'selection' | 'profile' | 'tier' | 'email';
+  type?: 'text' | 'flag' | 'action' | 'number' | 'date' | 'calendar' | 'badge' | 'image' | 'rate' | 'selection' | 'profile' | 'tier' | 'email' | 'progress' | 'boolean' | 'link' | 'currency' | 'tags';
   /** Whether column is sortable */
   sortable?: boolean;
   /** Current sort order */
@@ -65,6 +77,8 @@ export interface ColumnConfig {
   filterMode?: GridFilterMode;
   /** Filter options (for select filters) */
   filterOptions?: GridFilterOption[];
+  /** Whether the column stays frozen on the left side while horizontal scrolling */
+  locked?: boolean;
   /** Secondary field to display (e.g., scientific name in profile column) */
   subfield?: string;
 }

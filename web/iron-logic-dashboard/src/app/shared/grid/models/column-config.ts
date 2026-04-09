@@ -13,6 +13,13 @@ export type GridDateOperator = 'equals' | 'notEqual' | 'after' | 'afterEqual' | 
 /** Grid text comparison operators */
 export type GridTextOperator = 'contains' | 'notContains' | 'startsWith' | 'endsWith' | 'equals';
 
+/** Multi-column sort descriptor */
+export interface GridSortDescriptor {
+  field: string;
+  order: 'asc' | 'desc';
+  priority: number;
+}
+
 /** Filter option configuration */
 export interface GridFilterOption {
   /** Display label for the option */
@@ -70,6 +77,8 @@ export interface ColumnConfig {
   filterMode?: GridFilterMode;
   /** Filter options (for select filters) */
   filterOptions?: GridFilterOption[];
+  /** Whether the column stays frozen on the left side while horizontal scrolling */
+  locked?: boolean;
   /** Secondary field to display (e.g., scientific name in profile column) */
   subfield?: string;
 }

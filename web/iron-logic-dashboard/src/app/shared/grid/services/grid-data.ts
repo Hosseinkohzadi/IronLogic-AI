@@ -1,13 +1,15 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
-import { map, take } from 'rxjs/operators';
-import { GridDateOperator, GridFilterPayload, GridNumberOperator, GridTextOperator } from '../models/column-config';
+import { map, shareReplay, take } from 'rxjs/operators';
+import { GridDateOperator, GridFilterPayload, GridNumberOperator, GridSortDescriptor, GridTextOperator } from '../models/column-config';
 
 @Injectable()
 export class GridDataService {
+  private readonly textCollator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+
   // ۱. مخازن داده‌های خام و وضعیت‌ها (Private)
   private _rawData$ = new BehaviorSubject<any[]>([]);
-  private _sortConfig$ = new BehaviorSubject<{ field: string; order: 'asc' | 'desc' | null }>({ field: '', order: null });
+  private _sortConfig$ = new BehaviorSubject<GridSortDescriptor[]>([]);
   private _filters$ = new BehaviorSubject<Record<string, GridFilterPayload>>({});
   private _currentPage$ = new BehaviorSubject<number>(1);
   private _pageSize$ = new BehaviorSubject<number>(10);
@@ -30,21 +32,13 @@ export class GridDataService {
         });
       });
 
-      if (sort.order) {
-        result = [...result].sort((a, b) => {
-          let valA = a[sort.field];
-          let valB = b[sort.field];
-          if (valA instanceof Date) valA = valA.getTime();
-          if (valB instanceof Date) valB = valB.getTime();
-          if (valA == null) return 1;
-          if (valB == null) return -1;
-          if (valA < valB) return sort.order === 'asc' ? -1 : 1;
-          if (valA > valB) return sort.order === 'asc' ? 1 : -1;
-          return 0;
-        });
+      if (sort.length > 0) {
+        const orderedSorts = [...sort].sort((a, b) => a.priority - b.priority);
+        result = [...result].sort((a, b) => this.compareBySortChain(a, b, orderedSorts));
       }
       return result;
-    })
+    }),
+    shareReplay(1)
   );
 
   public processedData$ = this._processedData$;
@@ -80,7 +74,20 @@ export class GridDataService {
   }
 
   applySort(field: string, order: 'asc' | 'desc' | null) {
-    this._sortConfig$.next({ field, order });
+    if (!field || !order) {
+      this._sortConfig$.next([]);
+      return;
+    }
+
+    this._sortConfig$.next([{ field, order, priority: 1 }]);
+  }
+
+  applySorts(sorts: GridSortDescriptor[]) {
+    this._sortConfig$.next([...(sorts || [])]);
+  }
+
+  clearSorts() {
+    this._sortConfig$.next([]);
   }
 
   updateFilter(filter: GridFilterPayload) {
@@ -110,6 +117,12 @@ export class GridDataService {
 
   goToPage(page: number) {
     this._currentPage$.next(page);
+  }
+
+  setPageSize(size: number) {
+    const normalizedSize = Number(size);
+    this._pageSize$.next(Number.isFinite(normalizedSize) && normalizedSize > 0 ? normalizedSize : 10);
+    this._currentPage$.next(1);
   }
 
   // متدهای جدید برای مدیریت انتخاب‌ها
@@ -299,6 +312,76 @@ export class GridDataService {
     }
 
     return date.getTime();
+  }
+
+  private compareBySortChain(a: any, b: any, activeSorts: GridSortDescriptor[]): number {
+    for (const sort of activeSorts) {
+      const comparison = this.compareSortValues(a[sort.field], b[sort.field]);
+
+      if (comparison === 0) {
+        continue;
+      }
+
+      return sort.order === 'asc' ? comparison : -comparison;
+    }
+
+    return 0;
+  }
+
+  private compareSortValues(rawA: any, rawB: any): number {
+    const normalize = (val: any): string | number => {
+      if (val == null || String(val).trim() === '') {
+        return Number.POSITIVE_INFINITY;
+      }
+
+      if (val instanceof Date) {
+        return val.getTime();
+      }
+
+      if (typeof val === 'number') {
+        return Number.isFinite(val) ? val : Number.POSITIVE_INFINITY;
+      }
+
+      if (typeof val === 'boolean') {
+        return val ? 1 : 0;
+      }
+
+      const text = String(val).trim();
+
+      // CRITICAL: Numeric awareness for values like "41".
+      const parsed = Number.parseFloat(text);
+      if (!Number.isNaN(parsed) && Number.isFinite(Number(text))) {
+        return Number(text);
+      }
+
+      // Try ISO-like date-time values before falling back to text comparison.
+      if (/^\d{4}-\d{2}-\d{2}(T.*)?$/.test(text)) {
+        const timestamp = Date.parse(text);
+        if (!Number.isNaN(timestamp)) {
+          return timestamp;
+        }
+      }
+
+      return text;
+    };
+
+    const valA = normalize(rawA);
+    const valB = normalize(rawB);
+
+    const isNumeric =
+      typeof valA === 'number' &&
+      typeof valB === 'number' &&
+      Number.isFinite(valA) &&
+      Number.isFinite(valB);
+
+    if (isNumeric) {
+      if (valA === valB) return 0;
+      return valA > valB ? 1 : -1;
+    }
+
+    const aText = String(valA);
+    const bText = String(valB);
+    return this.textCollator.compare(aText, bText);
   }
 
   private isFilterEmpty(filter: GridFilterPayload): boolean {

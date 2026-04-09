@@ -1,5 +1,4 @@
 <div class="flex flex-col w-full gap-2">
-
   <div class="flex flex-col xl:flex-row justify-between items-center gap-4 mb-4">
 
     <div *ngIf="showSearch" class="h-9 w-full xl:w-[400px] border border-slate-200 rounded-lg shadow-sm bg-white overflow-hidden flex items-center">
@@ -33,22 +32,38 @@
     </div>
   </div>
 
-  <app-grid-header [columns]="columns"
-                   [showFilters]="showFilters"
-                   [filterResetKey]="filterResetKey"
-                   (sortChange)="gridDataService.applySort($event.field, $event.sortOrder!)"
-                   (filterChange)="gridDataService.updateFilter($event)"
-                   (toggleAll)="gridDataService.toggleAllSelection($event)">
-  </app-grid-header>
+  <ng-template #paginationTemplate>
+    <app-grid-footer *ngIf="pagination$ | async as pg"
+                     [pagination]="pg"
+                     (pageChange)="gridDataService.goToPage($event)"
+                     (pageSizeChange)="onPageSizeChange($event)">
+    </app-grid-footer>
+  </ng-template>
 
-  <app-grid-body [columns]="columns"
-                 [data$]="gridDataService.pagedData$"
-                 [editSettings]="editSettings"
-                 (action)="actionTriggered.emit($event)"
-                 (saveChanges)="saveChanges.emit($event)"
-                 (inlineSave)="inlineSave.emit($event)">
-  </app-grid-body>
+  <div *ngIf="pagerPosition === 'top' || pagerPosition === 'both'" class="border-b border-slate-200">
+    <ng-container *ngTemplateOutlet="paginationTemplate"></ng-container>
+  </div>
 
-  <app-grid-footer *ngIf="gridDataService.pagination$ | async as pg" [pagination]="pg" (pageChange)="gridDataService.goToPage($event)"></app-grid-footer>
+  <div class="w-full">
+    <app-grid-header [columns]="columns"
+                     [showFilters]="showFilters"
+                     [filterResetKey]="filterResetKey"
+                     (sortChange)="gridDataService.applySorts($event)"
+                     (filterChange)="gridDataService.updateFilter($event)"
+                     (toggleAll)="gridDataService.toggleAllSelection($event)">
+    </app-grid-header>
+
+    <app-grid-body [columns]="columns"
+                   [data$]="pagedData$"
+                   [editSettings]="editSettings"
+                   (action)="actionTriggered.emit($event)"
+                   (saveChanges)="saveChanges.emit($event)"
+                   (inlineSave)="inlineSave.emit($event)">
+    </app-grid-body>
+  </div>
+
+  <div *ngIf="pagerPosition === 'bottom' || pagerPosition === 'both'" class="border-t border-slate-200">
+    <ng-container *ngTemplateOutlet="paginationTemplate"></ng-container>
+  </div>
 
 </div>

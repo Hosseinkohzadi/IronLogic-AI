@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ScrollingModule } from '@angular/cdk/scrolling';
@@ -37,6 +37,7 @@ export class GridComponent implements OnInit {
   @Input() showExport: boolean = true;   // نمایش دکمه‌های اکسل/PDF
   @Input() showFilters: boolean = false; // نمایش فیلترهای زیر هدر
   @Input() showSearch: boolean = true;   // نمایش نوار جستجوی بالا
+  @Input() pagerPosition: 'top' | 'bottom' | 'both' = 'bottom';
 
   filterResetKey = 0;
 
@@ -47,7 +48,19 @@ export class GridComponent implements OnInit {
   @Output() saveChanges = new EventEmitter<any>();
   @Output() inlineSave = new EventEmitter<any>();
 
-  constructor(public gridDataService: GridDataService, private exportService: GridExportService) {}
+  constructor(
+    public gridDataService: GridDataService,
+    private exportService: GridExportService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  get pagedData$() {
+    return this.gridDataService.pagedData$;
+  }
+
+  get pagination$() {
+    return this.gridDataService.pagination$;
+  }
 
   ngOnInit() {
     this.gridDataService.selectedItems$.subscribe(items => this.selectionChanged.emit(items));
@@ -63,8 +76,17 @@ export class GridComponent implements OnInit {
     });
   }
 
+  onPageSizeChange(size: number) {
+    this.gridDataService.setPageSize(size);
+    this.cdr.markForCheck();
+  }
+
   onRefreshClick() {
+    this.gridDataService.clearSorts();
     this.gridDataService.clearFilters();
+    this.columns.forEach((column) => {
+      column.sortOrder = null;
+    });
     this.filterResetKey += 1;
     this.search.emit('');
     this.refresh.emit();

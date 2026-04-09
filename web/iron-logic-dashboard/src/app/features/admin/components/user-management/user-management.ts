@@ -66,13 +66,14 @@ export class UserManagementComponent implements OnInit {
 
   userColumns: ColumnConfig[] = [
     { field: 'selection', title: '', type: 'selection', width: '50px' },
-    { field: 'name', title: 'NAME', type: 'profile', sortable: true, width: '220px', filterType: 'text' },
+    { field: 'name', title: 'NAME', type: 'profile', sortable: true, width: '250px', locked: true, filterType: 'text' },
     {
       field: 'status',
       title: 'STATUS',
       type: 'badge',
       sortable: true,
       width: '120px',
+      locked: true,
       filterType: 'select',
       filterOptions: [
         { label: 'Active', value: 'Active' },

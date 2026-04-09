@@ -1,6 +1,6 @@
 import { Component, ElementRef, EventEmitter, Input, Output, HostListener, OnChanges, SimpleChanges, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ColumnConfig, GridDateOperator, GridFilterPayload, GridNumberOperator, GridTextOperator } from '../../models/column-config';
+import { ColumnConfig, GridDateOperator, GridFilterPayload, GridNumberOperator, GridSortDescriptor, GridTextOperator } from '../../models/column-config';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, take } from 'rxjs/operators';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -22,11 +22,12 @@ export class GridHeaderComponent implements OnChanges {
   @Input() showFilters: boolean = false;
   @Input() filterResetKey: number = 0;
 
-  @Output() sortChange = new EventEmitter<ColumnConfig>();
+  @Output() sortChange = new EventEmitter<GridSortDescriptor[]>();
   @Output() filterChange = new EventEmitter<GridFilterPayload>();
   @Output() toggleAll = new EventEmitter<boolean>();
 
   activeFilterMenu = signal<string | null>(null);
+  activeSorts = signal<GridSortDescriptor[]>([]);
   tempFilterValue = signal<any>('');
   tempFilterOperator = signal<string>('contains');
   tempSelectedOptions = signal<string[]>([]);
@@ -132,11 +133,71 @@ export class GridHeaderComponent implements OnChanges {
     this.toggleAll.emit(event.target.checked);
   }
 
-  onSort(column: ColumnConfig) {
-    if (['action', 'selection', 'image'].includes(column.type!) || column.field === 'avatar') return;
-    column.sortOrder = column.sortOrder === 'asc' ? 'desc' : (column.sortOrder === 'desc' ? null : 'asc');
-    this.columns.forEach(c => { if (c.field !== column.field) c.sortOrder = null; });
-    this.sortChange.emit(column);
+  handleSort(column: ColumnConfig, event: MouseEvent) {
+    if (['action', 'selection', 'image'].includes(column.type!) || column.field === 'avatar' || !column.sortable) return;
+
+    const currentSorts = [...this.activeSorts()];
+    const existingIndex = currentSorts.findIndex((item) => item.field === column.field);
+
+    if (!event.ctrlKey) {
+      const nextOrder = this.getNextSortOrder(currentSorts[existingIndex]?.order);
+      const nextSorts: GridSortDescriptor[] = [{
+        field: column.field,
+        order: nextOrder,
+        priority: 1
+      }];
+
+      this.activeSorts.set(nextSorts);
+      this.syncColumnSortOrders(nextSorts);
+      this.sortChange.emit(nextSorts);
+      return;
+    }
+
+    if (existingIndex >= 0) {
+      const existing = currentSorts[existingIndex];
+      currentSorts[existingIndex] = {
+        ...existing,
+        order: this.getNextSortOrder(existing.order)
+      };
+    } else {
+      currentSorts.push({
+        field: column.field,
+        order: 'asc',
+        priority: currentSorts.length + 1
+      });
+    }
+
+    const normalized = currentSorts
+      .map((item, index) => ({ ...item, priority: index + 1 }));
+
+    this.activeSorts.set(normalized);
+    this.syncColumnSortOrders(normalized);
+    this.sortChange.emit(normalized);
+  }
+
+  getSortPriority(field: string): number | null {
+    const sort = this.activeSorts().find((item) => item.field === field);
+    return sort ? sort.priority : null;
+  }
+
+  getSortOrder(field: string): 'asc' | 'desc' | null {
+    const sort = this.activeSorts().find((item) => item.field === field);
+    return sort ? sort.order : null;
+  }
+
+  hasMultiSort(): boolean {
+    return this.activeSorts().length > 1;
+  }
+
+  private getNextSortOrder(current?: 'asc' | 'desc' | null): 'asc' | 'desc' {
+    return current === 'asc' ? 'desc' : 'asc';
+  }
+
+  private syncColumnSortOrders(sorts: GridSortDescriptor[]): void {
+    this.columns.forEach((column) => {
+      const sort = sorts.find((item) => item.field === column.field);
+      column.sortOrder = sort ? sort.order : null;
+    });
   }
 
   toggleFilterMenu(col: ColumnConfig): void {
@@ -430,6 +491,36 @@ export class GridHeaderComponent implements OnChanges {
     return ['badge', 'tier', 'status', 'flag', 'boolean', 'tags'].includes(type || '');
   }
 
+  getLockedOffset(field: string): string {
+    let offset = 0;
+
+    for (const column of this.columns) {
+      if (column.field === field) {
+        break;
+      }
+
+      if (column.locked) {
+        offset += this.getSafeWidth(column.width);
+      }
+    }
+
+    return `${offset}px`;
+  }
+
+  isLastLocked(field: string): boolean {
+    const lockedColumns = this.columns.filter((column) => column.locked);
+    if (lockedColumns.length === 0) {
+      return false;
+    }
+
+    return lockedColumns[lockedColumns.length - 1].field === field;
+  }
+
+  private getSafeWidth(width?: string): number {
+    const parsed = Number.parseInt(String(width ?? '150').replace('px', ''), 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 150;
+  }
+
   isColumnFiltered(field: string): boolean {
     return !!this.gridDataService.getFilter(field);
   }
@@ -679,6 +770,11 @@ export class GridHeaderComponent implements OnChanges {
   }
 
   private resetFilterUiState() {
+    this.activeSorts.set([]);
+    this.columns.forEach((column) => {
+      column.sortOrder = null;
+    });
+
     this.textFilterValues = {};
     this.textOperators = {};
     this.selectFilterValues = {};
@@ -701,11 +797,6 @@ export class GridHeaderComponent implements OnChanges {
         column.width = `${minWidth}px`;
       }
     }
-  }
-
-  private getSafeWidth(width?: string): number {
-    const parsed = parseInt(width || '150', 10);
-    return Number.isNaN(parsed) ? 150 : parsed;
   }
 
   private getMinWidth(column: ColumnConfig): number {

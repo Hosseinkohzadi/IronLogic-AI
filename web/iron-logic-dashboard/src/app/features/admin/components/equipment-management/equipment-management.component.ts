@@ -6,7 +6,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { GridComponent } from '@shared/grid/grid';
 import { ColumnConfig } from '@shared/grid/models/column-config';
 
-type EquipmentStatus = 'Active' | 'Review';
+type EquipmentStatus = 'Active' | 'Review' | 'Suspended';
 
 type EquipmentEntityType = 'sessions' | 'weights' | 'exerciseSessions';
 
@@ -36,6 +36,8 @@ export class EquipmentManagementComponent {
   searchTerm = signal('');
   isLoading = signal(false);
   isAddModalOpen = signal(false);
+  isEditModalOpen = signal(false);
+  editingEquipment = signal<EquipmentRecord | null>(null);
   isDrawerOpen = signal(false);
   selectedEquipmentId = signal<string | null>(null);
   newEquipmentName = signal('');
@@ -55,7 +57,8 @@ export class EquipmentManagementComponent {
       filterType: 'select',
       filterOptions: [
         { label: 'Active', value: 'Active' },
-        { label: 'Review', value: 'Review' }
+        { label: 'Review', value: 'Review' },
+        { label: 'Suspended', value: 'Suspended' }
       ]
     },
     { field: 'actions', title: 'ACTION', type: 'action', width: '90px' }
@@ -143,10 +146,15 @@ export class EquipmentManagementComponent {
   }
 
   handleGridAction(event: { type: string; row: EquipmentRecord }): void {
-    if (event.type === 'row-click' || event.type === 'edit') {
+    if (event.type === 'row-click') {
       this.selectedEquipmentId.set(event.row.id);
       this.isDrawerOpen.set(true);
       document.body.style.overflow = 'hidden';
+      return;
+    }
+
+    if (event.type === 'edit') {
+      this.handleEdit(event.row);
       return;
     }
 
@@ -177,8 +185,51 @@ export class EquipmentManagementComponent {
     this.closeAddModal();
   }
 
-  handleEdit(id: string | null): void {
-    console.log('Editing equipment:', id);
+  handleEdit(row: EquipmentRecord): void {
+    this.editingEquipment.set({ ...row });
+    this.isEditModalOpen.set(true);
+  }
+
+  updateEditingEquipmentField(field: 'imageUrl' | 'name' | 'status' | 'description', value: string): void {
+    const current = this.editingEquipment();
+    if (!current) {
+      return;
+    }
+
+    this.editingEquipment.set({
+      ...current,
+      [field]: field === 'status' ? (value as EquipmentStatus) : value
+    });
+  }
+
+  saveEquipmentChanges(): void {
+    const editing = this.editingEquipment();
+    if (!editing) {
+      return;
+    }
+
+    this.equipments.update((current) =>
+      current.map((item) =>
+        item.id === editing.id
+          ? {
+              ...item,
+              name: editing.name,
+              status: editing.status,
+              imageUrl: editing.imageUrl,
+              description: editing.description
+            }
+          : item
+      )
+    );
+
+    this.onSearch(this.searchTerm());
+    this.closeEditModal();
+    console.log('Saved!');
+  }
+
+  closeEditModal(): void {
+    this.isEditModalOpen.set(false);
+    this.editingEquipment.set(null);
   }
 
   handleDelete(id: string | null): void {

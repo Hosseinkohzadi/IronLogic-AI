@@ -41,7 +41,13 @@
                    (toggleAll)="gridDataService.toggleAllSelection($event)">
   </app-grid-header>
 
-  <app-grid-body [columns]="columns" [data$]="gridDataService.pagedData$" (action)="actionTriggered.emit($event)"></app-grid-body>
+  <app-grid-body [columns]="columns"
+                 [data$]="gridDataService.pagedData$"
+                 [editSettings]="editSettings"
+                 (action)="actionTriggered.emit($event)"
+                 (saveChanges)="saveChanges.emit($event)"
+                 (inlineSave)="inlineSave.emit($event)">
+  </app-grid-body>
 
   <app-grid-footer *ngIf="gridDataService.pagination$ | async as pg" [pagination]="pg" (pageChange)="gridDataService.goToPage($event)"></app-grid-footer>
 

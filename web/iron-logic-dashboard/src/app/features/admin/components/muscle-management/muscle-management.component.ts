@@ -20,9 +20,12 @@ export class MuscleManagementComponent implements OnInit {
   isDrawerOpen = signal(false);
   selectedMuscleId = signal<string | null>(null);
   isAddModalOpen = signal(false);
+  isEditModalOpen = signal(false);
+  editingMuscle = signal<MuscleRow | null>(null);
   newMuscleName = signal('');
   newMuscleScientific = signal('');
   newMuscleRegion = signal('');
+  editSettings = { mode: 'None' as const, allowEditing: false };
 
   filteredMuscles = computed(() => {
     const searchLower = this.searchTerm().toLowerCase();
@@ -145,7 +148,7 @@ export class MuscleManagementComponent implements OnInit {
         console.log('View muscle:', action.row.id);
         break;
       case 'edit':
-        this.handleEdit(action.row.id);
+        this.openEditModal(action.row);
         break;
       case 'delete':
         this.handleDelete(action.row.id);
@@ -194,7 +197,60 @@ export class MuscleManagementComponent implements OnInit {
   }
 
   handleEdit(id: string): void {
-    console.log('Edit muscle:', id);
+    const muscle = this.muscles().find((item) => item.id === id);
+    if (!muscle) {
+      return;
+    }
+
+    this.openEditModal(muscle);
+  }
+
+  openEditModal(muscle: MuscleRow): void {
+    this.editingMuscle.set({ ...muscle });
+    this.isEditModalOpen.set(true);
+  }
+
+  updateEditingMuscleField(field: 'imageUrl' | 'name' | 'scientificName' | 'region', value: string): void {
+    const current = this.editingMuscle();
+    if (!current) {
+      return;
+    }
+
+    this.editingMuscle.set({
+      ...current,
+      [field]: value
+    });
+  }
+
+  saveMuscleChanges(): void {
+    const updatedRow = this.editingMuscle();
+    if (!updatedRow) {
+      return;
+    }
+
+    this.muscles.update((current) =>
+      current.map((muscle) =>
+        muscle.id === updatedRow.id
+          ? {
+              ...muscle,
+              name: updatedRow.name,
+              scientificName: updatedRow.scientificName,
+              region: updatedRow.region,
+              linkedExercises: updatedRow.linkedExercises,
+              status: updatedRow.status,
+              imageUrl: updatedRow.imageUrl
+            }
+          : muscle
+      )
+    );
+
+    this.closeEditModal();
+    console.log('Muscle updated successfully:', updatedRow.id);
+  }
+
+  closeEditModal(): void {
+    this.isEditModalOpen.set(false);
+    this.editingMuscle.set(null);
   }
 
   handleMerge(id: string): void {

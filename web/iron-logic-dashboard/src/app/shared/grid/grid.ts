@@ -11,6 +11,13 @@ import { take } from 'rxjs';
 import { GridExportService } from '@shared/grid/services/grid-export-service';
 import { LucideAngularModule } from 'lucide-angular';
 
+type GridEditMode = 'Inline' | 'Popup' | 'Batch' | 'None';
+
+interface GridEditSettings {
+  mode: GridEditMode;
+  allowEditing: boolean;
+}
+
 @Component({
   selector: 'app-grid',
   standalone: true,
@@ -24,6 +31,7 @@ export class GridComponent implements OnInit {
   @Input() set data(value: any[]) { this.gridDataService.setData(value); }
   @Input() isLoading: boolean = false;
   @Input() searchTerm: string = '';
+  @Input() editSettings: GridEditSettings = { mode: 'None', allowEditing: false };
 
   // --- پرچم‌های کنترلی جدید ---
   @Input() showExport: boolean = true;   // نمایش دکمه‌های اکسل/PDF
@@ -36,6 +44,8 @@ export class GridComponent implements OnInit {
   @Output() selectionChanged = new EventEmitter<any[]>();
   @Output() refresh = new EventEmitter<void>();
   @Output() search = new EventEmitter<string>();
+  @Output() saveChanges = new EventEmitter<any>();
+  @Output() inlineSave = new EventEmitter<any>();
 
   constructor(public gridDataService: GridDataService, private exportService: GridExportService) {}
 

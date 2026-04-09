@@ -9,13 +9,32 @@
     <div *ngFor="let col of columns"
          class="flex items-center px-4 overflow-hidden whitespace-nowrap"
          [style.width]="col.width || '150px'"
-         [ngClass]="{'justify-center': col.type === 'selection', 'justify-end pr-4': col.type === 'action'}">
+         [class.justify-center]="col.type === 'selection'"
+         [class.justify-end]="col.type === 'action'"
+         [class.pr-4]="col.type === 'action'">
 
       <ng-container *ngIf="col.type === 'selection'">
-        <input type="checkbox" [(ngModel)]="row.isSelected" (change)="onRowSelect(row)" (click)="$event.stopPropagation()" class="w-4 h-4 rounded border-slate-300 text-black focus:ring-black cursor-pointer">
+        <input type="checkbox"
+               [(ngModel)]="row.isSelected"
+               (change)="onRowSelect(row)"
+               (click)="$event.stopPropagation()"
+               class="w-4 h-4 rounded border-slate-300 text-black focus:ring-black cursor-pointer">
       </ng-container>
 
-      <ng-container *ngIf="!col.type || col.type === 'text'">
+      <ng-container *ngIf="isCellInEditMode(row, col)">
+        <input [ngModel]="row[col.field]"
+               (click)="$event.stopPropagation()"
+               (ngModelChange)="onBatchValueChange(row, col, $event)"
+               class="w-full h-8 px-2 text-[12px] font-medium bg-white border border-slate-200 rounded outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
+               [class.border-indigo-300]="isBatchMode() && isBatchFieldDirty(row, col.field)"
+               [class.bg-indigo-50]="isBatchMode() && isBatchFieldDirty(row, col.field)">
+      </ng-container>
+
+      <ng-container *ngIf="(!col.type || col.type === 'text') && !isCellInEditMode(row, col)">
+        <span class="text-[13px] text-slate-600 font-medium">{{ row[col.field] }}</span>
+      </ng-container>
+
+      <ng-container *ngIf="col.type === 'number' && !isCellInEditMode(row, col)">
         <span class="text-[13px] text-slate-600 font-medium">{{ row[col.field] }}</span>
       </ng-container>
 
@@ -29,8 +48,19 @@
             <span *ngIf="!row['profileImageUrl']" class="text-[11px] font-bold text-slate-600">{{ (row[col.field] || '?')[0] | uppercase }}</span>
           </div>
           <div class="flex flex-col">
-            <span class="font-bold text-slate-900 text-[13px]">{{ row[col.field] }}</span>
-            <span class="text-[11px] font-medium text-slate-400 mt-0.5">USR-{{ row['id'] | slice:0:4 }}</span>
+            <span *ngIf="!isInlineEditingRow(row)" class="font-bold text-slate-900 text-[13px]">{{ row[col.field] }}</span>
+            <input *ngIf="isInlineEditingRow(row)"
+                   type="text"
+                   [(ngModel)]="row[col.field]"
+                   (click)="$event.stopPropagation()"
+                   class="w-full h-8 px-2 text-[12px] font-medium bg-white border border-indigo-300 rounded outline-none focus:ring-2 focus:ring-indigo-100 transition-all">
+
+            <span *ngIf="!isInlineEditingRow(row)" class="text-[11px] font-medium text-slate-400 mt-0.5">{{ col.subfield ? row[col.subfield] : ('USR-' + (row['id'] | slice:0:4)) }}</span>
+            <input *ngIf="isInlineEditingRow(row) && col.subfield"
+                   type="text"
+                   [(ngModel)]="row[col.subfield]"
+                   (click)="$event.stopPropagation()"
+                   class="w-full h-8 mt-1 px-2 text-[12px] font-medium bg-white border border-indigo-300 rounded outline-none focus:ring-2 focus:ring-indigo-100 transition-all">
           </div>
         </div>
       </ng-container>
@@ -41,7 +71,11 @@
                [src]="row[col.field]"
                alt=""
                class="w-full h-full object-cover hover:scale-110 transition-transform duration-300">
-          <lucide-icon *ngIf="!row[col.field]" name="image" class="w-4 h-4 text-slate-300"></lucide-icon>
+          <svg *ngIf="!row[col.field]" class="w-4 h-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+            <circle cx="8.5" cy="8.5" r="1.5"></circle>
+            <path d="M21 15l-5-5L5 21"></path>
+          </svg>
         </div>
       </ng-container>
 
@@ -67,7 +101,7 @@
         </span>
       </ng-container>
 
-      <ng-container *ngIf="col.type === 'email'">
+      <ng-container *ngIf="col.type === 'email' && !isCellInEditMode(row, col)">
         <div class="flex items-center gap-2">
           <svg *ngIf="row['status'] !== 'Suspended'" class="w-4 h-4 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7l6.2 4.65a3 3 0 003.6 0L20 7"/><rect x="3" y="5" width="18" height="14" rx="2"/></svg>
           <svg *ngIf="row['status'] === 'Suspended'" class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -90,15 +124,86 @@
       </ng-container>
 
       <ng-container *ngIf="col.type === 'action' || col.field === 'actions'">
-        <button (click)="onAction('edit', row, $event)" class="p-1 text-slate-400 hover:text-slate-700 transition-colors">
-          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>
-        </button>
+        <div class="flex items-center gap-1">
+          <button *ngIf="isInlineEditingRow(row)"
+            (click)="saveInlineEdit(row, $event)"
+                  class="p-1 text-emerald-600 hover:text-emerald-700 transition-colors"
+                  title="Save">
+            <lucide-icon name="check" class="w-4 h-4"></lucide-icon>
+          </button>
+          <button *ngIf="isInlineEditingRow(row)"
+            (click)="cancelInlineEdit(row, $event)"
+                  class="p-1 text-rose-600 hover:text-rose-700 transition-colors"
+                  title="Cancel">
+            <lucide-icon name="x" class="w-4 h-4"></lucide-icon>
+          </button>
+
+          <button *ngIf="!isInlineEditingRow(row) && !(isBatchMode() && editSettings.allowEditing)"
+            (click)="onAction('edit', row, $event)"
+                  class="p-1 text-slate-400 hover:text-slate-700 transition-colors"
+                  title="Edit">
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="5" cy="12" r="1.5"></circle>
+              <circle cx="12" cy="12" r="1.5"></circle>
+              <circle cx="19" cy="12" r="1.5"></circle>
+            </svg>
+          </button>
+
+          <span *ngIf="isBatchMode() && editSettings.allowEditing" class="text-[10px] font-semibold text-slate-300">-</span>
+        </div>
       </ng-container>
 
     </div>
   </div>
 
+  <div *ngIf="isBatchMode() && batchChanges.size > 0" class="sticky bottom-0 z-20 mt-1 bg-white/95 backdrop-blur-sm border border-indigo-100 rounded-xl p-3 flex items-center justify-between">
+    <span class="text-[11px] font-semibold text-indigo-700">{{ batchChanges.size }} row(s) pending changes</span>
+    <div class="flex items-center gap-2">
+      <button (click)="cancelBatchEdit()"
+              class="px-3 py-1.5 text-[11px] font-bold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all">
+        Cancel
+      </button>
+      <button (click)="saveBatchEdit()"
+              class="px-3 py-1.5 text-[11px] font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all">
+        Save All
+      </button>
+    </div>
+  </div>
+
   <div *ngIf="(data$ | async)?.length === 0" class="p-12 text-center text-[12px] font-bold text-slate-400">
     No records found.
+  </div>
+
+  <div *ngIf="isPopupMode() && popupEditData" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" (click)="cancelPopupEdit()">
+    <div class="max-w-md w-full bg-white rounded-2xl p-6 shadow-2xl" (click)="$event.stopPropagation()">
+      <h3 class="text-lg font-black text-slate-900 mb-4">Edit Record</h3>
+
+      <div class="space-y-3">
+        <ng-container *ngFor="let col of columns">
+          <div *ngIf="isPopupPrimaryEditableColumn(col)">
+            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1">{{ col.title }}</label>
+            <input [(ngModel)]="popupEditData[col.field]"
+                   class="w-full h-8 px-2 text-[12px] font-medium bg-white border border-slate-200 rounded outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all">
+          </div>
+
+          <div *ngIf="col.subfield">
+            <label class="block text-[11px] font-bold uppercase tracking-wide text-slate-500 mb-1">{{ getPopupSubfieldLabel(col) }}</label>
+            <input [(ngModel)]="popupEditData[col.subfield]"
+                   class="w-full h-8 px-2 text-[12px] font-medium bg-white border border-slate-200 rounded outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all">
+          </div>
+        </ng-container>
+      </div>
+
+      <div class="mt-5 flex items-center justify-end gap-2">
+        <button (click)="cancelPopupEdit()"
+                class="px-3 py-1.5 text-[11px] font-bold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition-all">
+          Cancel
+        </button>
+        <button (click)="savePopupEdit()"
+                class="px-3 py-1.5 text-[11px] font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-all">
+          Save
+        </button>
+      </div>
+    </div>
   </div>
 </div>

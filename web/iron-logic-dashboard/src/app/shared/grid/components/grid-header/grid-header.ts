@@ -1,14 +1,15 @@
 import { Component, EventEmitter, Input, Output, HostListener, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ColumnConfig, GridFilterPayload, GridNumberOperator } from '../../models/column-config';
+import { ColumnConfig, GridFilterPayload, GridNumberOperator, GridTextOperator } from '../../models/column-config';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-grid-header',
   standalone: true,
-  imports: [CommonModule, DragDropModule],
+  imports: [CommonModule, DragDropModule, LucideAngularModule],
   templateUrl: './grid-header.html',
   styleUrls: ['./grid-header.css']
 })
@@ -29,6 +30,7 @@ export class GridHeaderComponent implements OnChanges {
   numberModes: Record<string, 'compare' | 'range'> = {};
   numberOperators: Record<string, GridNumberOperator> = {};
   textFilterValues: Record<string, string> = {};
+  textOperators: Record<string, GridTextOperator> = {};
   selectFilterValues: Record<string, string> = {};
 
   dateExact: Record<string, string> = {};
@@ -46,7 +48,11 @@ export class GridHeaderComponent implements OnChanges {
   constructor() {
     this.textFilterSubject.pipe(
       debounceTime(300),
-      distinctUntilChanged((prev, curr) => prev.field === curr.field && prev.value === curr.value)
+      distinctUntilChanged((prev, curr) => 
+        prev.field === curr.field && 
+        prev.value === curr.value && 
+        prev.textOperator === curr.textOperator
+      )
     ).subscribe(filter => {
       this.filterChange.emit(filter);
     });
@@ -128,14 +134,69 @@ export class GridHeaderComponent implements OnChanges {
     return this.numberOperators[field];
   }
 
-  onTextInputFilter(event: Event, field: string) {
-    const value = (event.target as HTMLInputElement).value;
-    this.textFilterValues[field] = value;
+  getTextOperator(field: string): GridTextOperator {
+    if (!this.textOperators[field]) {
+      this.textOperators[field] = 'contains';
+    }
+    return this.textOperators[field];
+  }
+
+  onTextOperatorChange(field: string, operator: GridTextOperator) {
+    this.textOperators[field] = operator;
+    const value = this.textFilterValues[field] || '';
     this.textFilterSubject.next({
       field,
       filterType: 'text',
       mode: 'contains',
-      value
+      value,
+      textOperator: operator
+    });
+  }
+
+  getTextOperatorIcon(operator: GridTextOperator): string {
+    switch (operator) {
+      case 'contains':
+        return 'search';
+      case 'notContains':
+        return 'x';
+      case 'startsWith':
+        return 'chevron-right';
+      case 'endsWith':
+        return 'chevron-left';
+      case 'equals':
+        return 'check';
+      default:
+        return 'search';
+    }
+  }
+
+  getTextOperatorLabel(operator: GridTextOperator): string {
+    switch (operator) {
+      case 'contains':
+        return 'Contains';
+      case 'notContains':
+        return 'Not Contains';
+      case 'startsWith':
+        return 'Starts With';
+      case 'endsWith':
+        return 'Ends With';
+      case 'equals':
+        return 'Equals';
+      default:
+        return 'Contains';
+    }
+  }
+
+  onTextInputFilter(event: Event, field: string) {
+    const value = (event.target as HTMLInputElement).value;
+    this.textFilterValues[field] = value;
+    const operator = this.getTextOperator(field);
+    this.textFilterSubject.next({
+      field,
+      filterType: 'text',
+      mode: 'contains',
+      value,
+      textOperator: operator
     });
   }
 
@@ -262,6 +323,7 @@ export class GridHeaderComponent implements OnChanges {
 
   private resetFilterUiState() {
     this.textFilterValues = {};
+    this.textOperators = {};
     this.selectFilterValues = {};
     this.dateModes = {};
     this.numberModes = {};

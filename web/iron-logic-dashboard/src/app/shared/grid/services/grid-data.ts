@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
-import { GridFilterPayload, GridNumberOperator } from '../models/column-config';
+import { GridFilterPayload, GridNumberOperator, GridTextOperator } from '../models/column-config';
 
 @Injectable()
 export class GridDataService {
@@ -138,20 +138,30 @@ export class GridDataService {
         return this.matchesSelectFilter(rowValue, filter.value);
       case 'text':
       default:
-        return this.matchesTextFilter(rowValue, filter.value, filter.mode);
+        return this.matchesTextFilter(rowValue, filter.value, filter.textOperator || 'contains');
     }
   }
 
-  private matchesTextFilter(rowValue: any, value: string | number | undefined, mode: string): boolean {
+  private matchesTextFilter(rowValue: any, value: string | number | undefined, textOperator: GridTextOperator): boolean {
     const term = String(value ?? '').trim().toLowerCase();
     if (!term) return true;
 
     const normalizedRow = String(rowValue ?? '').toLowerCase();
-    if (mode === 'equals') {
-      return normalizedRow === term;
+    
+    switch (textOperator) {
+      case 'contains':
+        return normalizedRow.includes(term);
+      case 'notContains':
+        return !normalizedRow.includes(term);
+      case 'startsWith':
+        return normalizedRow.startsWith(term);
+      case 'endsWith':
+        return normalizedRow.endsWith(term);
+      case 'equals':
+        return normalizedRow === term;
+      default:
+        return normalizedRow.includes(term);
     }
-
-    return normalizedRow.includes(term);
   }
 
   private matchesSelectFilter(rowValue: any, value: string | number | undefined): boolean {

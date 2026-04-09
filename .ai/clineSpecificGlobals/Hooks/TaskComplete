@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+const chunks = [];
+process.stdin.on("data", (d) => chunks.push(d));
+process.stdin.on("end", () => {
+  try {
+    const contextModification =
+      "Before closing this task:\n" +
+      "(1) Update aiReferenceFiles/aiKnowledgeBase.md if any structural or architectural knowledge was gained.\n" +
+      "(2) If tracked in aiWorkplans/, mark all completed steps [x] and set Status: COMPLETE.\n" +
+      "(3) If any .cs, .ts, or .tsx files were modified in this task, run the cx-code-review workflow before closing.";
+    process.stdout.write(
+      JSON.stringify({ cancel: false, contextModification, errorMessage: "" }),
+    );
+  } catch {
+    process.stdout.write(
+      JSON.stringify({
+        cancel: false,
+        contextModification: "",
+        errorMessage: "",
+      }),
+    );
+  }
+});

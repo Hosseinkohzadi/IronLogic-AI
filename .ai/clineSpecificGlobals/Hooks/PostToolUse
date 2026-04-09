@@ -1,0 +1,94 @@
+#!/usr/bin/env node
+
+// PostToolUse Hook
+// Fires after every tool use. Injects a compliance checklist into context
+// after writing or modifying a .cs, .ts/.tsx/.js/.jsx, Dockerfile, or pipeline YAML file.
+// Input:  { taskId, postToolUse: { tool, parameters, result, success, durationMs }, ... }
+// Output: { cancel, contextModification, errorMessage }
+
+const chunks = [];
+process.stdin.on('data', d => chunks.push(d));
+process.stdin.on('end', () => {
+  try {
+    const input = JSON.parse(Buffer.concat(chunks).toString());
+    const { tool, parameters, success } = input.postToolUse ?? {};
+    const filePath = parameters?.path ?? '';
+
+    let contextModification = '';
+
+    const isEdit = tool === 'write_to_file' || tool === 'replace_in_file';
+
+    if (success && isEdit && /\.(tsx?|jsx?)$/.test(filePath) && !filePath.endsWith('.d.ts') && !/\.(test|spec)\.(tsx?|jsx?)$/.test(filePath)) {
+      const isApiOrDto = /\/src\/api\//.test(filePath) || /(Dto|DTO|Request|Response)/.test(filePath);
+
+      const items = [
+        '[React/TS Compliance Check] The following standards apply to ' + filePath + ':',
+        '(1) No bare `any`, `@ts-ignore`, or `@ts-expect-error` without documented justification?',
+        '(2) No async work or side effects directly in components or event handlers — use sagas?',
+        '(3) API calls go through `src/api/` using `request` from `@cx/login` — no raw fetch/axios?',
+        '(4) Hook names start with `use` followed by a capital letter?',
+        '(5) Utils are pure functions — no `useState`, `useEffect`, or React hooks inside utils?',
+        '(6) Presentational components have no imports from store, sagas, or `src/api/`?',
+        '(7) Smart component (`index.ts`) contains only minimal wrapper markup — no business logic in JSX?',
+        '(8) All CSS is scoped — no bare HTML tag selectors, no global style leaks?',
+        '(9) All props interfaces/types have JSDoc `/** */` documentation on every property?',
+        '(10) Run `npm run lint` before committing — ESLint fix + `tsc --noEmit`.',
+        '(11) Run `npm run test` after any logic change — no regressions?',
+      ];
+
+      if (isApiOrDto) {
+        items.push(
+          '--- C# API Contract checks (API/DTO file detected) ---',
+          '(C1) camelCase props for Default endpoints (PascalCase for Legacy) — documented on the interface?',
+          '(C2) Nullable C# fields typed as `T | null`, not `T | undefined` — arrays never `T[] | null`?',
+          '(C3) Enums: PascalCase string literals matching C# member names exactly — includes zero-member (Unknown/None) as first union member?',
+          '(C4) DateTime fields typed as `string` — not `Date`?',
+          '(C5) DTO name mirrors C# name (DTO suffix ALL_CAPS, closed-form compounds match)?',
+        );
+      }
+
+      contextModification = items.join('\n');
+    }
+
+    if (success && isEdit && filePath.endsWith('.cs')) {
+      contextModification = [
+        '[C# Compliance Check] The following standards apply to ' + filePath + ':',
+        '(1) XML <summary> on all new public members?',
+        '(2) CancellationToken in all async methods (required for private, consistent for public)?',
+        '(3) No broad Exception catch — unless inside a BaseEventListener (intentional pattern)?',
+        '(4) CXJsonSerializerOptions.Default for all serialization — no custom options for internal comms?',
+        '(5) BinaryData.ToObjectFromJson<T>() for Service Bus — never .ToString() first?',
+        '(6) IHttpClientFactory only — no new HttpClient()?',
+        '(7) No #region directives?',
+        '(8) No [JsonPropertyName] used to change case/style — acceptable only to map a property to a differing external JSON key?',
+        '(9) No string.IsNullOrWhiteSpace() paired with || string.IsNullOrEmpty()?',
+        '(10) No null checks on collection returns — collections never return null?',
+        '(11) Treat all compiler warnings as errors — fix any introduced by this change.',
+        '(12) ArgumentNullException.ThrowIfNull() for all null guards — no manual null checks?',
+        '(13) StringComparison.OrdinalIgnoreCase — no .ToLower()/.ToUpper() for string comparison?',
+        '(14) IReadOnlyList<T> or ICollection<T> for collection returns — never List<T> or bare IEnumerable<T>?',
+        '(15) record used for new immutable DTOs/value objects?',
+      ].join('\n');
+    }
+
+    if (success && isEdit && /(Dockerfile|azure-pipelines.*\.yml|helm\/values.*\.yaml)/.test(filePath)) {
+      contextModification = [
+        '[Dockerfile / Pipeline Compliance Check] The following standards apply to ' + filePath + ':',
+        '(1) Dockerfile build stage: FROM concentrixcx.azurecr.io/cx/dotnet-sdk — not the public mcr.microsoft.com image?',
+        '(2) Dockerfile runtime stage: FROM concentrixcx.azurecr.io/cx/dotnet-aspnet — not the public mcr.microsoft.com image?',
+        '(3) --warnaserror present in BUILD_ARGS?',
+        '(4) Tests run in build stage before dotnet build?',
+        '(5) No hardcoded secrets or credentials — secrets via --mount=type=secret only?',
+        '(6) Pipeline uses base.v3.yaml for new pipelines — not base.v2.yaml or v1?',
+        '(7) New service Dockerfile uses 10.0 tags — existing service matches its current version?',
+        '(8) No 6.0 tags on new or modified services — raise upgrade task if project is still on 6.0?',
+        '(9) Helm values files exist for all environments (values.yaml, Development, UAT, Production)?',
+        '(10) Trigger paths.include scoped to only this project\'s directories?',
+      ].join('\n');
+    }
+
+    process.stdout.write(JSON.stringify({ cancel: false, contextModification, errorMessage: '' }));
+  } catch {
+    process.stdout.write(JSON.stringify({ cancel: false, contextModification: '', errorMessage: '' }));
+  }
+});

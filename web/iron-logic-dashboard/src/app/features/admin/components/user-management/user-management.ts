@@ -18,6 +18,41 @@ import { ColumnConfig } from '@shared/grid/models/column-config';
 export class UserManagementComponent implements OnInit {
   private apiService = inject(IronLogicApiService);
 
+  cards = [
+    {
+      label: 'PREMIUM SUBSCRIBERS',
+      val: '842',
+      trend: '+12.5%',
+      context: 'pro & elite tiers',
+      icon: 'star',
+      info: 'Users on paid Pro/Elite plans. This tracks monetization quality and recurring revenue strength. A positive trend means premium conversion is improving.'
+    },
+    {
+      label: 'WEEKLY ACTIVE (WAU)',
+      val: '1,420',
+      trend: '+5.2%',
+      context: 'logged a workout',
+      icon: 'activity',
+      info: 'Unique users active in the last 7 days. This indicates engagement health, not just signups. A positive trend means more users are returning weekly.'
+    },
+    {
+      label: 'TOTAL SESSIONS',
+      val: '84.5K',
+      trend: '+18.2%',
+      context: 'platform volume',
+      icon: 'zap',
+      info: 'Total workout sessions completed in the period. This reflects platform usage volume and habit intensity. A positive trend means stronger activity throughput.'
+    },
+    {
+      label: 'CHURN RISK',
+      val: '156',
+      trend: '-3.4%',
+      context: 'inactive > 14 days',
+      icon: 'alert-triangle',
+      info: 'Users likely to churn due to inactivity beyond 14 days. Lower is better for retention. A negative trend here is good because fewer users are at risk.'
+    }
+  ];
+
   users = signal<any[]>([]);
   filteredUsers = signal<any[]>([]); 
   searchTerm = signal('');

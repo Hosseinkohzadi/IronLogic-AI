@@ -1,0 +1,32 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "type": "command",
+        "command": "node .ai/claudeHooks/session-start.js",
+        "windows": "node .ai\\claudeHooks\\session-start.js"
+      }
+    ],
+    "PostToolUse": [
+      {
+        "type": "command",
+        "command": "node .ai/claudeHooks/post-tool-use.js",
+        "windows": "node .ai\\claudeHooks\\post-tool-use.js"
+      }
+    ],
+    "PreCompact": [
+      {
+        "type": "command",
+        "command": "node .ai/claudeHooks/pre-compact.js",
+        "windows": "node .ai\\claudeHooks\\pre-compact.js"
+      }
+    ],
+    "Stop": [
+      {
+        "type": "command",
+        "command": "node .ai/claudeHooks/stop.js",
+        "windows": "node .ai\\claudeHooks\\stop.js"
+      }
+    ]
+  }
+}

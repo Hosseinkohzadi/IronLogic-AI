@@ -4,6 +4,8 @@ export type GridFilterMode = 'contains' | 'equals' | 'exact' | 'compare' | 'rang
 
 export type GridNumberOperator = 'eq' | 'gt' | 'gte' | 'lt' | 'lte';
 
+export type GridTextOperator = 'contains' | 'notContains' | 'startsWith' | 'endsWith' | 'equals';
+
 export interface GridFilterOption {
   label: string;
   value: string | number;
@@ -15,6 +17,7 @@ export interface GridFilterPayload {
   mode: GridFilterMode;
   value?: string | number;
   operator?: GridNumberOperator;
+  textOperator?: GridTextOperator;
   from?: string;
   to?: string;
   min?: number;

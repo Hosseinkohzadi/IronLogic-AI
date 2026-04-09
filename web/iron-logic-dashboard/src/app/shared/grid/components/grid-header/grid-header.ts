@@ -367,7 +367,7 @@ export class GridHeaderComponent implements OnChanges {
         return 150;
       case 'text':
       default:
-        return 140;
+        return 190;
     }
   }
 }

@@ -18,38 +18,38 @@
   <div *ngIf="showFilters" class="flex w-full px-2 mt-2 animate-in fade-in duration-300">
     <div *ngFor="let col of columns" class="px-2" [style.width]="col.width || '150px'">
       <ng-container *ngIf="!['selection', 'action', 'image'].includes(col.type!)">
-        <div *ngIf="!col.filterType || col.filterType === 'text'" class="flex gap-1.5">
-          <div class="flex-shrink-0 relative group">
-            <button class="w-10 h-10 flex items-center justify-center bg-white border border-slate-100 rounded-lg text-slate-500 hover:bg-slate-50 focus:border-indigo-300 outline-none transition-all shadow-sm"
+        <div *ngIf="!col.filterType || col.filterType === 'text'" class="h-9 w-full border border-slate-200 rounded-lg shadow-sm bg-white overflow-hidden flex items-center">
+          <div class="relative h-full group">
+            <button class="h-full px-2.5 bg-transparent outline-none text-slate-500 hover:bg-slate-50 transition-colors border-r border-slate-200 flex items-center justify-center"
                     [title]="getTextOperatorLabel(getTextOperator(col.field))">
               <lucide-icon [name]="getTextOperatorIcon(getTextOperator(col.field))" class="w-4 h-4"></lucide-icon>
             </button>
             <div class="hidden group-hover:flex absolute left-0 top-full mt-1.5 flex-col bg-white border border-slate-100 rounded-lg shadow-lg py-1 z-50">
-              <button (click)="onTextOperatorChange(col.field, 'contains')" 
+              <button (click)="onTextOperatorChange(col.field, 'contains')"
                       class="flex items-center gap-2 px-3 py-2 text-[11px] font-medium text-slate-600 hover:bg-indigo-50 whitespace-nowrap"
                       [ngClass]="{'bg-indigo-50 text-indigo-700': getTextOperator(col.field) === 'contains'}">
                 <lucide-icon name="search" class="w-3.5 h-3.5"></lucide-icon>
                 Contains
               </button>
-              <button (click)="onTextOperatorChange(col.field, 'notContains')" 
+              <button (click)="onTextOperatorChange(col.field, 'notContains')"
                       class="flex items-center gap-2 px-3 py-2 text-[11px] font-medium text-slate-600 hover:bg-indigo-50 whitespace-nowrap"
                       [ngClass]="{'bg-indigo-50 text-indigo-700': getTextOperator(col.field) === 'notContains'}">
                 <lucide-icon name="x" class="w-3.5 h-3.5"></lucide-icon>
                 Not Contains
               </button>
-              <button (click)="onTextOperatorChange(col.field, 'startsWith')" 
+              <button (click)="onTextOperatorChange(col.field, 'startsWith')"
                       class="flex items-center gap-2 px-3 py-2 text-[11px] font-medium text-slate-600 hover:bg-indigo-50 whitespace-nowrap"
                       [ngClass]="{'bg-indigo-50 text-indigo-700': getTextOperator(col.field) === 'startsWith'}">
                 <lucide-icon name="chevron-right" class="w-3.5 h-3.5"></lucide-icon>
                 Starts With
               </button>
-              <button (click)="onTextOperatorChange(col.field, 'endsWith')" 
+              <button (click)="onTextOperatorChange(col.field, 'endsWith')"
                       class="flex items-center gap-2 px-3 py-2 text-[11px] font-medium text-slate-600 hover:bg-indigo-50 whitespace-nowrap"
                       [ngClass]="{'bg-indigo-50 text-indigo-700': getTextOperator(col.field) === 'endsWith'}">
                 <lucide-icon name="chevron-left" class="w-3.5 h-3.5"></lucide-icon>
                 Ends With
               </button>
-              <button (click)="onTextOperatorChange(col.field, 'equals')" 
+              <button (click)="onTextOperatorChange(col.field, 'equals')"
                       class="flex items-center gap-2 px-3 py-2 text-[11px] font-medium text-slate-600 hover:bg-indigo-50 whitespace-nowrap"
                       [ngClass]="{'bg-indigo-50 text-indigo-700': getTextOperator(col.field) === 'equals'}">
                 <lucide-icon name="check" class="w-3.5 h-3.5"></lucide-icon>
@@ -61,22 +61,24 @@
                  [value]="textFilterValues[col.field] || ''"
                  [placeholder]="'Filter ' + col.title + '...'"
                  (input)="onTextInputFilter($event, col.field)"
-                 class="flex-1 bg-white border border-slate-100 rounded-lg py-1.5 px-3 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all placeholder:text-slate-300 shadow-sm">
+                 class="h-full flex-1 bg-transparent outline-none border-0 px-3 text-[11px] font-medium text-slate-600 placeholder:text-slate-300">
         </div>
 
-        <select *ngIf="col.filterType === 'select'"
-          [value]="selectFilterValues[col.field] || ''"
-                (change)="onSelectFilter($event, col.field)"
-                class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-3 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all shadow-sm">
-          <option value="">All</option>
-          <option *ngFor="let option of col.filterOptions || []" [value]="option.value">{{ option.label }}</option>
-        </select>
+        <div *ngIf="col.filterType === 'select'" class="w-full">
+          <select
+            [value]="selectFilterValues[col.field] || ''"
+            (change)="onSelectFilter($event, col.field)"
+            class="w-full h-9 px-3 border border-slate-200 rounded-lg shadow-sm bg-white outline-none text-[11px] font-medium text-slate-600 focus:border-indigo-300">
+            <option value="">All</option>
+            <option *ngFor="let option of col.filterOptions || []" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </div>
 
         <div *ngIf="col.filterType === 'date'" class="space-y-1.5">
           <select
             [value]="getDateMode(col.field, col.filterMode)"
             (change)="onDateModeChange($event, col.field)"
-            class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider focus:border-indigo-300 outline-none transition-all shadow-sm">
+            class="w-full h-9 px-3 border border-slate-200 rounded-lg shadow-sm bg-white outline-none text-[11px] font-medium text-slate-600 focus:border-indigo-300">
             <option value="exact">Exact date</option>
             <option value="range">Date range</option>
           </select>
@@ -85,17 +87,17 @@
                  type="date"
                [value]="dateExact[col.field] || ''"
                  (change)="onDateExactChange($event, col.field)"
-                 class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all shadow-sm">
+                 class="w-full h-9 px-3 border border-slate-200 rounded-lg shadow-sm bg-white outline-none text-[11px] font-medium text-slate-600 focus:border-indigo-300">
 
           <div *ngIf="getDateMode(col.field, col.filterMode) === 'range'" class="grid grid-cols-1 gap-1.5">
             <input type="date"
                  [value]="dateFrom[col.field] || ''"
                    (change)="onDateFromChange($event, col.field)"
-                   class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all shadow-sm">
+                   class="w-full h-9 px-3 border border-slate-200 rounded-lg shadow-sm bg-white outline-none text-[11px] font-medium text-slate-600 focus:border-indigo-300">
             <input type="date"
                  [value]="dateTo[col.field] || ''"
                    (change)="onDateToChange($event, col.field)"
-                   class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all shadow-sm">
+                   class="w-full h-9 px-3 border border-slate-200 rounded-lg shadow-sm bg-white outline-none text-[11px] font-medium text-slate-600 focus:border-indigo-300">
           </div>
         </div>
 
@@ -103,7 +105,7 @@
           <select
             [value]="getNumberMode(col.field, col.filterMode)"
             (change)="onNumberModeChange($event, col.field)"
-            class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[10px] font-bold text-slate-500 uppercase tracking-wider focus:border-indigo-300 outline-none transition-all shadow-sm">
+            class="w-full h-9 px-3 border border-slate-200 rounded-lg shadow-sm bg-white outline-none text-[11px] font-medium text-slate-600 focus:border-indigo-300">
             <option value="compare">Compare</option>
             <option value="range">Range</option>
           </select>
@@ -112,30 +114,36 @@
             <select
               [value]="getNumberOperator(col.field)"
               (change)="onNumberOperatorChange($event, col.field)"
-              class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all shadow-sm">
+              class="w-full h-9 px-3 border border-slate-200 rounded-lg shadow-sm bg-white outline-none text-[11px] font-medium text-slate-600 focus:border-indigo-300">
               <option value="eq">=</option>
               <option value="gt">&gt;</option>
               <option value="gte">&gt;=</option>
               <option value="lt">&lt;</option>
               <option value="lte">&lt;=</option>
             </select>
-            <input type="number"
-                   [value]="numberValue[col.field] ?? ''"
-                   (input)="onNumberValueChange($event, col.field)"
-                   class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all shadow-sm">
+            <div class="h-9 w-full border border-slate-200 rounded-lg shadow-sm bg-white overflow-hidden flex items-center px-3">
+              <input type="number"
+                     [value]="numberValue[col.field] ?? ''"
+                     (input)="onNumberValueChange($event, col.field)"
+                     class="flex-1 h-full bg-transparent outline-none text-[11px] font-medium text-slate-600 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]">
+            </div>
           </div>
 
           <div *ngIf="getNumberMode(col.field, col.filterMode) === 'range'" class="grid grid-cols-2 gap-1.5">
-            <input type="number"
-                   [value]="numberMin[col.field] ?? ''"
-                   (input)="onNumberMinChange($event, col.field)"
-                   placeholder="Min"
-                   class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all placeholder:text-slate-300 shadow-sm">
-            <input type="number"
-                   [value]="numberMax[col.field] ?? ''"
-                   (input)="onNumberMaxChange($event, col.field)"
-                   placeholder="Max"
-                   class="w-full bg-white border border-slate-100 rounded-lg py-1.5 px-2 text-[11px] font-medium text-slate-600 focus:border-indigo-300 outline-none transition-all placeholder:text-slate-300 shadow-sm">
+            <div class="h-9 w-full border border-slate-200 rounded-lg shadow-sm bg-white overflow-hidden flex items-center px-3">
+              <input type="number"
+                     [value]="numberMin[col.field] ?? ''"
+                     (input)="onNumberMinChange($event, col.field)"
+                     placeholder="Min"
+                     class="flex-1 h-full bg-transparent outline-none text-[11px] font-medium text-slate-600 placeholder:text-slate-300 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]">
+            </div>
+            <div class="h-9 w-full border border-slate-200 rounded-lg shadow-sm bg-white overflow-hidden flex items-center px-3">
+              <input type="number"
+                     [value]="numberMax[col.field] ?? ''"
+                     (input)="onNumberMaxChange($event, col.field)"
+                     placeholder="Max"
+                     class="flex-1 h-full bg-transparent outline-none text-[11px] font-medium text-slate-600 placeholder:text-slate-300 appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [-moz-appearance:textfield]">
+            </div>
           </div>
         </div>
       </ng-container>

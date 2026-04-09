@@ -67,14 +67,21 @@
     <div class="h-full bg-slate-50/95 backdrop-blur-2xl rounded-[2.5rem] border border-white shadow-2xl p-8 overflow-y-auto flex flex-col">
 
       <div class="flex justify-between items-start mb-8 shrink-0">
-        <div>
-          <div class="flex items-center gap-3 mb-1.5">
-            <h2 class="text-2xl font-black text-slate-900 tracking-tight">{{ activeUserDetails()?.name }}</h2>
-            </div>
-            <p class="text-xs font-medium text-slate-500">{{ activeUserDetails()?.tier }} account overview and recent linked activity</p>
+        <div class="flex items-center gap-4">
+          <div class="w-16 h-16 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
+            <img *ngIf="activeUserDetails()?.profileImageUrl"
+                 [src]="activeUserDetails()?.profileImageUrl"
+                 alt=""
+                 class="w-full h-full object-cover">
+            <span *ngIf="!activeUserDetails()?.profileImageUrl" class="text-[20px] font-black text-slate-600">{{ (activeUserDetails()?.name || '?')[0] | uppercase }}</span>
           </div>
-          <button (click)="closeDrawer()" class="p-2 hover:bg-slate-200/50 rounded-xl transition-all font-bold text-slate-600">✕</button>
+          <div>
+            <h2 class="text-2xl font-black text-slate-900 tracking-tight">{{ activeUserDetails()?.name }}</h2>
+            <p class="text-xs font-medium text-slate-500 mt-1">{{ activeUserDetails()?.tier }} account overview and recent linked activity</p>
+          </div>
         </div>
+        <button (click)="closeDrawer()" class="p-2 hover:bg-slate-200/50 rounded-xl transition-all font-bold text-slate-600">✕</button>
+      </div>
 
         <div class="space-y-4 flex-1 pb-10">
 

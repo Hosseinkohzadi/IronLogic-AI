@@ -33,6 +33,14 @@ export const routes: Routes = [
       {
         path: 'sessions',
         loadComponent: () => import('@features/admin/components/workout-logs/workout-logs').then(m => m.WorkoutLogsComponent)
+      },
+      {
+        path: 'equipment',
+        loadComponent: () => import('@features/admin/components/equipment-management/equipment-management.component').then(m => m.EquipmentManagementComponent)
+      },
+      {
+        path: 'muscles',
+        loadComponent: () => import('@features/admin/components/muscle-management/muscle-management.component').then(m => m.MuscleManagementComponent)
       }
     ]
   },

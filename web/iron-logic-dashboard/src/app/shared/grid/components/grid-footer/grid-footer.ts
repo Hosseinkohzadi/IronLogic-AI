@@ -19,6 +19,7 @@ import { LucideAngularModule } from 'lucide-angular';
               <option [value]="5">5</option>
               <option [value]="10">10</option>
               <option [value]="20">20</option>
+              <option [value]="50">50</option>
               <option [value]="100">100</option>
             </select>
             <lucide-icon name="chevron-down" class="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 pointer-events-none"></lucide-icon>

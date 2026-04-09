@@ -2,12 +2,14 @@
 
   <div class="flex flex-col xl:flex-row justify-between items-center gap-4 mb-4">
 
-    <div *ngIf="showSearch" class="relative w-full xl:w-[400px]">
-      <lucide-icon name="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></lucide-icon>
+    <div *ngIf="showSearch" class="h-9 w-full xl:w-[400px] border border-slate-200 rounded-lg shadow-sm bg-white overflow-hidden flex items-center">
+      <div class="flex h-full items-center justify-center border-r border-slate-200 px-2.5 text-slate-500">
+        <lucide-icon name="search" class="w-4 h-4"></lucide-icon>
+      </div>
       <input type="text"
              [ngModel]="searchTerm" (ngModelChange)="search.emit($event)"
              placeholder="Search current view..."
-             class="w-full bg-white border border-slate-200 rounded-[12px] py-2.5 pl-11 pr-4 text-[13px] font-medium text-slate-700 focus:ring-2 focus:ring-indigo-500/20 outline-none transition-all placeholder:text-slate-400">
+             class="h-full flex-1 bg-transparent outline-none border-0 px-3 text-[11px] font-medium text-slate-600 placeholder:text-slate-300">
     </div>
 
     <div class="flex items-center gap-2 overflow-x-auto w-full xl:w-auto pb-2 xl:pb-0">

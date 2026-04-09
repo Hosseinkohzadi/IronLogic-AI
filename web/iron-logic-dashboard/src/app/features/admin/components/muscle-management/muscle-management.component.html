@@ -1,0 +1,225 @@
+<div class="relative min-h-[90vh]">
+  <div
+    class="space-y-6 animate-in transition-all duration-500 ease-in-out"
+    [class.blur-md]="isDrawerOpen()"
+    [class.pointer-events-none]="isDrawerOpen()">
+
+    <div class="flex flex-col gap-4 pt-2 md:flex-row md:items-end md:justify-between">
+      <div>
+        <h1 class="text-[28px] font-black tracking-tight text-slate-900">Muscle Management</h1>
+        <p class="mt-1 text-[13px] font-medium text-slate-500">Manage anatomical targets and reference regions for exercises.</p>
+      </div>
+
+      <button
+        type="button"
+        class="bg-black text-white hover:bg-slate-800 px-5 py-2.5 rounded-xl font-bold text-[13px]"
+        (click)="openAddModal()">
+        + Add Muscle
+      </button>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="relative w-full xl:w-[400px]">
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
+          <lucide-icon name="search" class="w-4 h-4 text-slate-400"></lucide-icon>
+        </div>
+        <input
+          type="text"
+          placeholder="Search muscles, regions..."
+          class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:border-slate-300 focus:ring-2 focus:ring-slate-100 transition-all"
+          [value]="searchTerm()"
+          (input)="onSearch($any($event).target.value)">
+      </div>
+    </div>
+
+    <app-grid
+      [columns]="columns"
+      [data]="filteredMuscles()"
+      [isLoading]="isLoading()"
+      [searchTerm]="searchTerm()"
+      [showExport]="true"
+      [showFilters]="false"
+      [showSearch]="false"
+      (search)="onSearch($event)"
+      (refresh)="loadData()"
+      (actionTriggered)="handleGridAction($event)">
+    </app-grid>
+  </div>
+
+  @if (isDrawerOpen()) {
+    <div
+      class="fixed inset-0 z-40 bg-slate-900/5 backdrop-blur-[2px] transition-opacity"
+      (click)="closeDrawer()">
+    </div>
+  }
+
+  @if (isDrawerOpen() && selectedMuscleDetails()) {
+    <div class="fixed top-0 right-0 z-50 h-full w-full max-w-[420px] p-4 animate-in-drawer">
+      <div class="flex h-full flex-col overflow-y-auto rounded-[2.5rem] border border-white bg-slate-50/95 p-8 shadow-2xl backdrop-blur-2xl">
+        <div class="mb-8 shrink-0">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center gap-4">
+              <div class="w-16 h-16 rounded-[14px] overflow-hidden bg-white border border-slate-200 shrink-0 flex items-center justify-center shadow-sm p-1">
+                <img *ngIf="selectedMuscleDetails()?.imageUrl"
+                     [src]="selectedMuscleDetails()?.imageUrl"
+                     alt=""
+                     class="w-full h-full object-cover rounded-[10px]">
+                <lucide-icon *ngIf="!selectedMuscleDetails()?.imageUrl" name="activity" class="w-6 h-6 text-slate-300"></lucide-icon>
+              </div>
+              <div>
+                <h2 class="text-2xl font-black tracking-tight text-slate-900">{{ selectedMuscleDetails()?.name }}</h2>
+                <p class="mt-1 text-xs font-medium text-slate-500">{{ selectedMuscleDetails()?.scientificName }}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              aria-label="Close panel"
+              class="rounded-xl p-2 font-bold text-slate-600 transition-all hover:bg-slate-200/50"
+              (click)="closeDrawer()">
+              x
+            </button>
+          </div>
+
+          <div class="mt-4 flex items-center gap-2">
+            <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest text-emerald-700">{{ selectedMuscleDetails()?.status }}</span>
+          </div>
+        </div>
+
+        <div class="space-y-4 pb-10">
+          <div class="rounded-2xl border border-slate-100/50 bg-slate-50 p-5">
+            <h3 class="mb-3.5 text-sm font-black text-slate-900">Anatomy Summary</h3>
+            <div class="space-y-3 text-xs font-medium text-slate-600">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">Primary Region</span>
+                <span class="font-bold text-slate-800">{{ selectedMuscleDetails()?.region }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-400">Function/Movement</span>
+                <span class="font-bold text-slate-800">Compressive</span>
+              </div>
+              <div class="flex items-center justify-between border-t border-slate-100 pt-2">
+                <span class="text-slate-400">Linked Exercises</span>
+                <span class="font-bold text-slate-800">{{ selectedMuscleDetails()?.linkedExercises }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-100/50 bg-white p-5 shadow-sm">
+            <h3 class="mb-3.5 text-sm font-black text-slate-900">Linked Entities</h3>
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-600">Targeting Exercises</span>
+                <button
+                  type="button"
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700"
+                  (click)="navigateLinkedEntity('exercises')">
+                  <lucide-icon name="eye" class="h-3.5 w-3.5"></lucide-icon>
+                  View
+                </button>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-600">Volume Analytics</span>
+                <button
+                  type="button"
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700"
+                  (click)="navigateLinkedEntity('analytics')">
+                  <lucide-icon name="trending-up" class="h-3.5 w-3.5"></lucide-icon>
+                  Trend
+                </button>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-slate-600">Recovery Status</span>
+                <button
+                  type="button"
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700"
+                  (click)="navigateLinkedEntity('recovery')">
+                  <lucide-icon name="activity" class="h-3.5 w-3.5"></lucide-icon>
+                  Inspect
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-100/50 bg-white p-5 shadow-sm">
+            <h3 class="mb-3.5 text-sm font-black text-slate-900">Actions</h3>
+            <div class="flex flex-col gap-2">
+              <button
+                type="button"
+                class="w-full px-4 py-2.5 bg-black text-white text-[11px] font-bold rounded-xl hover:bg-slate-800 transition-all"
+                (click)="handleEdit(selectedMuscleDetails()?.id || '')">
+                Edit
+              </button>
+              <button
+                type="button"
+                class="w-full px-4 py-2.5 bg-slate-100 text-slate-700 text-[11px] font-bold rounded-xl hover:bg-slate-200 transition-all"
+                (click)="handleMerge(selectedMuscleDetails()?.id || '')">
+                Merge
+              </button>
+              <button
+                type="button"
+                class="w-full px-4 py-2.5 bg-slate-100 text-slate-700 text-[11px] font-bold rounded-xl hover:bg-slate-200 transition-all"
+                (click)="handleDelete(selectedMuscleDetails()?.id || '')">
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+
+  @if (isAddModalOpen()) {
+    <div class="fixed inset-0 z-50 bg-slate-900/50 flex items-center justify-center p-4 animate-in">
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-in">
+        <h2 class="text-2xl font-black text-slate-900 mb-6">Add New Muscle</h2>
+
+        <div class="space-y-4 mb-6">
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-2 tracking-wide">Muscle Name</label>
+            <input
+              type="text"
+              placeholder="e.g., Chest"
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-10 transition-all"
+              [(ngModel)]="newMuscleName">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-2 tracking-wide">Scientific Name</label>
+            <input
+              type="text"
+              placeholder="e.g., Pectoralis Major"
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-10 transition-all"
+              [(ngModel)]="newMuscleScientific">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-600 uppercase mb-2 tracking-wide">Region</label>
+            <select
+              class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:border-black focus:ring-2 focus:ring-black focus:ring-opacity-10 transition-all"
+              [(ngModel)]="newMuscleRegion">
+              <option value="Upper Body">Upper Body</option>
+              <option value="Lower Body">Lower Body</option>
+              <option value="Core">Core</option>
+              <option value="Full Body">Full Body</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="flex gap-3">
+          <button
+            type="button"
+            class="flex-1 px-4 py-2.5 bg-slate-100 text-slate-700 text-sm font-bold rounded-xl hover:bg-slate-200 transition-all"
+            (click)="closeAddModal()">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="flex-1 px-4 py-2.5 bg-black text-white text-sm font-bold rounded-xl hover:bg-slate-800 transition-all"
+            (click)="saveNewMuscle()">
+            Save
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</div>

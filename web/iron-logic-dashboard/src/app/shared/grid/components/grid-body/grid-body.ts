@@ -4,11 +4,12 @@ import { Observable } from 'rxjs';
 import { ColumnConfig } from '../../models/column-config';
 import { GridDataService } from '../../services/grid-data';
 import { FormsModule } from '@angular/forms';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-grid-body',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './grid-body.html',
   styleUrls: ['./grid-body.css']
 })

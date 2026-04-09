@@ -19,6 +19,7 @@ export interface UserRow {
   lastSeen: string;
   tier: 'Free' | 'Basic' | 'Pro' | 'Elite';
   dailyWeights?: number;
+  profileImageUrl?: string;
 }
 export interface UserAdminStats {
   activeUsers: number;

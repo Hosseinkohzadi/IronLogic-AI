@@ -131,6 +131,14 @@ export class UserManagementComponent implements OnInit {
     this.apiService.getUsers().subscribe({
       next: (data: any[]) => { // <-- اینجا اصلاح شد
         if (data) {
+          const avatarUrls = [
+            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=96&q=80',
+            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=96&q=80',
+            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=96&q=80',
+            'https://images.unsplash.com/photo-1502685176499-5d707b212601?auto=format&fit=crop&w=96&q=80',
+            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=96&q=80'
+          ];
+
           const enrichedData = data.map((u: any, index: number) => {
             let calculatedStatus = 'Active';
             if (u.lockoutEnd && new Date(u.lockoutEnd) > new Date()) {
@@ -145,6 +153,7 @@ export class UserManagementComponent implements OnInit {
             return {
               ...u,
               status: calculatedStatus,
+              profileImageUrl: avatarUrls[index % avatarUrls.length],
               dailyWeights: Math.floor(u.sessions * 0.6),
               lastLogin: mockDate.toISOString() 
             };
@@ -181,6 +190,7 @@ export class UserManagementComponent implements OnInit {
                   sessions: nextSessions,
                   dailyWeights: Math.floor(nextSessions * 0.6),
                   lastLogin: loginDate.toISOString(),
+                  profileImageUrl: source.profileImageUrl,
                   isSelected: false
                 };
               })

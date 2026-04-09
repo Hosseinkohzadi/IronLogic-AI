@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { map, take } from 'rxjs/operators';
-import { GridFilterPayload, GridNumberOperator, GridTextOperator } from '../models/column-config';
+import { GridDateOperator, GridFilterPayload, GridNumberOperator, GridTextOperator } from '../models/column-config';
 
 @Injectable()
 export class GridDataService {
@@ -96,6 +96,10 @@ export class GridDataService {
     this._filters$.next(next);
     this._currentPage$.next(1);
     this._selectedItems$.next([]); // ریست کردن انتخاب‌ها هنگام تغییر فیلتر
+  }
+
+  getFilter(field: string): GridFilterPayload | undefined {
+    return this._filters$.value[field];
   }
 
   clearFilters() {
@@ -207,6 +211,20 @@ export class GridDataService {
   }
 
   private matchesDateFilter(rowValue: any, filter: GridFilterPayload): boolean {
+    const dateOperator = filter.dateOperator;
+
+    if (dateOperator === 'isNull') {
+      return rowValue == null || String(rowValue).trim() === '';
+    }
+
+    if (dateOperator === 'isNotNull') {
+      return !(rowValue == null || String(rowValue).trim() === '');
+    }
+
+    if (dateOperator) {
+      return this.matchesDateTimeOperator(rowValue, filter.value, dateOperator);
+    }
+
     const normalizedRowDate = this.normalizeDate(rowValue);
     if (!normalizedRowDate) return false;
 
@@ -222,6 +240,36 @@ export class GridDataService {
     const exactDate = String(filter.value ?? '').trim();
     if (!exactDate) return true;
     return normalizedRowDate === exactDate;
+  }
+
+  private matchesDateTimeOperator(rowValue: any, filterValue: string | number | undefined, operator: GridDateOperator): boolean {
+    const rowTimestamp = this.normalizeDateTime(rowValue);
+    const filterTimestamp = this.normalizeDateTime(filterValue);
+
+    if (rowTimestamp == null) {
+      return false;
+    }
+
+    if (filterTimestamp == null) {
+      return true;
+    }
+
+    switch (operator) {
+      case 'equals':
+        return rowTimestamp === filterTimestamp;
+      case 'notEqual':
+        return rowTimestamp !== filterTimestamp;
+      case 'after':
+        return rowTimestamp > filterTimestamp;
+      case 'afterEqual':
+        return rowTimestamp >= filterTimestamp;
+      case 'before':
+        return rowTimestamp < filterTimestamp;
+      case 'beforeEqual':
+        return rowTimestamp <= filterTimestamp;
+      default:
+        return rowTimestamp === filterTimestamp;
+    }
   }
 
   private normalizeDate(value: any): string | null {
@@ -240,6 +288,19 @@ export class GridDataService {
     return `${yyyy}-${mm}-${dd}`;
   }
 
+  private normalizeDateTime(value: string | number | undefined): number | null {
+    if (value == null || String(value).trim() === '') {
+      return null;
+    }
+
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+
+    return date.getTime();
+  }
+
   private isFilterEmpty(filter: GridFilterPayload): boolean {
     switch (filter.filterType) {
       case 'number':
@@ -248,6 +309,9 @@ export class GridDataService {
         }
         return filter.value == null || filter.value === '';
       case 'date':
+        if (filter.dateOperator === 'isNull' || filter.dateOperator === 'isNotNull') {
+          return false;
+        }
         if (filter.mode === 'range') {
           return !(filter.from || '').trim() && !(filter.to || '').trim();
         }

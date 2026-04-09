@@ -95,8 +95,8 @@ export class UserManagementComponent implements OnInit {
         { label: 'Free', value: 'Free' }
       ]
     },
-    { field: 'sessions', title: 'SESSIONS', type: 'text', sortable: true, width: '100px', filterType: 'number', filterMode: 'compare' },
-    { field: 'dailyWeights', title: 'WEIGHTS', type: 'text', sortable: true, width: '100px', filterType: 'number', filterMode: 'compare' },
+    { field: 'sessions', title: 'SESSIONS', type: 'number', sortable: true, width: '100px', filterType: 'number', filterMode: 'compare' },
+    { field: 'dailyWeights', title: 'WEIGHTS', type: 'number', sortable: true, width: '100px', filterType: 'number', filterMode: 'compare' },
     { field: 'email', title: 'EMAIL', type: 'email', sortable: true, width: '220px', filterType: 'text' },
     { field: 'lastLogin', title: 'LAST LOGIN', type: 'calendar', sortable: true, width: '140px', filterType: 'date', filterMode: 'exact' },
     { field: 'actions', title: 'ACTION', type: 'action', width: '80px' }

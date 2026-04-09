@@ -123,6 +123,14 @@
         </div>
       </ng-container>
 
+      <ng-container *ngIf="col.type === 'date'">
+        <div class="flex items-center text-slate-600">
+          <span class="text-[12px] font-semibold text-slate-700">
+            {{ row[col.field] ? (row[col.field] | date:'MMM d, y') : '-' }}
+          </span>
+        </div>
+      </ng-container>
+
       <ng-container *ngIf="col.type === 'action' || col.field === 'actions'">
         <div class="flex items-center gap-1">
           <button *ngIf="isInlineEditingRow(row)"

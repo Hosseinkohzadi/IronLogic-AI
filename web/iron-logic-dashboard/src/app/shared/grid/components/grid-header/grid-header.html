@@ -1,15 +1,38 @@
-<div class="flex flex-col w-full mb-3 overflow-visible" >
-  <div class="flex items-center justify-start min-w-full w-max h-14 py-3 bg-slate-50/50 border-b border-slate-200 px-2 overflow-visible">
-    <div *ngFor="let col of columns; let i = index"
-         class="relative flex h-full items-center px-4 overflow-visible bg-slate-50/50"
-          [style.width]="col.width || '200px'"
-         [ngClass]="{'justify-center': col.type === 'selection', 'justify-end pr-6': col.type === 'action'}">
+<div>
+  <div class="flex flex-nowrap items-center justify-start h-14 py-3 bg-slate-50/50 border-b border-slate-200 px-2 overflow-visible"
+       [class.min-w-full]="!fitViewportMode"
+       [class.w-max]="!fitViewportMode"
+       [style.width]="fitViewportMode ? '100%' : null"
+       [style.max-width]="fitViewportMode ? '100%' : null"
+       style="display: flex; flex-wrap: nowrap;">
+            <div *ngFor="let col of visibleColumns; let i = index"
+              class="header-cell flex h-full items-center px-4 overflow-visible transition-[width] duration-300 ease-out"
+             [attr.data-field]="col.field"
+         [style.width]="fitViewportMode ? (col.width || 'auto') : (col.width || '200px')"
+         [style.max-width]="fitViewportMode ? (col.width || 'auto') : null"
+         [style.flex]="fitViewportMode ? '1 1 auto' : null"
+         [style.position]="col.locked ? 'sticky' : 'relative'"
+         [style.left]="col.locked ? getLockedOffset(col.field) : 'auto'"
+         [style.z-index]="col.locked ? '50' : '1'"
+         [style.background-color]="col.locked ? '#f8fafc' : 'transparent'"
+          [class.sticky-column]="!!col.locked"
+         [class.border-r-2]="!!col.locked && isLastLocked(col.field)"
+         [class.border-slate-200]="!!col.locked && isLastLocked(col.field)"
+           [ngClass]="{
+             'justify-center': ['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || ''),
+             'justify-start': !['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || '') && col.type !== 'action',
+             'justify-end pr-6': col.type === 'action'
+           }">
 
       <ng-container *ngIf="col.type === 'selection'">
         <input type="checkbox" (change)="onToggleAll($event)" class="w-4 h-4 rounded border-slate-300 text-black focus:ring-black cursor-pointer">
       </ng-container>
 
-      <div *ngIf="col.type !== 'selection'" class="flex items-center justify-between w-full h-full group select-none cursor-pointer" (click)="handleSort(col, $event)">
+       <div *ngIf="col.type !== 'selection'"
+         class="flex items-center w-full h-full group select-none cursor-pointer"
+         [class.justify-center]="['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || '')"
+         [class.justify-between]="!['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || '')"
+         (click)="handleSort(col, $event)">
         <span class="text-[11px] font-bold text-slate-500 uppercase tracking-[0.15em]">{{ col.title }}</span>
 
         <div class="flex items-center gap-1.5">

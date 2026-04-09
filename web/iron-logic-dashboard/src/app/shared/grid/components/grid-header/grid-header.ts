@@ -17,6 +17,11 @@ import { GridDataService } from '../../services/grid-data';
 })
 export class GridHeaderComponent implements OnChanges {
   @Input() columns: ColumnConfig[] = [];
+  @Input() fitViewportMode: boolean = false;
+
+  get visibleColumns(): ColumnConfig[] {
+    return this.columns.filter((col) => !col.hidden);
+  }
 
   // این خط اضافه شد تا ارورهای TS2339 و NG8002 برطرف شوند
   @Input() showFilters: boolean = false;

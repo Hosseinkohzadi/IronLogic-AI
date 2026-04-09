@@ -11,6 +11,7 @@ export class GridDataService {
   private _rawData$ = new BehaviorSubject<any[]>([]);
   private _sortConfig$ = new BehaviorSubject<GridSortDescriptor[]>([]);
   private _filters$ = new BehaviorSubject<Record<string, GridFilterPayload>>({});
+  private _searchTerm$ = new BehaviorSubject<string>('');
   private _currentPage$ = new BehaviorSubject<number>(1);
   private _pageSize$ = new BehaviorSubject<number>(10);
 
@@ -22,15 +23,25 @@ export class GridDataService {
   private _processedData$: Observable<any[]> = combineLatest([
     this._rawData$,
     this._sortConfig$,
-    this._filters$
+    this._filters$,
+    this._searchTerm$
   ]).pipe(
-    map(([data, sort, filters]) => {
+    map(([data, sort, filters, searchTerm]) => {
       let result = data.filter(row => {
         return Object.values(filters).every(filter => {
           const rowValue = row[filter.field];
           return this.matchesFilter(rowValue, filter);
         });
       });
+
+      const normalizedSearch = String(searchTerm ?? '').trim().toLowerCase();
+      if (normalizedSearch) {
+        result = result.filter((row) =>
+          Object.values(row ?? {}).some((value) =>
+            String(value ?? '').toLowerCase().includes(normalizedSearch)
+          )
+        );
+      }
 
       if (sort.length > 0) {
         const orderedSorts = [...sort].sort((a, b) => a.priority - b.priority);
@@ -115,9 +126,15 @@ export class GridDataService {
     this._selectedItems$.next([]);
   }
 
+  setSearchTerm(term: string) {
+    this._searchTerm$.next(String(term ?? ''));
+    this._currentPage$.next(1);
+  }
+
   clearAllStates() {
     this._filters$.next({});
     this._sortConfig$.next([]);
+    this._searchTerm$.next('');
     this._currentPage$.next(1);
     this._selectedItems$.next([]);
   }

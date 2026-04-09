@@ -1,14 +1,21 @@
-<div class="flex flex-col gap-3 w-full">
+<div>
   <div *ngFor="let row of data$ | async"
-  class="flex items-center justify-start min-w-full w-max h-16 border-b border-slate-100 hover:bg-slate-50 transition-colors bg-white cursor-pointer px-2"
+  class="flex flex-nowrap items-center justify-start h-16 border-b border-slate-100 hover:bg-slate-50 transition-colors bg-white cursor-pointer px-2"
+       [class.min-w-full]="!fitViewportMode"
+       [class.w-max]="!fitViewportMode"
+       [style.width]="fitViewportMode ? '100%' : null"
+       [style.max-width]="fitViewportMode ? '100%' : null"
+       style="display: flex; flex-wrap: nowrap;"
        [class.ring-1]="row.isSelected"
        [class.ring-slate-300]="row.isSelected"
        [class.bg-slate-50]="row.isSelected"
        (click)="onRowClick(row)">
 
-    <div *ngFor="let col of columns"
-         class="flex items-center px-4 overflow-hidden whitespace-nowrap"
-         [style.width]="col.width || '150px'"
+    <div *ngFor="let col of visibleColumns"
+          class="flex items-center px-4 overflow-hidden whitespace-nowrap transition-[width] duration-300 ease-out"
+         [style.width]="fitViewportMode ? (col.width || 'auto') : (col.width || '150px')"
+         [style.max-width]="fitViewportMode ? (col.width || 'auto') : null"
+         [style.flex]="fitViewportMode ? '1 1 auto' : null"
          [class.sticky]="!!col.locked"
           [class.left-0]="!!col.locked"
          [style.left]="col.locked ? getLockedOffset(col.field) : null"
@@ -16,7 +23,8 @@
          [class.bg-white]="!!col.locked"
          [class.border-r-2]="!!col.locked && isLastLocked(col.field)"
          [class.border-slate-200]="!!col.locked && isLastLocked(col.field)"
-         [class.justify-center]="col.type === 'selection'"
+         [class.justify-center]="['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || '')"
+         [class.justify-start]="!['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || '') && col.type !== 'action'"
          [class.justify-end]="col.type === 'action'"
          [class.pr-4]="col.type === 'action'">
 
@@ -42,7 +50,7 @@
       </ng-container>
 
       <ng-container *ngIf="col.type === 'number' && !isCellInEditMode(row, col)">
-        <span class="text-[13px] text-slate-600 font-medium">{{ row[col.field] }}</span>
+        <span class="text-[13px] text-slate-600 font-medium text-center w-full">{{ row[col.field] }}</span>
       </ng-container>
 
       <ng-container *ngIf="col.type === 'profile'">
@@ -87,7 +95,7 @@
       </ng-container>
 
       <ng-container *ngIf="col.type === 'badge'">
-        <span class="inline-flex items-center rounded-md px-3 py-1 text-[11px] font-medium"
+        <span class="inline-flex items-center justify-center text-center rounded-md px-3 py-1 text-[11px] font-medium"
               [ngClass]="{
                 'bg-emerald-100 text-emerald-700': row[col.field] === 'Active',
                 'bg-amber-100 text-amber-700': row[col.field] === 'Review',
@@ -98,7 +106,7 @@
       </ng-container>
 
       <ng-container *ngIf="col.type === 'tier'">
-        <span class="inline-flex items-center rounded-md px-3 py-1 text-[11px] font-bold tracking-tight uppercase"
+        <span class="inline-flex items-center justify-center text-center rounded-md px-3 py-1 text-[11px] font-bold tracking-tight uppercase"
               [ngClass]="{
                 'bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-200': row[col.field] === 'Elite' || row[col.field] === 'Premium',
                 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200': row[col.field] === 'Pro',

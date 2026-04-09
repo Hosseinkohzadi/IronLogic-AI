@@ -63,6 +63,8 @@ export interface ColumnConfig {
   field: string;
   /** Column header title */
   title: string;
+  /** Optional lucide icon name for column UI */
+  icon?: string;
   /** Whether column is hidden in the grid */
   hidden?: boolean;
   /** Column width (CSS value) */

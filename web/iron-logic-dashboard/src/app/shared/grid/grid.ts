@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, EventEmitter, Input, Output, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ScrollingModule } from '@angular/cdk/scrolling';
@@ -26,11 +26,17 @@ interface GridEditSettings {
   styleUrls: ['./grid.css'],
   providers: [GridDataService]
 })
-export class GridComponent implements OnInit {
+export class GridComponent implements OnInit, OnChanges {
   @Input() columns: ColumnConfig[] = [];
   @Input() set data(value: any[]) { this.gridDataService.setData(value); }
   @Input() isLoading: boolean = false;
-  @Input() searchTerm: string = '';
+  @Input() set searchTerm(value: string) {
+    this._searchTerm = String(value ?? '');
+    this.gridDataService.setSearchTerm(this._searchTerm);
+  }
+  get searchTerm(): string {
+    return this._searchTerm;
+  }
   @Input() editSettings: GridEditSettings = { mode: 'None', allowEditing: false };
 
   // --- پرچم‌های کنترلی جدید ---
@@ -40,6 +46,13 @@ export class GridComponent implements OnInit {
   @Input() pagerPosition: 'top' | 'bottom' | 'both' = 'bottom';
 
   filterResetKey = 0;
+  isColumnMenuOpen = false;
+  isFitViewportMode = false;
+  private _searchTerm = '';
+  private readonly initialColumnWidths = new Map<string, string | undefined>();
+
+  @ViewChild('columnMenuContainer') private columnMenuContainerRef?: ElementRef<HTMLElement>;
+  @ViewChild('gridScrollContainer') private gridScrollContainerRef?: ElementRef<HTMLElement>;
 
   @Output() actionTriggered = new EventEmitter<{type: string, row: any}>();
   @Output() selectionChanged = new EventEmitter<any[]>();
@@ -51,7 +64,8 @@ export class GridComponent implements OnInit {
   constructor(
     public gridDataService: GridDataService,
     private exportService: GridExportService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private elementRef: ElementRef<HTMLElement>
   ) {}
 
   get pagedData$() {
@@ -71,7 +85,14 @@ export class GridComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.captureInitialColumnWidths();
     this.gridDataService.selectedItems$.subscribe(items => this.selectionChanged.emit(items));
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['columns']) {
+      this.captureInitialColumnWidths();
+    }
   }
 
   export(type: 'excel' | 'pdf') {
@@ -95,6 +116,12 @@ export class GridComponent implements OnInit {
     this.cdr.markForCheck();
   }
 
+  onSearchTermChange(term: string) {
+    this._searchTerm = String(term ?? '');
+    this.gridDataService.setSearchTerm(this._searchTerm);
+    this.search.emit(this._searchTerm);
+  }
+
   shouldShowColumnField(col: ColumnConfig): boolean {
     if (!col.field) {
       return false;
@@ -110,13 +137,158 @@ export class GridComponent implements OnInit {
     return fieldName !== headerName;
   }
 
-  handleRefresh() {
-    this.columns = this.columns.map((column) => ({ ...column, hidden: false }));
-    this.gridDataService.clearAllStates();
-    this.columns.forEach((column) => {
-      column.sortOrder = null;
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (!this.isColumnMenuOpen) {
+      return;
+    }
+
+    const clickTarget = event.target as Node | null;
+    const menuContainer = this.columnMenuContainerRef?.nativeElement;
+
+    if (menuContainer && clickTarget && !menuContainer.contains(clickTarget)) {
+      this.isColumnMenuOpen = false;
+      this.cdr.markForCheck();
+      return;
+    }
+
+    if (!menuContainer && clickTarget && !this.elementRef.nativeElement.contains(clickTarget)) {
+      this.isColumnMenuOpen = false;
+      this.cdr.markForCheck();
+    }
+  }
+
+  private captureInitialColumnWidths(): void {
+    for (const column of this.columns) {
+      if (!this.initialColumnWidths.has(column.field)) {
+        this.initialColumnWidths.set(column.field, column.width);
+      }
+    }
+  }
+
+  private getPreferredViewportPercentage(column: ColumnConfig): number | null {
+    if (column.type === 'selection' || column.field === 'selection') {
+      return 5;
+    }
+
+    if (column.field === 'name' || column.type === 'profile') {
+      return 25;
+    }
+
+    if (column.field === 'email' || column.type === 'email') {
+      return 25;
+    }
+
+    if (column.field === 'status' || column.type === 'badge') {
+      return 15;
+    }
+
+    if (column.type === 'action' || column.field === 'actions') {
+      return 8;
+    }
+
+    return null;
+  }
+
+  private buildViewportPercentages(columns: ColumnConfig[]): Map<string, string> {
+    const visibleColumns = columns.filter((column) => column.hidden !== true);
+    const percentageMap = new Map<string, string>();
+
+    if (visibleColumns.length === 0) {
+      return percentageMap;
+    }
+
+    const prioritizedColumns: Array<{ field: string; percentage: number }> = [];
+    const remainingColumns: ColumnConfig[] = [];
+
+    for (const column of visibleColumns) {
+      const preferredPercentage = this.getPreferredViewportPercentage(column);
+      if (preferredPercentage === null) {
+        remainingColumns.push(column);
+        continue;
+      }
+
+      prioritizedColumns.push({ field: column.field, percentage: preferredPercentage });
+    }
+
+    const prioritizedTotal = prioritizedColumns.reduce((sum, column) => sum + column.percentage, 0);
+
+    if (prioritizedTotal >= 100) {
+      let usedPercentage = 0;
+      prioritizedColumns.forEach((column, index) => {
+        const isLastColumn = index === prioritizedColumns.length - 1;
+        if (isLastColumn) {
+          percentageMap.set(column.field, `${Math.max(0, Number((100 - usedPercentage).toFixed(2)))}%`);
+          return;
+        }
+
+        const scaled = Number(((column.percentage / prioritizedTotal) * 100).toFixed(2));
+        usedPercentage += scaled;
+        percentageMap.set(column.field, `${scaled}%`);
+      });
+
+      return percentageMap;
+    }
+
+    const remainingPercentage = Math.max(0, 100 - prioritizedTotal);
+    const defaultPercentage = remainingColumns.length > 0
+      ? Number((remainingPercentage / remainingColumns.length).toFixed(2))
+      : 0;
+
+    prioritizedColumns.forEach((column) => {
+      percentageMap.set(column.field, `${column.percentage}%`);
     });
+
+    let usedPercentage = prioritizedTotal;
+    remainingColumns.forEach((column, index) => {
+      const isLastColumn = index === remainingColumns.length - 1;
+      if (isLastColumn) {
+        percentageMap.set(column.field, `${Math.max(0, Number((100 - usedPercentage).toFixed(2)))}%`);
+        return;
+      }
+
+      usedPercentage += defaultPercentage;
+      percentageMap.set(column.field, `${defaultPercentage}%`);
+    });
+
+    return percentageMap;
+  }
+
+  autoSizeColumnsContentBased(): void {
+    this.isColumnMenuOpen = false;
+    this.isFitViewportMode = true;
+    this.cdr.detectChanges();
+
+    setTimeout(() => {
+      const widths = this.buildViewportPercentages(this.columns);
+
+      this.columns = this.columns.map((column) => {
+        if (column.hidden) {
+          return column;
+        }
+
+        return {
+          ...column,
+          width: widths.get(column.field) ?? column.width
+        };
+      });
+
+      this.cdr.markForCheck();
+    }, 0);
+  }
+
+  handleRefresh() {
+    this.isFitViewportMode = false;
+    this.columns = this.columns.map((column) => ({
+      ...column,
+      hidden: false,
+      width: this.initialColumnWidths.has(column.field)
+        ? this.initialColumnWidths.get(column.field)
+        : column.width
+    }));
+    this.gridDataService.clearAllStates();
     this.filterResetKey += 1;
+    this._searchTerm = '';
     this.search.emit('');
     this.refresh.emit();
     this.cdr.markForCheck();

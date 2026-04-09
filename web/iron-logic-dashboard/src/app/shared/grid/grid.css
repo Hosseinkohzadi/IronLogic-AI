@@ -4,19 +4,37 @@ app-grid-footer {
   display: contents;
 }
 
+.sticky-column {
+  position: sticky !important;
+  z-index: 50 !important;
+  background-color: #f8fafc !important;
+}
+
+.fit-viewport-scroll {
+  overflow-x: hidden !important;
+}
+
+
+.scroll-container {
+  display: block;
+  white-space: nowrap;
+}
+
 .custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
+  height: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background-color: #cbd5e1;
+  background: #f8fafc;
   border-radius: 10px;
 }
 
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+  border: 2px solid #f8fafc;
+}
+
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
+  background: #94a3b8;
 }

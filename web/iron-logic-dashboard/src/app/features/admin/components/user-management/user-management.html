@@ -88,6 +88,7 @@
       </div>
       <div class="p-4 grid-shell">
         <app-grid
+          [resizableRows]="true"
           class="h-full w-full"
           [columns]="userColumns"
           [data]="filteredUsers()"

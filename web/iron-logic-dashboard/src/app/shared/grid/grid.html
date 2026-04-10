@@ -155,10 +155,12 @@
     <app-grid-body
       [columns]="visibleColumns"
       [fitViewportMode]="isFitViewportMode"
+      [resizableRows]="resizableRows"
       [style.display]="'contents'"
       [data$]="pagedData$"
       [editSettings]="editSettings"
       (action)="actionTriggered.emit($event)"
+      (rowResize)="onRowResize()"
       (saveChanges)="saveChanges.emit($event)"
       (inlineSave)="inlineSave.emit($event)"
     >

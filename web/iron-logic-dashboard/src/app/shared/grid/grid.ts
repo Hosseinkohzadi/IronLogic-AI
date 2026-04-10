@@ -69,6 +69,7 @@ export class GridComponent implements OnInit, OnChanges {
   @Input() showFilters: boolean = false; // نمایش فیلترهای زیر هدر
   @Input() showSearch: boolean = true; // نمایش نوار جستجوی بالا
   @Input() pagerPosition: 'top' | 'bottom' | 'both' = 'bottom';
+  @Input() resizableRows: boolean = true;
   reorderable = input<boolean>(false);
 
   filterResetKey = 0;
@@ -150,6 +151,16 @@ export class GridComponent implements OnInit, OnChanges {
     this._searchTerm = String(term ?? '');
     this.gridDataService.setSearchTerm(this._searchTerm);
     this.search.emit(this._searchTerm);
+  }
+
+  onRowResize(): void {
+    const viewport = this.elementRef.nativeElement.querySelector('cdk-virtual-scroll-viewport') as {
+      checkViewportSize?: () => void;
+    } | null;
+
+    if (viewport?.checkViewportSize) {
+      viewport.checkViewportSize();
+    }
   }
 
   drop(event: CdkDragDrop<ColumnConfig[]>) {

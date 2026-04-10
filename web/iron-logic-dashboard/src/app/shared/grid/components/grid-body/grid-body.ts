@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { ColumnConfig } from '../../models/column-config';
@@ -20,9 +20,10 @@ interface GridEditSettings {
   templateUrl: './grid-body.html',
   styleUrls: ['./grid-body.css']
 })
-export class GridBodyComponent {
+export class GridBodyComponent implements OnDestroy {
   @Input() columns: ColumnConfig[] = [];
   @Input() fitViewportMode: boolean = false;
+  @Input() resizableRows: boolean = true;
 
   get visibleColumns(): ColumnConfig[] {
     return this.columns.filter((col) => !col.hidden);
@@ -33,14 +34,27 @@ export class GridBodyComponent {
   @Output() action = new EventEmitter<{ type: string, row: any }>();
   @Output() saveChanges = new EventEmitter<any>();
   @Output() inlineSave = new EventEmitter<any>();
+  @Output() rowResize = new EventEmitter<{ rowIndex: number; height: number }>();
 
   editingRowId = signal<string | null>(null);
   private inlineOriginalData: any | null = null;
   popupEditData: any | null = null;
   popupOriginalData: any | null = null;
   batchChanges = new Map<string, Record<string, any>>();
+  readonly minRowHeight = 40;
+  private readonly defaultRowHeight = 64;
+  private readonly rowHeights: number[] = [];
+  private resizingRowIndex: number | null = null;
+  private rowResizeStartY = 0;
+  private rowResizeStartHeight = this.defaultRowHeight;
+  private readonly onWindowMouseMove = (event: MouseEvent) => this.onRowResizeMove(event);
+  private readonly onWindowMouseUp = () => this.onRowResizeEnd();
 
   constructor(private gridDataService: GridDataService) {}
+
+  ngOnDestroy(): void {
+    this.removeRowResizeListeners();
+  }
 
   onAction(type: string, row: any, event?: Event) {
     if(event) event.stopPropagation(); // جلوگیری از تداخل کلیک دکمه با کلیک سطر
@@ -311,6 +325,65 @@ export class GridBodyComponent {
 
   cancelBatchEdit(): void {
     this.batchChanges.clear();
+  }
+
+  getRowHeight(rowIndex: number): string {
+    const height = this.rowHeights[rowIndex] ?? this.defaultRowHeight;
+    return `${height}px`;
+  }
+
+  isRowResizing(rowIndex: number): boolean {
+    return this.resizingRowIndex === rowIndex;
+  }
+
+  onRowResizeStart(rowIndex: number, event: MouseEvent): void {
+    if (!this.resizableRows) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const rowElement = (event.currentTarget as HTMLElement | null)?.closest('[data-grid-row]') as HTMLElement | null;
+    const currentHeight = rowElement?.getBoundingClientRect().height
+      ?? this.rowHeights[rowIndex]
+      ?? this.defaultRowHeight;
+
+    this.resizingRowIndex = rowIndex;
+    this.rowResizeStartY = event.clientY;
+    this.rowResizeStartHeight = Math.max(this.minRowHeight, Math.round(currentHeight));
+
+    window.addEventListener('mousemove', this.onWindowMouseMove);
+    window.addEventListener('mouseup', this.onWindowMouseUp);
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'row-resize';
+  }
+
+  private onRowResizeMove(event: MouseEvent): void {
+    if (this.resizingRowIndex === null) {
+      return;
+    }
+
+    const delta = event.clientY - this.rowResizeStartY;
+    const nextHeight = Math.max(this.minRowHeight, Math.round(this.rowResizeStartHeight + delta));
+    this.rowHeights[this.resizingRowIndex] = nextHeight;
+    this.rowResize.emit({ rowIndex: this.resizingRowIndex, height: nextHeight });
+  }
+
+  private onRowResizeEnd(): void {
+    if (this.resizingRowIndex === null) {
+      return;
+    }
+
+    this.resizingRowIndex = null;
+    this.removeRowResizeListeners();
+  }
+
+  private removeRowResizeListeners(): void {
+    window.removeEventListener('mousemove', this.onWindowMouseMove);
+    window.removeEventListener('mouseup', this.onWindowMouseUp);
+    document.body.style.removeProperty('user-select');
+    document.body.style.removeProperty('cursor');
   }
 
   private getSafeWidth(width?: string): number {

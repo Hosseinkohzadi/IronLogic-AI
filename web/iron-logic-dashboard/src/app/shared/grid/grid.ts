@@ -1,7 +1,21 @@
-import { ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  ElementRef,
+  EventEmitter,
+  HostListener,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild,
+  input,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ScrollingModule } from '@angular/cdk/scrolling';
+import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 import { ColumnConfig } from './models/column-config';
 import { GridDataService } from './services/grid-data';
 import { GridHeaderComponent } from './components/grid-header/grid-header';
@@ -21,14 +35,25 @@ interface GridEditSettings {
 @Component({
   selector: 'app-grid',
   standalone: true,
-  imports: [CommonModule, FormsModule, LucideAngularModule, GridHeaderComponent, GridBodyComponent, GridFooterComponent, ScrollingModule],
+  imports: [
+    CommonModule,
+    FormsModule,
+    LucideAngularModule,
+    GridHeaderComponent,
+    GridBodyComponent,
+    GridFooterComponent,
+    ScrollingModule,
+    DragDropModule,
+  ],
   templateUrl: './grid.html',
   styleUrls: ['./grid.css'],
-  providers: [GridDataService]
+  providers: [GridDataService],
 })
 export class GridComponent implements OnInit, OnChanges {
   @Input() columns: ColumnConfig[] = [];
-  @Input() set data(value: any[]) { this.gridDataService.setData(value); }
+  @Input() set data(value: any[]) {
+    this.gridDataService.setData(value);
+  }
   @Input() isLoading: boolean = false;
   @Input() set searchTerm(value: string) {
     this._searchTerm = String(value ?? '');
@@ -40,10 +65,11 @@ export class GridComponent implements OnInit, OnChanges {
   @Input() editSettings: GridEditSettings = { mode: 'None', allowEditing: false };
 
   // --- پرچم‌های کنترلی جدید ---
-  @Input() showExport: boolean = true;   // نمایش دکمه‌های اکسل/PDF
+  @Input() showExport: boolean = true; // نمایش دکمه‌های اکسل/PDF
   @Input() showFilters: boolean = false; // نمایش فیلترهای زیر هدر
-  @Input() showSearch: boolean = true;   // نمایش نوار جستجوی بالا
+  @Input() showSearch: boolean = true; // نمایش نوار جستجوی بالا
   @Input() pagerPosition: 'top' | 'bottom' | 'both' = 'bottom';
+  reorderable = input<boolean>(false);
 
   filterResetKey = 0;
   isColumnMenuOpen = false;
@@ -54,7 +80,7 @@ export class GridComponent implements OnInit, OnChanges {
   @ViewChild('columnMenuContainer') private columnMenuContainerRef?: ElementRef<HTMLElement>;
   @ViewChild('gridScrollContainer') private gridScrollContainerRef?: ElementRef<HTMLElement>;
 
-  @Output() actionTriggered = new EventEmitter<{type: string, row: any}>();
+  @Output() actionTriggered = new EventEmitter<{ type: string; row: any }>();
   @Output() selectionChanged = new EventEmitter<any[]>();
   @Output() refresh = new EventEmitter<void>();
   @Output() search = new EventEmitter<string>();
@@ -65,7 +91,7 @@ export class GridComponent implements OnInit, OnChanges {
     public gridDataService: GridDataService,
     private exportService: GridExportService,
     private cdr: ChangeDetectorRef,
-    private elementRef: ElementRef<HTMLElement>
+    private elementRef: ElementRef<HTMLElement>,
   ) {}
 
   get pagedData$() {
@@ -81,12 +107,14 @@ export class GridComponent implements OnInit, OnChanges {
   }
 
   get toggleableColumns(): ColumnConfig[] {
-    return this.columns.filter((column) => column.field !== 'selection' && column.field !== 'actions');
+    return this.columns.filter(
+      (column) => column.field !== 'selection' && column.field !== 'actions',
+    );
   }
 
   ngOnInit() {
     this.captureInitialColumnWidths();
-    this.gridDataService.selectedItems$.subscribe(items => this.selectionChanged.emit(items));
+    this.gridDataService.selectedItems$.subscribe((items) => this.selectionChanged.emit(items));
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -96,10 +124,12 @@ export class GridComponent implements OnInit, OnChanges {
   }
 
   export(type: 'excel' | 'pdf') {
-    this.gridDataService.processedData$.pipe(take(1)).subscribe(data => {
-      const exportColumns = this.columns.filter(c => c.type !== 'action' && c.type !== 'selection');
-      const titles = exportColumns.map(c => c.title);
-      const fields = exportColumns.map(c => c.field);
+    this.gridDataService.processedData$.pipe(take(1)).subscribe((data) => {
+      const exportColumns = this.columns.filter(
+        (c) => c.type !== 'action' && c.type !== 'selection',
+      );
+      const titles = exportColumns.map((c) => c.title);
+      const fields = exportColumns.map((c) => c.field);
       if (type === 'excel') this.exportService.exportToExcel(data, 'Grid_Export');
       else if (type === 'pdf') this.exportService.exportToPdf(data, titles, fields, 'Grid_Export');
     });
@@ -120,6 +150,27 @@ export class GridComponent implements OnInit, OnChanges {
     this._searchTerm = String(term ?? '');
     this.gridDataService.setSearchTerm(this._searchTerm);
     this.search.emit(this._searchTerm);
+  }
+
+  drop(event: CdkDragDrop<ColumnConfig[]>) {
+    const visible = this.visibleColumns;
+    const actionIdx = visible.findIndex((c) => c.type === 'action');
+
+    let toVisible = event.currentIndex;
+    if (actionIdx !== -1 && toVisible >= actionIdx) {
+      toVisible = actionIdx - 1;
+    }
+
+    if (event.previousIndex === toVisible) return;
+
+    const fromField = visible[event.previousIndex].field;
+    const toField = visible[toVisible].field;
+    const fromIdx = this.columns.findIndex((c) => c.field === fromField);
+    const toIdx = this.columns.findIndex((c) => c.field === toField);
+
+    moveItemInArray(this.columns, fromIdx, toIdx);
+    this.columns = [...this.columns];
+    this.cdr.markForCheck();
   }
 
   shouldShowColumnField(col: ColumnConfig): boolean {
@@ -218,7 +269,10 @@ export class GridComponent implements OnInit, OnChanges {
       prioritizedColumns.forEach((column, index) => {
         const isLastColumn = index === prioritizedColumns.length - 1;
         if (isLastColumn) {
-          percentageMap.set(column.field, `${Math.max(0, Number((100 - usedPercentage).toFixed(2)))}%`);
+          percentageMap.set(
+            column.field,
+            `${Math.max(0, Number((100 - usedPercentage).toFixed(2)))}%`,
+          );
           return;
         }
 
@@ -231,9 +285,10 @@ export class GridComponent implements OnInit, OnChanges {
     }
 
     const remainingPercentage = Math.max(0, 100 - prioritizedTotal);
-    const defaultPercentage = remainingColumns.length > 0
-      ? Number((remainingPercentage / remainingColumns.length).toFixed(2))
-      : 0;
+    const defaultPercentage =
+      remainingColumns.length > 0
+        ? Number((remainingPercentage / remainingColumns.length).toFixed(2))
+        : 0;
 
     prioritizedColumns.forEach((column) => {
       percentageMap.set(column.field, `${column.percentage}%`);
@@ -243,7 +298,10 @@ export class GridComponent implements OnInit, OnChanges {
     remainingColumns.forEach((column, index) => {
       const isLastColumn = index === remainingColumns.length - 1;
       if (isLastColumn) {
-        percentageMap.set(column.field, `${Math.max(0, Number((100 - usedPercentage).toFixed(2)))}%`);
+        percentageMap.set(
+          column.field,
+          `${Math.max(0, Number((100 - usedPercentage).toFixed(2)))}%`,
+        );
         return;
       }
 
@@ -269,7 +327,7 @@ export class GridComponent implements OnInit, OnChanges {
 
         return {
           ...column,
-          width: widths.get(column.field) ?? column.width
+          width: widths.get(column.field) ?? column.width,
         };
       });
 
@@ -284,7 +342,7 @@ export class GridComponent implements OnInit, OnChanges {
       hidden: false,
       width: this.initialColumnWidths.has(column.field)
         ? this.initialColumnWidths.get(column.field)
-        : column.width
+        : column.width,
     }));
     this.gridDataService.clearAllStates();
     this.filterResetKey += 1;

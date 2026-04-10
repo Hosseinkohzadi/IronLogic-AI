@@ -1,103 +1,163 @@
 <div class="flex h-full min-h-0 w-full flex-col gap-2 overflow-hidden">
   <div class="mb-4 flex w-full items-center justify-between shrink-0">
-
-    <div *ngIf="showSearch" class="h-9 w-full max-w-[400px] border border-slate-200 rounded-lg shadow-sm bg-white overflow-hidden flex items-center">
-      <div class="flex h-full items-center justify-center border-r border-slate-200 px-2.5 text-slate-500">
+    <div
+      *ngIf="showSearch"
+      class="h-9 w-full max-w-[400px] border border-slate-200 rounded-lg shadow-sm bg-white overflow-hidden flex items-center"
+    >
+      <div
+        class="flex h-full items-center justify-center border-r border-slate-200 px-2.5 text-slate-500"
+      >
         <lucide-icon name="search" class="w-4 h-4"></lucide-icon>
       </div>
-      <input type="text"
-              [ngModel]="searchTerm" (ngModelChange)="onSearchTermChange($event)"
-             placeholder="Search current view..."
-             class="h-full flex-1 bg-transparent outline-none border-0 px-3 text-[11px] font-medium text-slate-600 placeholder:text-slate-300">
+      <input
+        type="text"
+        [ngModel]="searchTerm"
+        (ngModelChange)="onSearchTermChange($event)"
+        placeholder="Search current view..."
+        class="h-full flex-1 bg-transparent outline-none border-0 px-3 text-[11px] font-medium text-slate-600 placeholder:text-slate-300"
+      />
     </div>
 
     <div class="flex items-center gap-2">
-
       <ng-container *ngIf="showExport">
-        <button (click)="export('excel')" class="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-[12px] transition-all whitespace-nowrap border border-emerald-100">
+        <button
+          (click)="export('excel')"
+          class="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-bold rounded-[12px] transition-all whitespace-nowrap border border-emerald-100"
+        >
           <lucide-icon name="file-spreadsheet" class="w-4 h-4"></lucide-icon> Excel
         </button>
-        <button (click)="export('pdf')" class="flex items-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-[12px] transition-all whitespace-nowrap border border-rose-100">
+        <button
+          (click)="export('pdf')"
+          class="flex items-center gap-2 px-4 py-2.5 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold rounded-[12px] transition-all whitespace-nowrap border border-rose-100"
+        >
           <lucide-icon name="file-text" class="w-4 h-4"></lucide-icon> PDF
         </button>
       </ng-container>
 
-      <button (click)="handleRefresh()" class="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-[12px] transition-all whitespace-nowrap">
-        <lucide-icon name="refresh-cw" [class.animate-spin]="isLoading" class="w-4 h-4"></lucide-icon> Refresh
+      <button
+        (click)="handleRefresh()"
+        class="flex items-center gap-2 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-[12px] transition-all whitespace-nowrap"
+      >
+        <lucide-icon
+          name="refresh-cw"
+          [class.animate-spin]="isLoading"
+          class="w-4 h-4"
+        ></lucide-icon>
+        Refresh
       </button>
 
       <div class="w-px h-6 bg-slate-200 mx-1"></div>
 
       <div class="relative" #columnMenuContainer>
-        <button (click)="isColumnMenuOpen = !isColumnMenuOpen"
-                class="px-3 py-2 flex items-center gap-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm focus:outline-none">
+        <button
+          (click)="isColumnMenuOpen = !isColumnMenuOpen"
+          class="px-3 py-2 flex items-center gap-2 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-all shadow-sm focus:outline-none"
+        >
           <lucide-icon name="sliders-horizontal" class="w-4 h-4 text-slate-600"></lucide-icon>
-          <span class="bg-slate-100 text-slate-600 rounded-md px-1.5 py-0.5 text-[11px] font-bold tracking-wide">{{ visibleColumns.length }}/{{ columns.length }}</span>
+          <span
+            class="bg-slate-100 text-slate-600 rounded-md px-1.5 py-0.5 text-[11px] font-bold tracking-wide"
+            >{{ visibleColumns.length }}/{{ columns.length }}</span
+          >
         </button>
 
-        <div *ngIf="isColumnMenuOpen" class="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-[100] py-2">
-                <button (click)="autoSizeColumnsContentBased()"
-                    class="w-full flex items-center justify-start gap-3 px-3 py-2 hover:bg-slate-50 transition-colors text-sm text-slate-700 font-medium cursor-pointer border-b border-slate-100">
-              <lucide-icon name="sliders-horizontal" class="w-4 h-4 text-slate-400"></lucide-icon>
-              <span class="truncate">Auto size all columns</span>
-            </button>
-            <label *ngFor="let col of toggleableColumns" class="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer text-sm text-slate-700 min-w-0">
-              <input type="checkbox"
-                     [checked]="!col.hidden"
-                     (change)="toggleColumn(col)"
-                     class="w-4.5 h-4.5 text-blue-600 bg-white border-slate-300 rounded-[4px] focus:ring-blue-500 accent-blue-600">
-              <span class="flex items-center min-w-0">
-                <lucide-icon *ngIf="col.icon" [name]="col.icon" class="w-4 h-4 text-slate-400 mr-2"></lucide-icon>
-                <span class="flex flex-col min-w-0">
-                  <span class="text-sm font-medium text-slate-700 truncate">{{ col.title || col.field }}</span>
-                  <span *ngIf="shouldShowColumnField(col)" class="text-[11px] font-medium text-slate-400 mt-0.5 truncate">{{ col.field }}</span>
-                </span>
+        <div
+          *ngIf="isColumnMenuOpen"
+          class="absolute right-0 top-full mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-[100] py-2"
+        >
+          <button
+            (click)="autoSizeColumnsContentBased()"
+            class="w-full flex items-center justify-start gap-3 px-3 py-2 hover:bg-slate-50 transition-colors text-sm text-slate-700 font-medium cursor-pointer border-b border-slate-100"
+          >
+            <lucide-icon name="sliders-horizontal" class="w-4 h-4 text-slate-400"></lucide-icon>
+            <span class="truncate">Auto size all columns</span>
+          </button>
+          <label
+            *ngFor="let col of toggleableColumns"
+            class="flex items-center gap-3 px-3 py-2 hover:bg-slate-50 cursor-pointer text-sm text-slate-700 min-w-0"
+          >
+            <input
+              type="checkbox"
+              [checked]="!col.hidden"
+              (change)="toggleColumn(col)"
+              class="w-4.5 h-4.5 text-blue-600 bg-white border-slate-300 rounded-[4px] focus:ring-blue-500 accent-blue-600"
+            />
+            <span class="flex items-center min-w-0">
+              <lucide-icon
+                *ngIf="col.icon"
+                [name]="col.icon"
+                class="w-4 h-4 text-slate-400 mr-2"
+              ></lucide-icon>
+              <span class="flex flex-col min-w-0">
+                <span class="text-sm font-medium text-slate-700 truncate">{{
+                  col.title || col.field
+                }}</span>
+                <span
+                  *ngIf="shouldShowColumnField(col)"
+                  class="text-[11px] font-medium text-slate-400 mt-0.5 truncate"
+                  >{{ col.field }}</span
+                >
               </span>
-            </label>
-          </div>
+            </span>
+          </label>
+        </div>
       </div>
     </div>
   </div>
 
   <ng-template #paginationTemplate>
-    <app-grid-footer *ngIf="pagination$ | async as pg"
-                     [pagination]="pg"
-                     (pageChange)="gridDataService.goToPage($event)"
-                     (pageSizeChange)="onPageSizeChange($event)">
+    <app-grid-footer
+      *ngIf="pagination$ | async as pg"
+      [pagination]="pg"
+      (pageChange)="gridDataService.goToPage($event)"
+      (pageSizeChange)="onPageSizeChange($event)"
+    >
     </app-grid-footer>
   </ng-template>
 
-  <div *ngIf="pagerPosition === 'top' || pagerPosition === 'both'" class="border-b border-slate-200">
+  <div
+    *ngIf="pagerPosition === 'top' || pagerPosition === 'both'"
+    class="border-b border-slate-200"
+  >
     <ng-container *ngTemplateOutlet="paginationTemplate"></ng-container>
   </div>
 
-    <div #gridScrollContainer
-      class="min-h-0 flex-1 w-full overflow-auto custom-scrollbar border border-slate-200 rounded-2xl"
-      [class.fit-viewport-scroll]="isFitViewportMode"
-      style="overflow-x: auto !important; display: block !important;">
-    <app-grid-header [columns]="visibleColumns"
-                     [fitViewportMode]="isFitViewportMode"
-                     [style.display]="'contents'"
-                     [showFilters]="showFilters"
-                     [filterResetKey]="filterResetKey"
-                     (sortChange)="gridDataService.applySorts($event)"
-                     (filterChange)="gridDataService.updateFilter($event)"
-                     (toggleAll)="gridDataService.toggleAllSelection($event)">
+  <div
+    #gridScrollContainer
+    class="min-h-0 flex-1 w-full overflow-auto custom-scrollbar border border-slate-200 rounded-2xl"
+    [class.fit-viewport-scroll]="isFitViewportMode"
+    style="overflow-x: auto !important; display: block !important"
+  >
+    <app-grid-header
+      [columns]="visibleColumns"
+      [fitViewportMode]="isFitViewportMode"
+      [style.display]="'contents'"
+      [showFilters]="showFilters"
+      [filterResetKey]="filterResetKey"
+      [reorderable]="reorderable()"
+      (sortChange)="gridDataService.applySorts($event)"
+      (filterChange)="gridDataService.updateFilter($event)"
+      (toggleAll)="gridDataService.toggleAllSelection($event)"
+      (columnDrop)="drop($event)"
+    >
     </app-grid-header>
 
-    <app-grid-body [columns]="visibleColumns"
-                   [fitViewportMode]="isFitViewportMode"
-                   [style.display]="'contents'"
-                   [data$]="pagedData$"
-                   [editSettings]="editSettings"
-                   (action)="actionTriggered.emit($event)"
-                   (saveChanges)="saveChanges.emit($event)"
-                   (inlineSave)="inlineSave.emit($event)">
+    <app-grid-body
+      [columns]="visibleColumns"
+      [fitViewportMode]="isFitViewportMode"
+      [style.display]="'contents'"
+      [data$]="pagedData$"
+      [editSettings]="editSettings"
+      (action)="actionTriggered.emit($event)"
+      (saveChanges)="saveChanges.emit($event)"
+      (inlineSave)="inlineSave.emit($event)"
+    >
     </app-grid-body>
   </div>
 
-  <div *ngIf="pagerPosition === 'bottom' || pagerPosition === 'both'" class="border-t border-slate-200">
+  <div
+    *ngIf="pagerPosition === 'bottom' || pagerPosition === 'both'"
+    class="border-t border-slate-200"
+  >
     <ng-container *ngTemplateOutlet="paginationTemplate"></ng-container>
   </div>
-
 </div>

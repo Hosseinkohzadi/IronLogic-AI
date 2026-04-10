@@ -1,82 +1,129 @@
 <div>
-  <div class="flex flex-nowrap items-center justify-start h-14 py-3 bg-slate-50/50 border-b border-slate-200 px-2 overflow-visible"
-       [class.min-w-full]="!fitViewportMode"
-       [class.w-max]="!fitViewportMode"
-       [style.width]="fitViewportMode ? '100%' : null"
-       [style.max-width]="fitViewportMode ? '100%' : null"
-       style="display: flex; flex-wrap: nowrap;">
-            <div *ngFor="let col of visibleColumns; let i = index"
-              class="header-cell flex h-full items-center px-4 overflow-visible transition-[width] duration-300 ease-out"
-             [attr.data-field]="col.field"
-         [style.width]="fitViewportMode ? (col.width || 'auto') : (col.width || '200px')"
-         [style.max-width]="fitViewportMode ? (col.width || 'auto') : null"
-         [style.flex]="fitViewportMode ? '1 1 auto' : null"
-         [style.position]="col.locked ? 'sticky' : 'relative'"
-         [style.left]="col.locked ? getLockedOffset(col.field) : 'auto'"
-         [style.z-index]="col.locked ? '50' : '1'"
-         [style.background-color]="col.locked ? '#f8fafc' : 'transparent'"
-          [class.sticky-column]="!!col.locked"
-         [class.border-r-2]="!!col.locked && isLastLocked(col.field)"
-         [class.border-slate-200]="!!col.locked && isLastLocked(col.field)"
-           [ngClass]="{
-             'justify-center': ['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || ''),
-             'justify-start': !['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || '') && col.type !== 'action',
-             'justify-end pr-6': col.type === 'action'
-           }">
-
+  <div
+    class="flex flex-nowrap items-center justify-start h-14 py-3 bg-slate-50/50 border-b border-slate-200 px-2 overflow-visible"
+    cdkDropList
+    cdkDropListOrientation="horizontal"
+    (cdkDropListDropped)="onColumnDrop($event)"
+    [class.min-w-full]="!fitViewportMode"
+    [class.w-max]="!fitViewportMode"
+    [style.width]="fitViewportMode ? '100%' : null"
+    [style.max-width]="fitViewportMode ? '100%' : null"
+    style="display: flex; flex-wrap: nowrap"
+  >
+    <div
+      *ngFor="let col of visibleColumns; let i = index"
+      cdkDrag
+      [cdkDragDisabled]="
+        !reorderable || col.type === 'action' || col.type === 'selection' || !!col.locked
+      "
+      class="header-cell flex h-full items-center px-4 overflow-visible transition-[width] duration-300 ease-out"
+      [attr.data-field]="col.field"
+      [style.width]="fitViewportMode ? col.width || 'auto' : col.width || '200px'"
+      [style.max-width]="fitViewportMode ? col.width || 'auto' : null"
+      [style.flex]="fitViewportMode ? '1 1 auto' : null"
+      [style.position]="col.locked ? 'sticky' : 'relative'"
+      [style.left]="col.locked ? getLockedOffset(col.field) : 'auto'"
+      [style.z-index]="col.locked ? '50' : '1'"
+      [style.background-color]="col.locked ? '#f8fafc' : 'transparent'"
+      [class.sticky-column]="!!col.locked"
+      [class.border-r-2]="!!col.locked && isLastLocked(col.field)"
+      [class.border-slate-200]="!!col.locked && isLastLocked(col.field)"
+      [ngClass]="{
+        'justify-center': ['badge', 'tier', 'number', 'status', 'selection'].includes(
+          col.type || ''
+        ),
+        'justify-start':
+          !['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || '') &&
+          col.type !== 'action',
+        'justify-end pr-6': col.type === 'action',
+      }"
+    >
       <ng-container *ngIf="col.type === 'selection'">
-        <input type="checkbox" (change)="onToggleAll($event)" class="w-4 h-4 rounded border-slate-300 text-black focus:ring-black cursor-pointer">
+        <input
+          type="checkbox"
+          (change)="onToggleAll($event)"
+          class="w-4 h-4 rounded border-slate-300 text-black focus:ring-black cursor-pointer"
+        />
       </ng-container>
 
-       <div *ngIf="col.type !== 'selection'"
-         class="flex items-center w-full h-full group select-none cursor-pointer"
-         [class.justify-center]="['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || '')"
-         [class.justify-between]="!['badge', 'tier', 'number', 'status', 'selection'].includes(col.type || '')"
-         (click)="handleSort(col, $event)">
-        <span class="text-[11px] font-bold text-slate-500 uppercase tracking-[0.15em]">{{ col.title }}</span>
+      <div
+        *ngIf="col.type !== 'selection'"
+        class="flex items-center justify-between w-full h-full select-none relative"
+      >
+        <!-- Drag Handle + Sort: the ONLY grab-able region -->
+        <div
+          cdkDragHandle
+          class="flex items-center flex-1 h-full min-w-0 cursor-move"
+          [class.justify-center]="['badge', 'tier', 'number', 'status'].includes(col.type || '')"
+          (click)="handleSort(col, $event)"
+        >
+          <span class="text-[11px] font-bold text-slate-500 uppercase tracking-[0.15em] truncate">
+            {{ col.title }}
+          </span>
 
-        <div class="flex items-center gap-1.5">
-          <ng-container *ngIf="col.sortable">
-            <span *ngIf="getSortOrder(col.field) as sortOrder"
-                  class="text-[10px] font-bold text-blue-500">
-              {{ sortOrder === 'asc' ? '↑' : '↓' }}
-              <span *ngIf="hasMultiSort()">{{ getSortPriority(col.field) }}</span>
-            </span>
-            <svg *ngIf="!getSortOrder(col.field)"
-                 class="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500 transition-colors"
-                 viewBox="0 0 24 24"
-                 fill="none"
-                 stroke="currentColor"
-                 stroke-width="2.5">
-              <path d="M7 15l5 5 5-5M7 9l5-5 5 5"/>
-            </svg>
-          </ng-container>
-          <button *ngIf="showFilters && col.type !== 'action' && col.type !== 'image'"
-            (click)="$event.stopPropagation(); toggleFilterMenu(col)"
-            class="relative flex items-center p-1 hover:bg-slate-100 rounded transition-colors">
-            <lucide-icon name="filter"
-                   class="w-3.5 h-3.5"
-                   [class.text-blue-600]="isColumnFiltered(col.field)"
-                   [class.text-slate-400]="!isColumnFiltered(col.field)"></lucide-icon>
-            <span *ngIf="isColumnFiltered(col.field)"
-            class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white"></span>
+          <div class="ml-1.5 flex shrink-0">
+            <ng-container *ngIf="col.sortable">
+              <span
+                *ngIf="getSortOrder(col.field) as sortOrder"
+                class="text-[10px] font-bold text-blue-500"
+              >
+                {{ sortOrder === 'asc' ? '↑' : '↓' }}
+                <span *ngIf="hasMultiSort()">{{ getSortPriority(col.field) }}</span>
+              </span>
+              <svg
+                *ngIf="!getSortOrder(col.field)"
+                class="w-3.5 h-3.5 text-slate-300 group-hover:text-slate-500 transition-colors"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+              >
+                <path d="M7 15l5 5 5-5M7 9l5-5 5 5" />
+              </svg>
+            </ng-container>
+          </div>
+        </div>
+
+        <!-- Filter button: sibling to cdkDragHandle — mousedown stops CDK drag capture -->
+        <div class="flex items-center shrink-0" (mousedown)="$event.stopPropagation()">
+          <button
+            *ngIf="showFilters && col.type !== 'action' && col.type !== 'image'"
+            type="button"
+            (click)="toggleFilterMenu(col, $event)"
+            class="flex items-center p-1 hover:bg-slate-100 rounded transition-colors"
+          >
+            <lucide-icon
+              name="filter"
+              class="w-3.5 h-3.5"
+              [class.text-blue-600]="isColumnFiltered(col.field)"
+              [class.text-slate-400]="!isColumnFiltered(col.field)"
+            ></lucide-icon>
+            <span
+              *ngIf="isColumnFiltered(col.field)"
+              class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white"
+            ></span>
           </button>
         </div>
       </div>
 
-       <div *ngIf="activeFilterMenu() === col.field"
-         (click)="$event.stopPropagation()"
-         class="absolute top-full mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl z-[100] p-4 flex flex-col gap-3"
-         [ngClass]="isPopupAlignedRight(i) ? 'right-0' : 'left-0'">
-
+      <div
+        *ngIf="activeFilterMenu() === col.field"
+        (click)="$event.stopPropagation()"
+        class="absolute top-full mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl z-[100] p-4 flex flex-col gap-3"
+        [ngClass]="isPopupAlignedRight(i) ? 'right-0' : 'left-0'"
+      >
         <!-- CALENDAR TYPE: Date + Time Picker -->
         <ng-container *ngIf="isCalendarType(col.type)">
           <div class="flex flex-col gap-3">
-            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Show items with date/time that:</span>
+            <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider"
+              >Show items with date/time that:</span
+            >
 
-            <select [ngModel]="tempFilterOperator()"
-                    (ngModelChange)="tempFilterOperator.set($event)"
-                    class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-white shadow-sm outline-none focus:border-blue-500 transition-all duration-200">
+            <select
+              [ngModel]="tempFilterOperator()"
+              (ngModelChange)="tempFilterOperator.set($event)"
+              class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-white shadow-sm outline-none focus:border-blue-500 transition-all duration-200"
+            >
               <option value="equals">Is equal to</option>
               <option value="notEqual">Is not equal to</option>
               <option value="after">Is after</option>
@@ -89,19 +136,35 @@
 
             <div *ngIf="shouldShowCalendarInputs()" class="flex items-center gap-2">
               <div class="relative flex-1">
-                <input type="date"
-                       [ngModel]="tempDate()"
-                       (ngModelChange)="tempDate.set($event)"
-                       class="w-full h-10 pl-3 pr-10 text-xs border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/10 transition-all duration-200 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
-                <lucide-icon name="calendar" class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"></lucide-icon>
+                <input
+                  type="date"
+                  [ngModel]="tempDate()"
+                  (ngModelChange)="tempDate.set($event)"
+                  class="w-full h-10 pl-3 pr-10 text-xs border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/10 transition-all duration-200 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                />
+                <lucide-icon
+                  name="calendar"
+                  class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+                ></lucide-icon>
               </div>
 
               <div class="relative flex-1">
-                <input type="time"
-                       [ngModel]="tempTime()"
-                       (ngModelChange)="tempTime.set($event)"
-                       class="w-full h-10 pl-3 pr-10 text-xs border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/10 transition-all duration-200 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer">
-                <svg class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <input
+                  type="time"
+                  [ngModel]="tempTime()"
+                  (ngModelChange)="tempTime.set($event)"
+                  class="w-full h-10 pl-3 pr-10 text-xs border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/10 transition-all duration-200 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                />
+                <svg
+                  class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
                   <circle cx="12" cy="12" r="9"></circle>
                   <path d="M12 7v5l3 2"></path>
                 </svg>
@@ -112,36 +175,48 @@
 
         <!-- TEXT TYPES: Text Input with Search Icon -->
         <ng-container *ngIf="isTextType(col.type)">
-          <span class="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">Show items with value that:</span>
-          
-          <select [ngModel]="tempFilterOperator()"
-                  (ngModelChange)="tempFilterOperator.set($event)"
-                  class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200">
+          <span class="text-[11px] font-semibold text-slate-600 uppercase tracking-wider"
+            >Show items with value that:</span
+          >
+
+          <select
+            [ngModel]="tempFilterOperator()"
+            (ngModelChange)="tempFilterOperator.set($event)"
+            class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+          >
             <option value="contains">Contains</option>
             <option value="startsWith">Starts with</option>
             <option value="endsWith">Ends with</option>
             <option value="equals">Equals</option>
           </select>
 
-          <div class="flex items-center w-full border border-slate-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 transition-all duration-200">
+          <div
+            class="flex items-center w-full border border-slate-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 transition-all duration-200"
+          >
             <div class="p-2.5 border-r border-slate-100 bg-slate-50">
               <lucide-icon name="search" class="w-4 h-4 text-slate-400"></lucide-icon>
             </div>
-            <input type="text"
-                   [ngModel]="tempFilterValue()"
-                   (ngModelChange)="tempFilterValue.set($event)"
-                   [placeholder]="'Filter ' + col.title + '...'"
-                   class="flex-1 h-9 px-3 text-xs font-medium outline-none bg-white">
+            <input
+              type="text"
+              [ngModel]="tempFilterValue()"
+              (ngModelChange)="tempFilterValue.set($event)"
+              [placeholder]="'Filter ' + col.title + '...'"
+              class="flex-1 h-9 px-3 text-xs font-medium outline-none bg-white"
+            />
           </div>
         </ng-container>
 
         <!-- NUMERIC TYPES: Number Comparison -->
         <ng-container *ngIf="isNumericType(col.type)">
-          <span class="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">Filter by {{col.title}}:</span>
-          
-          <select [ngModel]="tempFilterOperator()"
-                  (ngModelChange)="tempFilterOperator.set($event)"
-                  class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200">
+          <span class="text-[11px] font-semibold text-slate-600 uppercase tracking-wider"
+            >Filter by {{ col.title }}:</span
+          >
+
+          <select
+            [ngModel]="tempFilterOperator()"
+            (ngModelChange)="tempFilterOperator.set($event)"
+            class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+          >
             <option value="eq">=</option>
             <option value="gt">&gt;</option>
             <option value="lt">&lt;</option>
@@ -149,34 +224,44 @@
           </select>
 
           <div *ngIf="tempFilterOperator() !== 'between'" class="relative">
-            <input type="number"
-                   [ngModel]="tempFilterValue()"
-                   (ngModelChange)="tempFilterValue.set($event)"
-                   placeholder="Enter value..."
-                   class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200">
+            <input
+              type="number"
+              [ngModel]="tempFilterValue()"
+              (ngModelChange)="tempFilterValue.set($event)"
+              placeholder="Enter value..."
+              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+            />
           </div>
 
           <div *ngIf="tempFilterOperator() === 'between'" class="grid grid-cols-2 gap-2">
-            <input type="number"
-                   [ngModel]="tempRangeStart()"
-                   (ngModelChange)="tempRangeStart.set($event)"
-                   placeholder="Min"
-                   class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200">
-            <input type="number"
-                   [ngModel]="tempRangeEnd()"
-                   (ngModelChange)="tempRangeEnd.set($event)"
-                   placeholder="Max"
-                   class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200">
+            <input
+              type="number"
+              [ngModel]="tempRangeStart()"
+              (ngModelChange)="tempRangeStart.set($event)"
+              placeholder="Min"
+              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+            />
+            <input
+              type="number"
+              [ngModel]="tempRangeEnd()"
+              (ngModelChange)="tempRangeEnd.set($event)"
+              placeholder="Max"
+              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+            />
           </div>
         </ng-container>
 
         <!-- SIMPLE DATE TYPE: Date Only -->
         <ng-container *ngIf="isDateType(col.type)">
-          <span class="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">Filter by {{col.title}}:</span>
-          
-          <select [ngModel]="tempFilterOperator()"
-                  (ngModelChange)="tempFilterOperator.set($event)"
-                  class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200">
+          <span class="text-[11px] font-semibold text-slate-600 uppercase tracking-wider"
+            >Filter by {{ col.title }}:</span
+          >
+
+          <select
+            [ngModel]="tempFilterOperator()"
+            (ngModelChange)="tempFilterOperator.set($event)"
+            class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+          >
             <option value="equals">Equals</option>
             <option value="before">Before</option>
             <option value="after">After</option>
@@ -184,38 +269,55 @@
           </select>
 
           <div *ngIf="tempFilterOperator() !== 'range'" class="relative">
-            <input type="date"
-                   [ngModel]="tempFilterValue()"
-                   (ngModelChange)="tempFilterValue.set($event)"
-                   class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200">
+            <input
+              type="date"
+              [ngModel]="tempFilterValue()"
+              (ngModelChange)="tempFilterValue.set($event)"
+              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+            />
           </div>
 
           <div *ngIf="tempFilterOperator() === 'range'" class="grid grid-cols-2 gap-2">
-            <input type="date"
-                   [ngModel]="tempRangeStart()"
-                   (ngModelChange)="tempRangeStart.set($event)"
-                   class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200">
-            <input type="date"
-                   [ngModel]="tempRangeEnd()"
-                   (ngModelChange)="tempRangeEnd.set($event)"
-                   class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200">
+            <input
+              type="date"
+              [ngModel]="tempRangeStart()"
+              (ngModelChange)="tempRangeStart.set($event)"
+              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+            />
+            <input
+              type="date"
+              [ngModel]="tempRangeEnd()"
+              (ngModelChange)="tempRangeEnd.set($event)"
+              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+            />
           </div>
         </ng-container>
 
         <!-- SELECTION TYPES: Checkbox List -->
         <ng-container *ngIf="isSelectionType(col.type)">
-          <span class="text-[11px] font-semibold text-slate-600 uppercase tracking-wider">Filter by {{col.title}}:</span>
-          
-          <div class="max-h-48 overflow-y-auto flex flex-col gap-1.5 border border-slate-100 rounded-lg bg-slate-50 p-2">
-            <div *ngFor="let option of getUniqueColumnValues(col.field)"
-                 class="flex items-center gap-2.5 p-2 hover:bg-white rounded cursor-pointer transition-colors duration-200"
-                 (click)="toggleOption(option)">
-              <input type="checkbox" 
-                     [checked]="tempSelectedOptions().includes(option)"
-                     class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer">
-              <span class="text-xs font-medium text-slate-700 flex-1">{{option}}</span>
+          <span class="text-[11px] font-semibold text-slate-600 uppercase tracking-wider"
+            >Filter by {{ col.title }}:</span
+          >
+
+          <div
+            class="max-h-48 overflow-y-auto flex flex-col gap-1.5 border border-slate-100 rounded-lg bg-slate-50 p-2"
+          >
+            <div
+              *ngFor="let option of getUniqueColumnValues(col.field)"
+              class="flex items-center gap-2.5 p-2 hover:bg-white rounded cursor-pointer transition-colors duration-200"
+              (click)="toggleOption(option)"
+            >
+              <input
+                type="checkbox"
+                [checked]="tempSelectedOptions().includes(option)"
+                class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer"
+              />
+              <span class="text-xs font-medium text-slate-700 flex-1">{{ option }}</span>
             </div>
-            <div *ngIf="getUniqueColumnValues(col.field).length === 0" class="text-xs text-slate-400 p-2 text-center">
+            <div
+              *ngIf="getUniqueColumnValues(col.field).length === 0"
+              class="text-xs text-slate-400 p-2 text-center"
+            >
               No options available
             </div>
           </div>
@@ -223,12 +325,16 @@
 
         <!-- Action Buttons -->
         <div class="flex items-center gap-2 pt-1">
-          <button (click)="applyFilter(col.field)"
-                  class="flex-1 h-9 bg-[#0275d8] text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all duration-200 active:scale-95">
+          <button
+            (click)="applyFilter(col.field)"
+            class="flex-1 h-9 bg-[#0275d8] text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all duration-200 active:scale-95"
+          >
             Filter
           </button>
-          <button (click)="clearFilter(col.field)"
-                  class="flex-1 h-9 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold border border-slate-200 hover:bg-slate-200 transition-all duration-200 active:scale-95">
+          <button
+            (click)="clearFilter(col.field)"
+            class="flex-1 h-9 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold border border-slate-200 hover:bg-slate-200 transition-all duration-200 active:scale-95"
+          >
             Clear
           </button>
         </div>

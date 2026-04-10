@@ -1,7 +1,11 @@
-import {ApplicationConfig, importProvidersFrom, provideZonelessChangeDetection} from '@angular/core';
-import {provideRouter} from '@angular/router';
-import {provideHttpClient} from '@angular/common/http';
-import {routes} from './app.routes';
+import {
+  ApplicationConfig,
+  importProvidersFrom,
+  provideZonelessChangeDetection,
+} from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient } from '@angular/common/http';
+import { routes } from './app.routes';
 
 import {
   Activity,
@@ -39,14 +43,15 @@ import {
   Trash2,
   TrendingUp,
   Users,
+  UserPlus,
   Zap,
   Weight,
   Wrench,
   X,
   AlertTriangle,
   MoreHorizontal,
-   FileSpreadsheet,
-        FileText
+  FileSpreadsheet,
+  FileText,
 } from 'lucide-angular';
 
 export const appConfig: ApplicationConfig = {
@@ -94,11 +99,12 @@ export const appConfig: ApplicationConfig = {
         Trash2,
         TrendingUp,
         Users,
+        UserPlus,
         Weight,
         Wrench,
         X,
         Zap,
-      })
-    )
-  ]
+      }),
+    ),
+  ],
 };

@@ -2,6 +2,28 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --finance-50: #eef4ff;
+  --finance-100: #dce8ff;
+  --finance-200: #bed2ff;
+  --finance-300: #9ab7ff;
+  --finance-400: #7396ff;
+  --finance-500: #556ef4;
+  --finance-600: #3f53d8;
+  --finance-700: #3342ad;
+  --finance-surface: #f7f9ff;
+
+  --ai-50: #f7f1ff;
+  --ai-100: #ead9ff;
+  --ai-200: #d7b8ff;
+  --ai-300: #bf91ff;
+  --ai-400: #a66bff;
+  --ai-500: #8b4ee8;
+  --ai-600: #7439c9;
+  --ai-700: #5c2da0;
+  --ai-surface: #fbf8ff;
+}
+
 body { @apply bg-slate-50 text-slate-900; }
 @layer components {
   .badge-active {

@@ -1,69 +1,265 @@
-<div class="space-y-6 animate-in">
-  <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-    <div>
-      <h2 class="text-xl font-black text-slate-800 uppercase tracking-tight">Exercise_Library</h2>
-      <p class="text-[10px] font-bold text-slate-400 mt-1 uppercase tracking-[0.2em]">Total_Entities: {{ api.totalExercises() }}</p>
-    </div>
-
-    <div class="relative w-full md:w-80">
-      <lucide-icon name="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></lucide-icon>
-      <input type="text"
-             [ngModel]="searchTerm()"
-             (ngModelChange)="searchTerm.set($event)"
-             placeholder="Query GUID or Name..."
-             class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-indigo-500 outline-none transition-all">
-    </div>
-  </div>
-
-  <div class="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm">
-    <table class="w-full text-left border-collapse">
-      <thead>
-      <tr class="bg-slate-50/80 border-b border-slate-100 text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">
-        <th class="px-6 py-4">Entity_Identity</th>
-        <th class="px-6 py-4">Muscle_Mapping</th>
-        <th class="px-6 py-4">Mechanics</th>
-        <th class="px-6 py-4 text-right">System_Actions</th>
-      </tr>
-      </thead>
-      <tbody class="divide-y divide-slate-50">
-      @for (ex of filteredExercises(); track ex.id) {
-      <tr class="hover:bg-slate-50/50 transition-colors group">
-        <td class="px-6 py-4">
-          <div class="font-black text-slate-700 text-sm uppercase tracking-tight">{{ ex.name }}</div>
-              <div class="text-[10px] font-mono text-slate-400 mt-0.5">GUID: {{ ex.id.substring(0, 8) }}...</div>
-            </td>
-            <td class="px-6 py-4">
-              <span [class]="ex.primaryMuscleId ? 'text-indigo-600 bg-indigo-50' : 'text-slate-400 bg-slate-50'"
-                    class="px-2 py-1 rounded text-[10px] font-bold uppercase border border-current/10">
-      {{ ex.primaryMuscleId ? 'Mapped' : 'Unmapped' }}
-      </span>
-    </td>
-    <td class="px-6 py-4">
-      <span class="px-2 py-1 rounded bg-slate-100 text-[10px] font-black text-slate-500 uppercase">
-      {{ ex.mechanics || 'N/A' }}
-      </span>
-    </td>
-    <td class="px-6 py-4 text-right">
-      <div class="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button class="p-2 hover:bg-indigo-50 rounded-lg text-indigo-600 transition-all">
-          <lucide-icon name="pencil" class="w-4 h-4"></lucide-icon>
-        </button>
-        <button (click)="onDelete(ex.id)" class="p-2 hover:bg-red-50 rounded-lg text-red-500 transition-all">
-          <lucide-icon name="trash-2" class="w-4 h-4"></lucide-icon>
-        </button>
+<div class="flex h-full min-h-0 flex-col gap-5 overflow-hidden">
+  <!-- ── Page Header ──────────────────────────────────────── -->
+  <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div>
+        <p class="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Admin / Coaching</p>
+        <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-900">Exercise Management</h1>
+        <p class="mt-1 text-sm text-slate-500">Manage exercise catalog with AI classification and coaching-ready metadata.</p>
       </div>
-    </td>
-  </tr>
+
+      <button
+        type="button"
+        (click)="openQuickAdd()"
+        class="quick-add-btn inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold text-white"
+      >
+        <lucide-icon name="pencil" class="h-4 w-4"></lucide-icon>
+        Quick Add Exercise
+      </button>
+    </div>
+
+    <!-- ── Standalone Filter Bar ───────────────────────── -->
+    <div class="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center">
+      <!-- Search -->
+      <div class="relative flex-1">
+        <lucide-icon name="search" class="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></lucide-icon>
+        <input
+          type="text"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onSearch($event)"
+          placeholder="Search by name, muscle, equipment..."
+          class="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 pl-10 pr-3 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+          aria-label="Search exercises"
+        />
+      </div>
+
+      <!-- Filter by Muscle -->
+      <div class="relative sm:w-52">
+        <lucide-icon name="filter" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></lucide-icon>
+        <select
+          [ngModel]="muscleFilter()"
+          (ngModelChange)="onMuscleFilter($event)"
+          class="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 py-2 pl-10 pr-8 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+          aria-label="Filter by primary muscle"
+        >
+          <option value="">All Muscles</option>
+          <option value="Chest">Chest</option>
+          <option value="Back">Back</option>
+          <option value="Legs">Legs</option>
+          <option value="Shoulders">Shoulders</option>
+          <option value="Core">Core</option>
+          <option value="Biceps">Biceps</option>
+          <option value="Triceps">Triceps</option>
+          <option value="Glutes">Glutes</option>
+        </select>
+        <lucide-icon name="chevron-down" class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></lucide-icon>
+      </div>
+
+      @if (muscleFilter() || searchTerm()) {
+        <button
+          type="button"
+          (click)="onSearch(''); onMuscleFilter('')"
+          class="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-500 hover:bg-slate-50"
+        >
+          <lucide-icon name="x" class="h-3.5 w-3.5"></lucide-icon>
+          Clear
+        </button>
       }
-      </tbody>
-    </table>
-
-    <div class="p-4 bg-slate-50/50 border-t border-slate-100 flex justify-between items-center">
-      <span class="text-[10px] font-bold text-slate-400 uppercase">Page_Ref: {{ currentPage() }}</span>
-      <div class="flex gap-2">
-        <button (click)="changePage(-1)" [disabled]="currentPage() === 1" class="px-4 py-2 rounded-lg border border-slate-200 bg-white font-bold text-[10px] disabled:opacity-30 hover:bg-slate-50 transition-all">PREV</button>
-        <button (click)="changePage(1)" [disabled]="filteredExercises().length < pageSize" class="px-4 py-2 rounded-lg bg-slate-900 text-white font-bold text-[10px] shadow-sm">NEXT</button>
-      </div>
     </div>
+  </section>
+
+  <div class="min-h-0 flex-1 overflow-hidden">
+    <app-grid
+      class="h-full"
+      [columns]="exerciseColumns"
+      [data]="filteredRows()"
+      [isLoading]="isLoading()"
+      [searchTerm]="searchTerm()"
+      [showExport]="true"
+      [showFilters]="true"
+      [showSearch]="false"
+      [pagerPosition]="'bottom'"
+      (refresh)="loadData()"
+      (actionTriggered)="handleGridAction($event)"
+    ></app-grid>
   </div>
+
+  @if (isQuickAddOpen()) {
+    <div class="fixed inset-0 z-40 bg-slate-900/20 backdrop-blur-[2px]" (click)="closeQuickAdd()"></div>
+
+    <section class="fixed right-0 top-0 z-50 h-screen w-full max-w-[440px] border-l border-slate-200 bg-gradient-to-b from-white to-slate-50 p-6 shadow-2xl">
+      <div class="flex h-full flex-col">
+        <div class="mb-5 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-black uppercase tracking-[0.14em] text-slate-400">Quick Add</p>
+            <h2 class="text-xl font-black text-slate-900">New Exercise</h2>
+          </div>
+          <button
+            type="button"
+            class="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+            (click)="closeQuickAdd()"
+            aria-label="Close quick add form"
+          >
+            <lucide-icon name="x" class="h-4 w-4"></lucide-icon>
+          </button>
+        </div>
+
+        <form class="flex min-h-0 flex-1 flex-col" (ngSubmit)="submitQuickAdd()">
+          <div class="form-scroll-area flex-1 min-h-0 space-y-4 overflow-y-auto pr-1">
+            <label class="block space-y-1">
+              <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Exercise Name</span>
+              <input
+                [ngModel]="quickAddForm().name"
+                (ngModelChange)="updateQuickAddField('name', $event)"
+                name="name"
+                required
+                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                placeholder="Incline Dumbbell Press"
+              />
+            </label>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label class="block space-y-1">
+                <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Target Muscle</span>
+                <select
+                  [ngModel]="quickAddForm().primaryMuscle"
+                  (ngModelChange)="updateQuickAddField('primaryMuscle', $event)"
+                  name="primaryMuscle"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                >
+                  <option value="Chest">Chest</option>
+                  <option value="Back">Back</option>
+                  <option value="Legs">Legs</option>
+                  <option value="Shoulders">Shoulders</option>
+                  <option value="Core">Core</option>
+                </select>
+              </label>
+
+              <label class="block space-y-1">
+                <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Equipment</span>
+                <select
+                  [ngModel]="quickAddForm().equipment"
+                  (ngModelChange)="updateQuickAddField('equipment', $event)"
+                  name="equipment"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                >
+                  <option value="Barbell">Barbell</option>
+                  <option value="Dumbbell">Dumbbell</option>
+                  <option value="Cable">Cable</option>
+                  <option value="Machine">Machine</option>
+                  <option value="Bodyweight">Bodyweight</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label class="block space-y-1">
+                <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Mechanics</span>
+                <select
+                  [ngModel]="quickAddForm().mechanics"
+                  (ngModelChange)="updateQuickAddField('mechanics', $event)"
+                  name="mechanics"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                >
+                  <option value="Compound">Compound</option>
+                  <option value="Isolation">Isolation</option>
+                </select>
+              </label>
+
+              <label class="block space-y-1">
+                <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Difficulty</span>
+                <select
+                  [ngModel]="quickAddForm().difficulty"
+                  (ngModelChange)="updateQuickAddField('difficulty', $event)"
+                  name="difficulty"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                >
+                  <option value="Beginner">Beginner</option>
+                  <option value="Intermediate">Intermediate</option>
+                  <option value="Advanced">Advanced</option>
+                </select>
+              </label>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label class="block space-y-1">
+                <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Logic Tag</span>
+                <select
+                  [ngModel]="quickAddForm().logicTag"
+                  (ngModelChange)="updateQuickAddField('logicTag', $event)"
+                  name="logicTag"
+                  class="w-full appearance-none rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100"
+                >
+                  <option value="CNS Intensive">CNS Intensive</option>
+                  <option value="Hypertrophy Focus">Hypertrophy Focus</option>
+                  <option value="Metabolic Stress">Metabolic Stress</option>
+                  <option value="Posterior Chain">Posterior Chain</option>
+                </select>
+              </label>
+
+              <label class="block space-y-1">
+                <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Video Link</span>
+                <input
+                  [ngModel]="quickAddForm().videoLink"
+                  (ngModelChange)="updateQuickAddField('videoLink', $event)"
+                  name="videoLink"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                  placeholder="https://youtube.com/..."
+                />
+              </label>
+            </div>
+
+            <label class="block space-y-1">
+              <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Instructions</span>
+              <textarea
+                [ngModel]="quickAddForm().instructions"
+                (ngModelChange)="updateQuickAddField('instructions', $event)"
+                name="instructions"
+                rows="4"
+                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                placeholder="Keep chest up, brace core, and control every eccentric rep."
+              ></textarea>
+            </label>
+
+            <label class="block space-y-1">
+              <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Demo Image or GIF URL</span>
+              <input
+                [ngModel]="quickAddForm().demoMediaUrl"
+                (ngModelChange)="updateQuickAddField('demoMediaUrl', $event)"
+                name="demoMediaUrl"
+                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                placeholder="https://..."
+              />
+            </label>
+
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <p class="text-[11px] font-semibold text-slate-500">Row preview placeholder</p>
+              <div class="mt-2 flex items-center gap-3">
+                <div class="flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-400">
+                  <lucide-icon name="eye" class="h-4 w-4"></lucide-icon>
+                </div>
+                <p class="text-xs text-slate-500">A thumbnail slot will appear in the grid even if no media URL is provided.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
+            <button
+              type="button"
+              (click)="closeQuickAdd()"
+              class="rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-xs font-bold text-violet-700 transition-colors hover:bg-violet-100"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="quick-add-btn rounded-xl px-4 py-2 text-xs font-bold text-white"
+            >
+              Save Exercise
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
+  }
 </div>

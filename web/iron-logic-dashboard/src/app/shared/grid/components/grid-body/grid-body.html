@@ -46,7 +46,7 @@
       </ng-container>
 
       <ng-container *ngIf="(!col.type || col.type === 'text') && !isCellInEditMode(row, col)">
-        <span class="text-[13px] text-slate-600 font-medium">{{ row[col.field] }}</span>
+        <span class="block w-full truncate text-[13px] text-slate-600 font-medium" [attr.title]="row[col.field]">{{ row[col.field] }}</span>
       </ng-container>
 
       <ng-container *ngIf="col.type === 'number' && !isCellInEditMode(row, col)">
@@ -96,11 +96,7 @@
 
       <ng-container *ngIf="col.type === 'badge'">
         <span class="inline-flex items-center justify-center text-center rounded-md px-3 py-1 text-[11px] font-medium"
-              [ngClass]="{
-                'bg-emerald-100 text-emerald-700': row[col.field] === 'Active',
-                'bg-amber-100 text-amber-700': row[col.field] === 'Review',
-                'bg-rose-100 text-rose-700': row[col.field] === 'Suspended'
-              }">
+              [class]="'inline-flex items-center justify-center text-center rounded-md px-3 py-1 text-[11px] font-medium ' + getBadgeClass(col, row)">
           {{ row[col.field] }}
         </span>
       </ng-container>
@@ -162,14 +158,10 @@
           </button>
 
           <button *ngIf="!isInlineEditingRow(row) && !(isBatchMode() && editSettings.allowEditing)"
-            (click)="onAction('edit', row, $event)"
+            (click)="onAction(getActionType(col), row, $event)"
                   class="p-1 text-slate-400 hover:text-slate-700 transition-colors"
-                  title="Edit">
-            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="5" cy="12" r="1.5"></circle>
-              <circle cx="12" cy="12" r="1.5"></circle>
-              <circle cx="19" cy="12" r="1.5"></circle>
-            </svg>
+                  [attr.title]="getActionTitle(col)">
+            <lucide-icon [name]="getActionIcon(col)" class="w-5 h-5"></lucide-icon>
           </button>
 
           <span *ngIf="isBatchMode() && editSettings.allowEditing" class="text-[10px] font-semibold text-slate-300">-</span>

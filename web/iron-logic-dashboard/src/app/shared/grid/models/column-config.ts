@@ -71,6 +71,14 @@ export interface ColumnConfig {
   width?: string;
   /** Cell renderer type (text, profile, image, badge, tier, email, calendar, action, selection, etc.) */
   type?: 'text' | 'flag' | 'action' | 'number' | 'date' | 'calendar' | 'badge' | 'image' | 'rate' | 'selection' | 'profile' | 'tier' | 'email' | 'progress' | 'boolean' | 'link' | 'currency' | 'tags';
+  /** Optional visual style preset for badge cells */
+  badgeStyle?: 'default' | 'mechanics' | 'aiTag' | 'financePlan' | 'financeStatus' | 'verified' | 'userTier' | 'userStatus' | 'difficulty';
+  /** Optional icon name for action button cells */
+  actionIcon?: string;
+  /** Optional event type emitted by action button cells */
+  actionType?: string;
+  /** Optional accessible title for action button cells */
+  actionLabel?: string;
   /** Whether column is sortable */
   sortable?: boolean;
   /** Current sort order */

@@ -1,0 +1,18 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.finance-kpi {
+  border-color: var(--finance-200);
+  background: linear-gradient(180deg, #ffffff 0%, var(--finance-surface) 100%);
+}
+
+.chart-shell {
+  background: linear-gradient(180deg, #ffffff 0%, var(--finance-50) 100%);
+}
+
+.finance-kpi,
+.chart-shell {
+  border-color: var(--finance-200);
+}

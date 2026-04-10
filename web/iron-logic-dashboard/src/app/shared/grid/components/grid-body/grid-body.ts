@@ -30,7 +30,7 @@ export class GridBodyComponent {
 
   @Input() data$!: Observable<any[]>;
   @Input() editSettings: GridEditSettings = { mode: 'None', allowEditing: false };
-  @Output() action = new EventEmitter<{ type: 'edit' | 'delete' | 'row-click', row: any }>();
+  @Output() action = new EventEmitter<{ type: string, row: any }>();
   @Output() saveChanges = new EventEmitter<any>();
   @Output() inlineSave = new EventEmitter<any>();
 
@@ -42,7 +42,7 @@ export class GridBodyComponent {
 
   constructor(private gridDataService: GridDataService) {}
 
-  onAction(type: 'edit' | 'delete', row: any, event?: Event) {
+  onAction(type: string, row: any, event?: Event) {
     if(event) event.stopPropagation(); // جلوگیری از تداخل کلیک دکمه با کلیک سطر
 
     if (this.editSettings.allowEditing && type === 'edit') {
@@ -67,6 +67,78 @@ export class GridBodyComponent {
   // متد جدید برای کلیک روی کل سطر (باز کردن Drawer)
   onRowClick(row: any) {
     this.action.emit({ type: 'row-click', row });
+  }
+
+  getBadgeClass(col: ColumnConfig, row: any): string {
+    const value = String(row[col.field] ?? '');
+
+    if (col.badgeStyle === 'mechanics') {
+      return value === 'Compound'
+        ? 'badge-mechanics-compound'
+        : 'badge-mechanics-isolation';
+    }
+
+    if (col.badgeStyle === 'aiTag') {
+      return 'bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200 rounded-full';
+    }
+
+    if (col.badgeStyle === 'financePlan') {
+      return value === 'Gold'
+        ? 'badge-finance-plan-gold'
+        : 'badge-finance-plan-silver';
+    }
+
+    if (col.badgeStyle === 'financeStatus') {
+      return value === 'Paid'
+        ? 'badge-finance-status-paid'
+        : 'badge-finance-status-pending';
+    }
+
+    if (col.badgeStyle === 'verified') {
+      return 'badge-verified';
+    }
+
+    if (col.badgeStyle === 'userTier') {
+      return value === 'Elite'
+        ? 'badge-difficulty-advanced'
+        : value === 'Pro'
+          ? 'badge-difficulty-intermediate'
+          : 'badge-difficulty-beginner';
+    }
+
+    if (col.badgeStyle === 'difficulty') {
+      return value === 'Advanced'
+        ? 'badge-difficulty-advanced'
+        : value === 'Intermediate'
+          ? 'badge-difficulty-intermediate'
+          : 'badge-difficulty-beginner';
+    }
+
+    if (col.badgeStyle === 'userStatus') {
+      return value === 'Active'
+        ? 'badge-user-status-active'
+        : value === 'Review'
+          ? 'badge-user-status-review'
+          : 'badge-user-status-banned';
+    }
+
+    return value === 'Active'
+      ? 'bg-emerald-100 text-emerald-700'
+      : value === 'Review'
+        ? 'bg-amber-100 text-amber-700'
+        : 'bg-rose-100 text-rose-700';
+  }
+
+  getActionType(col: ColumnConfig): string {
+    return col.actionType ?? 'edit';
+  }
+
+  getActionTitle(col: ColumnConfig): string {
+    return col.actionLabel ?? 'Edit';
+  }
+
+  getActionIcon(col: ColumnConfig): string {
+    return col.actionIcon ?? 'more-horizontal';
   }
 
   getLockedOffset(field: string): string {

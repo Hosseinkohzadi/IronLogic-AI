@@ -5,6 +5,7 @@ import { catchError, startWith, switchMap } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LucideAngularModule } from 'lucide-angular';
 import { IronLogicApiService } from '@core/services/iron-logic-api.service';
+import { KpiCardComponent } from '@shared/kpi-card/kpi-card.component';
 
 type KpiTone = 'indigo' | 'emerald' | 'amber' | 'violet';
 type FeedType = 'pr' | 'completed' | 'upload' | 'generic';
@@ -17,6 +18,7 @@ interface CoachKpiCard {
   icon: string;
   subtitle: string;
   hasSparkline?: boolean;
+  hasRevenueCTA?: boolean;
 }
 
 interface ActivityFeedItem {
@@ -37,7 +39,7 @@ interface ExpiringAthlete {
 
 @Component({
   selector: 'app-admin-dashboard-home',
-  imports: [CommonModule, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule, KpiCardComponent],
   templateUrl: './admin-dashboard-home.component.html',
   styleUrl: './admin-dashboard-home.component.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -48,6 +50,24 @@ export class AdminDashboardHomeComponent implements OnInit {
 
   serverStatus = signal<'OPERATIONAL' | 'DOWN' | 'CHECKING'>('CHECKING');
   remindedSet = signal<Set<number>>(new Set());
+  isRevenueDetailOpen = signal(false);
+
+  readonly revenueDetail = {
+    current: '$3,200',
+    pending: '$1,100',
+    potential: '$4,300',
+  };
+
+  readonly weeklyExpiring = [
+    { id: 1, name: 'Reza T.', plan: 'Elite Athlete', daysLeft: 1, amount: 280, initials: 'RT' },
+    { id: 2, name: 'Dariush K.', plan: 'Premium Coaching', daysLeft: 2, amount: 200, initials: 'DK' },
+    { id: 3, name: 'Niloofar M.', plan: 'Strength Program', daysLeft: 4, amount: 180, initials: 'NM' },
+    { id: 4, name: 'Babak S.', plan: 'Elite Athlete', daysLeft: 5, amount: 280, initials: 'BS' },
+    { id: 5, name: 'Arman F.', plan: 'Basic Coaching', daysLeft: 7, amount: 160, initials: 'AF' },
+  ];
+
+  openRevenueDetail(): void { this.isRevenueDetailOpen.set(true); }
+  closeRevenueDetail(): void { this.isRevenueDetailOpen.set(false); }
 
   readonly kpiCards: CoachKpiCard[] = [
     {
@@ -79,6 +99,7 @@ export class AdminDashboardHomeComponent implements OnInit {
       icon: 'trending-up',
       subtitle: 'vs $2,940 last month',
       hasSparkline: true,
+      hasRevenueCTA: true,
     },
   ];
 

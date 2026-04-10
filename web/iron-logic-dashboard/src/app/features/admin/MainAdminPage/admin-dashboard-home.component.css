@@ -1,6 +1,7 @@
 :host {
   display: block;
   background-color: #ffffff;
+  height: 100%;
 }
 
 :host ::ng-deep mark {

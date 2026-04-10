@@ -1,1 +1,21 @@
 /* KPI Card Component Styles */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 300ms ease-out forwards;
+}
+
+/* Smooth scale and opacity transition for tooltips */
+.group\/info:hover .transition-all {
+  transform-origin: top right;
+}

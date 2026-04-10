@@ -1,17 +1,16 @@
 <div class="flex w-full flex-col gap-6 bg-slate-50 p-6">
-
-  <div
-    [class.pointer-events-none]="isUserFormOpen() || isDrawerOpen()"
-    class="flex flex-col gap-6"
-  >
-
+  <div [class.pointer-events-none]="isUserFormOpen() || isDrawerOpen()" class="flex flex-col gap-6">
     <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <p class="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Admin / Coaching</p>
-            <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-900">Users Directory</h1>
-            <p class="mt-1 text-sm text-slate-500">Search, review, and take action on account records</p>
-          </div>
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p class="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">
+            Admin / Coaching
+          </p>
+          <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-900">Users Directory</h1>
+          <p class="mt-1 text-sm text-slate-500">
+            Search, review, and take action on account records
+          </p>
+        </div>
 
         <button
           type="button"
@@ -23,43 +22,69 @@
         </button>
       </div>
 
-        <div class="mt-4 grid h-fit grid-cols-1 gap-4 md:grid-cols-4">
+      <div class="mt-4 grid h-fit grid-cols-1 gap-4 md:grid-cols-4">
         @for (card of cards; track card.label) {
           <app-kpi-card
-           themeColor="indigo"
+            themeColor="indigo"
             [label]="card.label"
             [value]="card.val"
             [trend]="card.trend"
             [context]="card.context"
             [mainIcon]="card.icon"
             [showInfoIcon]="true"
-            [infoText]="card.info">
+            [infoText]="card.info"
+          >
           </app-kpi-card>
         }
       </div>
 
-        @if (selectedUsers().length > 0) {
-        <div class="mt-4 flex items-center justify-between rounded-[16px] border border-slate-200 bg-white p-4 shadow-sm animate-in transition-all">
-        <div>
-          <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Selection</p>
-          <p class="text-sm font-bold text-slate-800">{{ selectedUsers().length }} account selected</p>
+      @if (selectedUsers().length > 0) {
+        <div
+          class="mt-4 flex items-center justify-between rounded-[16px] border border-slate-200 bg-white p-4 shadow-sm animate-in transition-all"
+        >
+          <div>
+            <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">
+              Selection
+            </p>
+            <p class="text-sm font-bold text-slate-800">
+              {{ selectedUsers().length }} account selected
+            </p>
           </div>
           <div class="flex gap-2">
-            <button class="px-5 py-2.5 bg-black text-white text-[11px] font-bold rounded-xl hover:bg-slate-800 transition-all">Suspend</button>
-            <button class="px-5 py-2.5 bg-slate-100 text-slate-700 text-[11px] font-bold rounded-xl hover:bg-slate-200 transition-all">Reset Password</button>
-            <button class="px-5 py-2.5 bg-slate-100 text-slate-700 text-[11px] font-bold rounded-xl hover:bg-slate-200 transition-all">Assign Role</button>
+            <button
+              class="px-5 py-2.5 bg-black text-white text-[11px] font-bold rounded-xl hover:bg-slate-800 transition-all"
+            >
+              Suspend
+            </button>
+            <button
+              class="px-5 py-2.5 bg-slate-100 text-slate-700 text-[11px] font-bold rounded-xl hover:bg-slate-200 transition-all"
+            >
+              Reset Password
+            </button>
+            <button
+              class="px-5 py-2.5 bg-slate-100 text-slate-700 text-[11px] font-bold rounded-xl hover:bg-slate-200 transition-all"
+            >
+              Assign Role
+            </button>
           </div>
         </div>
-        }
-      </section>
+      }
+    </section>
 
     <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
       <div class="flex items-center justify-between border-b border-slate-100 px-5 py-3">
         <div>
-          <p class="text-[11px] font-black uppercase tracking-[0.14em] text-indigo-600">User Registry</p>
-          <h2 class="mt-0.5 text-sm font-black uppercase tracking-[0.12em] text-slate-700">Active Accounts</h2>
+          <p class="text-[11px] font-black uppercase tracking-[0.14em] text-indigo-600">
+            User Registry
+          </p>
+          <h2 class="mt-0.5 text-sm font-black uppercase tracking-[0.12em] text-slate-700">
+            Active Accounts
+          </h2>
         </div>
-        <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-600">{{ filteredUsers().length }} users</span>
+        <span
+          class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-600"
+          >{{ filteredUsers().length }} users</span
+        >
       </div>
       <div class="p-4 grid-shell">
         <app-grid
@@ -74,23 +99,34 @@
           (search)="onSearch($event)"
           (refresh)="loadData()"
           (actionTriggered)="handleGridAction($event)"
-          (selectionChanged)="selectedUsers.set($event)">
+          (selectionChanged)="selectedUsers.set($event)"
+          [reorderable]="true"
+        >
         </app-grid>
       </div>
     </div>
   </div>
 
   @if (isDrawerOpen() || isUserFormOpen()) {
-  <div (click)="closeOverlays()" class="fixed inset-0 z-40 bg-slate-900/5 backdrop-blur-[2px] transition-opacity"></div>
+    <div
+      (click)="closeOverlays()"
+      class="fixed inset-0 z-40 bg-slate-900/5 backdrop-blur-[2px] transition-opacity"
+    ></div>
   }
 
   @if (isUserFormOpen()) {
-    <section class="fixed right-0 top-0 z-[100] h-full w-full max-w-[440px] border-l border-slate-200 bg-gradient-to-b from-white to-slate-50 p-6 shadow-2xl">
+    <section
+      class="fixed right-0 top-0 z-[100] h-full w-full max-w-[440px] border-l border-slate-200 bg-gradient-to-b from-white to-slate-50 p-6 shadow-2xl"
+    >
       <div class="flex h-full flex-col">
         <div class="mb-5 flex items-center justify-between">
           <div>
-            <p class="text-[11px] font-black uppercase tracking-[0.14em] text-slate-400">User Directory</p>
-            <h2 class="text-xl font-black text-slate-900">{{ editingUserId() ? 'Edit User' : 'New User' }}</h2>
+            <p class="text-[11px] font-black uppercase tracking-[0.14em] text-slate-400">
+              User Directory
+            </p>
+            <h2 class="text-xl font-black text-slate-900">
+              {{ editingUserId() ? 'Edit User' : 'New User' }}
+            </h2>
           </div>
           <button
             type="button"
@@ -105,7 +141,9 @@
         <form class="flex min-h-0 flex-1 flex-col" (ngSubmit)="submitUserForm()">
           <div class="form-scroll-area flex-1 min-h-0 space-y-4 overflow-y-auto pr-1">
             <label class="block space-y-1">
-              <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Full Name</span>
+              <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500"
+                >Full Name</span
+              >
               <input
                 [ngModel]="userForm().fullName"
                 (ngModelChange)="updateUserFormField('fullName', $event)"
@@ -117,7 +155,9 @@
             </label>
 
             <label class="block space-y-1">
-              <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Email</span>
+              <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500"
+                >Email</span
+              >
               <input
                 type="email"
                 [ngModel]="userForm().email"
@@ -131,7 +171,9 @@
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <label class="block space-y-1">
-                <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Tier</span>
+                <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500"
+                  >Tier</span
+                >
                 <select
                   [ngModel]="userForm().tier"
                   (ngModelChange)="updateUserFormField('tier', $event)"
@@ -145,7 +187,9 @@
               </label>
 
               <label class="block space-y-1">
-                <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Initial Status</span>
+                <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500"
+                  >Initial Status</span
+                >
                 <select
                   [ngModel]="userForm().status"
                   (ngModelChange)="updateUserFormField('status', $event)"
@@ -180,28 +224,45 @@
   }
 
   @if (isDrawerOpen() && activeUserDetails()) {
-  <div class="fixed top-0 right-0 h-full w-full max-w-[420px] z-50 animate-in-drawer p-4">
-    <div class="h-full bg-slate-50/95 backdrop-blur-2xl rounded-[2.5rem] border border-white shadow-2xl p-8 overflow-y-auto flex flex-col">
-
-      <div class="flex justify-between items-start mb-8 shrink-0">
-        <div class="flex items-center gap-4">
-          <div class="w-16 h-16 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center">
-            <img *ngIf="activeUserDetails()?.profileImageUrl"
-                 [src]="activeUserDetails()?.profileImageUrl"
-                 alt=""
-                 class="w-full h-full object-cover">
-            <span *ngIf="!activeUserDetails()?.profileImageUrl" class="text-[20px] font-black text-slate-600">{{ (activeUserDetails()?.name || '?')[0] | uppercase }}</span>
+    <div class="fixed top-0 right-0 h-full w-full max-w-[420px] z-50 animate-in-drawer p-4">
+      <div
+        class="h-full bg-slate-50/95 backdrop-blur-2xl rounded-[2.5rem] border border-white shadow-2xl p-8 overflow-y-auto flex flex-col"
+      >
+        <div class="flex justify-between items-start mb-8 shrink-0">
+          <div class="flex items-center gap-4">
+            <div
+              class="w-16 h-16 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center"
+            >
+              <img
+                *ngIf="activeUserDetails()?.profileImageUrl"
+                [src]="activeUserDetails()?.profileImageUrl"
+                alt=""
+                class="w-full h-full object-cover"
+              />
+              <span
+                *ngIf="!activeUserDetails()?.profileImageUrl"
+                class="text-[20px] font-black text-slate-600"
+                >{{ (activeUserDetails()?.name || '?')[0] | uppercase }}</span
+              >
+            </div>
+            <div>
+              <h2 class="text-2xl font-black text-slate-900 tracking-tight">
+                {{ activeUserDetails()?.name }}
+              </h2>
+              <p class="text-xs font-medium text-slate-500 mt-1">
+                {{ activeUserDetails()?.tier }} account overview and recent linked activity
+              </p>
+            </div>
           </div>
-          <div>
-            <h2 class="text-2xl font-black text-slate-900 tracking-tight">{{ activeUserDetails()?.name }}</h2>
-            <p class="text-xs font-medium text-slate-500 mt-1">{{ activeUserDetails()?.tier }} account overview and recent linked activity</p>
-          </div>
+          <button
+            (click)="closeDrawer()"
+            class="p-2 hover:bg-slate-200/50 rounded-xl transition-all font-bold text-slate-600"
+          >
+            ✕
+          </button>
         </div>
-        <button (click)="closeDrawer()" class="p-2 hover:bg-slate-200/50 rounded-xl transition-all font-bold text-slate-600">✕</button>
-      </div>
 
         <div class="space-y-4 flex-1 pb-10">
-
           <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
             <h3 class="text-sm font-black text-slate-900 mb-3.5">Grid Row Data</h3>
             <div class="space-y-3 text-xs font-medium text-slate-600">
@@ -215,7 +276,9 @@
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-slate-400">Status</span>
-                <span class="font-bold text-slate-800">{{ activeUserDetails()?.status || '-' }}</span>
+                <span class="font-bold text-slate-800">{{
+                  activeUserDetails()?.status || '-'
+                }}</span>
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-slate-400">Tier</span>
@@ -223,19 +286,29 @@
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-slate-400">Sessions</span>
-                <span class="font-bold text-slate-800">{{ activeUserDetails()?.sessions ?? 0 }}</span>
+                <span class="font-bold text-slate-800">{{
+                  activeUserDetails()?.sessions ?? 0
+                }}</span>
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-slate-400">Weights</span>
-                <span class="font-bold text-slate-800">{{ activeUserDetails()?.dailyWeights ?? 0 }}</span>
+                <span class="font-bold text-slate-800">{{
+                  activeUserDetails()?.dailyWeights ?? 0
+                }}</span>
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-slate-400">Email</span>
-                <span class="font-bold text-slate-800">{{ activeUserDetails()?.email || '-' }}</span>
+                <span class="font-bold text-slate-800">{{
+                  activeUserDetails()?.email || '-'
+                }}</span>
               </div>
               <div class="flex justify-between items-center pt-2 border-t border-slate-50">
                 <span class="text-slate-400">Last Login</span>
-                <span class="font-bold text-slate-800">{{ activeUserDetails()?.lastLogin ? (activeUserDetails()?.lastLogin | date:'medium') : '-' }}</span>
+                <span class="font-bold text-slate-800">{{
+                  activeUserDetails()?.lastLogin
+                    ? (activeUserDetails()?.lastLogin | date: 'medium')
+                    : '-'
+                }}</span>
               </div>
             </div>
           </div>
@@ -244,23 +317,40 @@
             <h3 class="text-sm font-black text-slate-900 mb-3.5">Account Risk & Lockout</h3>
             <div class="space-y-3 text-xs font-medium text-slate-600">
               <div class="flex justify-between items-center">
-  <span class="text-slate-400">Failed Login Attempts</span>
-  <span [class]="activeUserDetails()?.accessFailedCount > 3 ? 'text-red-500 font-bold' : 'text-slate-800'">
-  {{ activeUserDetails()?.accessFailedCount }} / 5
+                <span class="text-slate-400">Failed Login Attempts</span>
+                <span
+                  [class]="
+                    activeUserDetails()?.accessFailedCount > 3
+                      ? 'text-red-500 font-bold'
+                      : 'text-slate-800'
+                  "
+                >
+                  {{ activeUserDetails()?.accessFailedCount }} / 5
                 </span>
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-slate-400">Lockout Status</span>
-                <span *ngIf="activeUserDetails()?.status === 'Banned'" class="px-2 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-bold uppercase tracking-widest">
+                <span
+                  *ngIf="activeUserDetails()?.status === 'Banned'"
+                  class="px-2 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-bold uppercase tracking-widest"
+                >
                   Locked Out
                 </span>
-                <span *ngIf="activeUserDetails()?.status !== 'Banned'" class="text-emerald-500 font-bold">
+                <span
+                  *ngIf="activeUserDetails()?.status !== 'Banned'"
+                  class="text-emerald-500 font-bold"
+                >
                   Clear
                 </span>
               </div>
-              <div *ngIf="activeUserDetails()?.lockoutEnd" class="flex justify-between items-center pt-2 border-t border-slate-50">
+              <div
+                *ngIf="activeUserDetails()?.lockoutEnd"
+                class="flex justify-between items-center pt-2 border-t border-slate-50"
+              >
                 <span class="text-slate-400">Lockout Ends At</span>
-                <span class="text-red-600 font-mono text-[10px]">{{ activeUserDetails()?.lockoutEnd | date:'medium' }}</span>
+                <span class="text-red-600 font-mono text-[10px]">{{
+                  activeUserDetails()?.lockoutEnd | date: 'medium'
+                }}</span>
               </div>
             </div>
           </div>
@@ -270,21 +360,30 @@
             <div class="space-y-3">
               <div class="flex justify-between items-center">
                 <span class="text-xs font-medium text-slate-600">Sessions</span>
-                <button (click)="navigateToEntity('sessions')" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors">
+                <button
+                  (click)="navigateToEntity('sessions')"
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors"
+                >
                   <lucide-icon name="eye" class="w-3.5 h-3.5"></lucide-icon>
                   View
                 </button>
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-xs font-medium text-slate-600">Daily Weights</span>
-                <button (click)="navigateToEntity('weights')" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors">
+                <button
+                  (click)="navigateToEntity('weights')"
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors"
+                >
                   <lucide-icon name="trending-up" class="w-3.5 h-3.5"></lucide-icon>
                   Trend
                 </button>
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-xs font-medium text-slate-600">Exercise Sessions</span>
-                <button (click)="navigateToEntity('exercises')" class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors">
+                <button
+                  (click)="navigateToEntity('exercises')"
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors"
+                >
                   <lucide-icon name="panel-left" class="w-3.5 h-3.5"></lucide-icon>
                   Inspect
                 </button>
@@ -295,38 +394,64 @@
           <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
             <h3 class="text-sm font-black text-slate-900 mb-3.5">Account Risk</h3>
             <div class="space-y-2.5 text-xs font-medium text-slate-600">
-              <div>Support priority: <span class="font-bold text-slate-800">{{ activeUserDetails()?.supportPriority || '-' }}</span></div>
-              <div>Sync complaints in last 30d: <span class="font-bold text-slate-800">{{ activeUserDetails()?.syncComplaints || '-' }}</span></div>
-              <div>Billing friction: <span class="font-bold text-slate-800">{{ activeUserDetails()?.billingFriction || '-' }}</span></div>
-              <div>Retention flag: <span class="font-bold text-slate-800">{{ activeUserDetails()?.retentionFlag || '-' }}</span></div>
+              <div>
+                Support priority:
+                <span class="font-bold text-slate-800">{{
+                  activeUserDetails()?.supportPriority || '-'
+                }}</span>
+              </div>
+              <div>
+                Sync complaints in last 30d:
+                <span class="font-bold text-slate-800">{{
+                  activeUserDetails()?.syncComplaints || '-'
+                }}</span>
+              </div>
+              <div>
+                Billing friction:
+                <span class="font-bold text-slate-800">{{
+                  activeUserDetails()?.billingFriction || '-'
+                }}</span>
+              </div>
+              <div>
+                Retention flag:
+                <span class="font-bold text-slate-800">{{
+                  activeUserDetails()?.retentionFlag || '-'
+                }}</span>
+              </div>
             </div>
           </div>
 
           <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
             <h3 class="text-sm font-black text-slate-900 mb-3.5">Audit Trail</h3>
             @for (log of activeUserDetails()?.auditTrail || []; track log) {
-            <p class="text-xs font-medium text-slate-600">{{ log }}</p>
+              <p class="text-xs font-medium text-slate-600">{{ log }}</p>
             }
           </div>
 
           <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
             <h3 class="text-sm font-black text-slate-900 mb-3.5">Admin Actions</h3>
             <div class="flex flex-wrap gap-2.5">
-              <button (click)="activeUserDetails() && openUserForm(activeUserDetails())" class="flex items-center gap-1.5 px-4 py-2 bg-black text-white rounded-lg text-[11px] font-bold hover:bg-slate-800 transition-colors">
+              <button
+                (click)="activeUserDetails() && openUserForm(activeUserDetails())"
+                class="flex items-center gap-1.5 px-4 py-2 bg-black text-white rounded-lg text-[11px] font-bold hover:bg-slate-800 transition-colors"
+              >
                 <lucide-icon name="edit-3" class="w-3.5 h-3.5"></lucide-icon>
                 Edit
               </button>
-              <button class="flex items-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-800 rounded-lg text-[11px] font-bold hover:bg-slate-200 transition-colors">
+              <button
+                class="flex items-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-800 rounded-lg text-[11px] font-bold hover:bg-slate-200 transition-colors"
+              >
                 <lucide-icon name="lock" class="w-3.5 h-3.5"></lucide-icon>
                 Suspend
               </button>
-              <button class="flex items-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-800 rounded-lg text-[11px] font-bold hover:bg-slate-200 transition-colors">
+              <button
+                class="flex items-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-800 rounded-lg text-[11px] font-bold hover:bg-slate-200 transition-colors"
+              >
                 <lucide-icon name="refresh-cw" class="w-3.5 h-3.5"></lucide-icon>
                 Reset
               </button>
             </div>
           </div>
-
         </div>
       </div>
     </div>

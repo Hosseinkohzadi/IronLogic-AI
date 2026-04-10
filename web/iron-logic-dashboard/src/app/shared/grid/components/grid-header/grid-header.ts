@@ -1,6 +1,23 @@
-import { Component, ElementRef, EventEmitter, Input, Output, HostListener, OnChanges, SimpleChanges, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  Output,
+  HostListener,
+  OnChanges,
+  SimpleChanges,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ColumnConfig, GridDateOperator, GridFilterPayload, GridNumberOperator, GridSortDescriptor, GridTextOperator } from '../../models/column-config';
+import {
+  ColumnConfig,
+  GridDateOperator,
+  GridFilterPayload,
+  GridNumberOperator,
+  GridSortDescriptor,
+  GridTextOperator,
+} from '../../models/column-config';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, take } from 'rxjs/operators';
 import { DragDropModule, CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
@@ -13,11 +30,12 @@ import { GridDataService } from '../../services/grid-data';
   standalone: true,
   imports: [CommonModule, FormsModule, DragDropModule, LucideAngularModule],
   templateUrl: './grid-header.html',
-  styleUrls: ['./grid-header.css']
+  styleUrls: ['./grid-header.css'],
 })
 export class GridHeaderComponent implements OnChanges {
   @Input() columns: ColumnConfig[] = [];
   @Input() fitViewportMode: boolean = false;
+  @Input() reorderable: boolean = false;
 
   get visibleColumns(): ColumnConfig[] {
     return this.columns.filter((col) => !col.hidden);
@@ -30,6 +48,7 @@ export class GridHeaderComponent implements OnChanges {
   @Output() sortChange = new EventEmitter<GridSortDescriptor[]>();
   @Output() filterChange = new EventEmitter<GridFilterPayload>();
   @Output() toggleAll = new EventEmitter<boolean>();
+  @Output() columnDrop = new EventEmitter<CdkDragDrop<ColumnConfig[]>>();
 
   activeFilterMenu = signal<string | null>(null);
   activeSorts = signal<GridSortDescriptor[]>([]);
@@ -65,18 +84,21 @@ export class GridHeaderComponent implements OnChanges {
 
   constructor(
     private elementRef: ElementRef<HTMLElement>,
-    private gridDataService: GridDataService
+    private gridDataService: GridDataService,
   ) {
-    this.textFilterSubject.pipe(
-      debounceTime(300),
-      distinctUntilChanged((prev, curr) => 
-        prev.field === curr.field && 
-        prev.value === curr.value && 
-        prev.textOperator === curr.textOperator
+    this.textFilterSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(
+          (prev, curr) =>
+            prev.field === curr.field &&
+            prev.value === curr.value &&
+            prev.textOperator === curr.textOperator,
+        ),
       )
-    ).subscribe(filter => {
-      this.filterChange.emit(filter);
-    });
+      .subscribe((filter) => {
+        this.filterChange.emit(filter);
+      });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -91,7 +113,7 @@ export class GridHeaderComponent implements OnChanges {
 
   // --- مدیریت Drag & Drop ---
   onColumnDrop(event: CdkDragDrop<ColumnConfig[]>) {
-    moveItemInArray(this.columns, event.previousIndex, event.currentIndex);
+    this.columnDrop.emit(event);
   }
 
   // --- مدیریت Resizing ---
@@ -139,18 +161,25 @@ export class GridHeaderComponent implements OnChanges {
   }
 
   handleSort(column: ColumnConfig, event: MouseEvent) {
-    if (['action', 'selection', 'image'].includes(column.type!) || column.field === 'avatar' || !column.sortable) return;
+    if (
+      ['action', 'selection', 'image'].includes(column.type!) ||
+      column.field === 'avatar' ||
+      !column.sortable
+    )
+      return;
 
     const currentSorts = [...this.activeSorts()];
     const existingIndex = currentSorts.findIndex((item) => item.field === column.field);
 
     if (!event.ctrlKey) {
       const nextOrder = this.getNextSortOrder(currentSorts[existingIndex]?.order);
-      const nextSorts: GridSortDescriptor[] = [{
-        field: column.field,
-        order: nextOrder,
-        priority: 1
-      }];
+      const nextSorts: GridSortDescriptor[] = [
+        {
+          field: column.field,
+          order: nextOrder,
+          priority: 1,
+        },
+      ];
 
       this.activeSorts.set(nextSorts);
       this.syncColumnSortOrders(nextSorts);
@@ -162,18 +191,17 @@ export class GridHeaderComponent implements OnChanges {
       const existing = currentSorts[existingIndex];
       currentSorts[existingIndex] = {
         ...existing,
-        order: this.getNextSortOrder(existing.order)
+        order: this.getNextSortOrder(existing.order),
       };
     } else {
       currentSorts.push({
         field: column.field,
         order: 'asc',
-        priority: currentSorts.length + 1
+        priority: currentSorts.length + 1,
       });
     }
 
-    const normalized = currentSorts
-      .map((item, index) => ({ ...item, priority: index + 1 }));
+    const normalized = currentSorts.map((item, index) => ({ ...item, priority: index + 1 }));
 
     this.activeSorts.set(normalized);
     this.syncColumnSortOrders(normalized);
@@ -205,7 +233,11 @@ export class GridHeaderComponent implements OnChanges {
     });
   }
 
-  toggleFilterMenu(col: ColumnConfig): void {
+  toggleFilterMenu(col: ColumnConfig, event?: MouseEvent) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
     if (this.activeFilterMenu() === col.field) {
       this.activeFilterMenu.set(null);
       return;
@@ -250,7 +282,7 @@ export class GridHeaderComponent implements OnChanges {
           field,
           filterType: 'date',
           mode: 'exact',
-          dateOperator: operator
+          dateOperator: operator,
         });
         this.activeFilterMenu.set(null);
         return;
@@ -274,7 +306,7 @@ export class GridHeaderComponent implements OnChanges {
         filterType: 'date',
         mode: 'exact',
         value: combinedValue,
-        dateOperator: operator
+        dateOperator: operator,
       });
       this.activeFilterMenu.set(null);
       return;
@@ -290,7 +322,7 @@ export class GridHeaderComponent implements OnChanges {
           filterType: 'number',
           mode: 'range',
           min,
-          max
+          max,
         });
       } else {
         const operator: GridNumberOperator = op === 'gt' ? 'gt' : op === 'lt' ? 'lt' : 'eq';
@@ -300,7 +332,7 @@ export class GridHeaderComponent implements OnChanges {
           filterType: 'number',
           mode: 'compare',
           operator,
-          value
+          value,
         });
       }
       this.activeFilterMenu.set(null);
@@ -315,28 +347,28 @@ export class GridHeaderComponent implements OnChanges {
           filterType: 'date',
           mode: 'range',
           from: this.tempRangeStart(),
-          to: this.tempRangeEnd()
+          to: this.tempRangeEnd(),
         });
       } else if (op === 'before') {
         this.filterChange.emit({
           field,
           filterType: 'date',
           mode: 'range',
-          to: String(this.tempFilterValue() || '')
+          to: String(this.tempFilterValue() || ''),
         });
       } else if (op === 'after') {
         this.filterChange.emit({
           field,
           filterType: 'date',
           mode: 'range',
-          from: String(this.tempFilterValue() || '')
+          from: String(this.tempFilterValue() || ''),
         });
       } else {
         this.filterChange.emit({
           field,
           filterType: 'date',
           mode: 'exact',
-          value: String(this.tempFilterValue() || '')
+          value: String(this.tempFilterValue() || ''),
         });
       }
       this.activeFilterMenu.set(null);
@@ -349,7 +381,7 @@ export class GridHeaderComponent implements OnChanges {
         field,
         filterType: 'select',
         mode: 'equals',
-        value: selected.length > 0 ? selected[0] : ''
+        value: selected.length > 0 ? selected[0] : '',
       });
       this.activeFilterMenu.set(null);
       return;
@@ -361,7 +393,7 @@ export class GridHeaderComponent implements OnChanges {
       filterType: 'text',
       mode: 'contains',
       value: String(this.tempFilterValue() || ''),
-      textOperator
+      textOperator,
     });
 
     this.activeFilterMenu.set(null);
@@ -379,7 +411,7 @@ export class GridHeaderComponent implements OnChanges {
         filterType: 'date',
         mode: 'exact',
         value: '',
-        dateOperator: 'equals'
+        dateOperator: 'equals',
       });
     } else if (this.isNumericType(col?.type)) {
       this.filterChange.emit({
@@ -387,21 +419,21 @@ export class GridHeaderComponent implements OnChanges {
         filterType: 'number',
         mode: 'compare',
         operator: 'eq',
-        value: undefined
+        value: undefined,
       });
     } else if (this.isDateType(col?.type)) {
       this.filterChange.emit({
         field,
         filterType: 'date',
         mode: 'exact',
-        value: ''
+        value: '',
       });
     } else if (this.isSelectionType(col?.type)) {
       this.filterChange.emit({
         field,
         filterType: 'select',
         mode: 'equals',
-        value: ''
+        value: '',
       });
     } else {
       this.filterChange.emit({
@@ -409,7 +441,7 @@ export class GridHeaderComponent implements OnChanges {
         filterType: 'text',
         mode: 'contains',
         value: '',
-        textOperator: 'contains'
+        textOperator: 'contains',
       });
     }
 
@@ -418,9 +450,7 @@ export class GridHeaderComponent implements OnChanges {
 
   toggleOption(value: string): void {
     this.tempSelectedOptions.update((current) =>
-      current.includes(value)
-        ? current.filter((item) => item !== value)
-        : [...current, value]
+      current.includes(value) ? current.filter((item) => item !== value) : [...current, value],
     );
   }
 
@@ -430,21 +460,26 @@ export class GridHeaderComponent implements OnChanges {
 
   private loadUniqueColumnValues(field: string): void {
     this.gridDataService.processedData$.pipe(take(1)).subscribe((rows) => {
-      const values = [...new Set(
-        rows
-          .map((row) => String(row[field] ?? '').trim())
-          .filter((value) => value.length > 0)
-      )];
+      const values = [
+        ...new Set(
+          rows.map((row) => String(row[field] ?? '').trim()).filter((value) => value.length > 0),
+        ),
+      ];
 
       this.uniqueColumnValues.update((current) => ({
         ...current,
-        [field]: values
+        [field]: values,
       }));
     });
   }
 
   private toTextOperator(operator: string): GridTextOperator {
-    if (operator === 'startsWith' || operator === 'endsWith' || operator === 'equals' || operator === 'contains') {
+    if (
+      operator === 'startsWith' ||
+      operator === 'endsWith' ||
+      operator === 'equals' ||
+      operator === 'contains'
+    ) {
       return operator;
     }
 
@@ -602,7 +637,7 @@ export class GridHeaderComponent implements OnChanges {
       filterType: 'text',
       mode: 'contains',
       value,
-      textOperator: operator
+      textOperator: operator,
     });
   }
 
@@ -649,7 +684,7 @@ export class GridHeaderComponent implements OnChanges {
       filterType: 'text',
       mode: 'contains',
       value,
-      textOperator: operator
+      textOperator: operator,
     });
   }
 
@@ -659,7 +694,7 @@ export class GridHeaderComponent implements OnChanges {
       field,
       filterType: 'select',
       mode: 'equals',
-      value: event.target.value
+      value: event.target.value,
     });
   }
 
@@ -731,7 +766,7 @@ export class GridHeaderComponent implements OnChanges {
         field,
         filterType: 'date',
         mode: 'exact',
-        value: this.dateExact[field] || ''
+        value: this.dateExact[field] || '',
       });
       return;
     }
@@ -741,7 +776,7 @@ export class GridHeaderComponent implements OnChanges {
       filterType: 'date',
       mode: 'range',
       from: this.dateFrom[field] || '',
-      to: this.dateTo[field] || ''
+      to: this.dateTo[field] || '',
     });
   }
 
@@ -754,7 +789,7 @@ export class GridHeaderComponent implements OnChanges {
         filterType: 'number',
         mode: 'compare',
         operator: this.getNumberOperator(field),
-        value: this.numberValue[field] ?? undefined
+        value: this.numberValue[field] ?? undefined,
       });
       return;
     }
@@ -764,7 +799,7 @@ export class GridHeaderComponent implements OnChanges {
       filterType: 'number',
       mode: 'range',
       min: this.numberMin[field] ?? undefined,
-      max: this.numberMax[field] ?? undefined
+      max: this.numberMax[field] ?? undefined,
     });
   }
 

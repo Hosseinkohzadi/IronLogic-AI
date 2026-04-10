@@ -1,7 +1,6 @@
-import { Component, OnInit, signal, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IronLogicApiService } from '@core/services/iron-logic-api.service';
-import { UserRow } from '@core/models/user.model';
 import { LucideAngularModule } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -10,12 +9,23 @@ import { GridComponent } from '@shared/grid/grid';
 import { ColumnConfig } from '@shared/grid/models/column-config';
 import { KpiCardComponent } from '@shared/kpi-card/kpi-card.component';
 
+type UserGridStatus = 'Active' | 'Review' | 'Banned';
+type UserGridTier = 'Basic' | 'Pro' | 'Elite';
+
+interface UserFormState {
+  fullName: string;
+  email: string;
+  tier: UserGridTier;
+  status: 'Active' | 'Review';
+}
+
 @Component({
   selector: 'app-user-management',
   standalone: true,
   imports: [CommonModule, LucideAngularModule, FormsModule, GridComponent, KpiCardComponent],
   templateUrl: './user-management.html',
-  styleUrl: './user-management.css'
+  styleUrl: './user-management.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class UserManagementComponent implements OnInit {
   private apiService = inject(IronLogicApiService);
@@ -62,7 +72,16 @@ export class UserManagementComponent implements OnInit {
   selectedUserId = signal<string | null>(null);
   selectedUsers = signal<any[]>([]); 
   isDrawerOpen = signal(false);
+  isUserFormOpen = signal(false);
   isLoading = signal(true);
+  editingUserId = signal<string | null>(null);
+
+  readonly userForm = signal<UserFormState>({
+    fullName: '',
+    email: '',
+    tier: 'Basic',
+    status: 'Active'
+  });
 
   userColumns: ColumnConfig[] = [
     { field: 'selection', title: '', type: 'selection', width: '50px' },
@@ -71,6 +90,7 @@ export class UserManagementComponent implements OnInit {
       field: 'status',
       title: 'STATUS',
       type: 'badge',
+      badgeStyle: 'userStatus',
       sortable: true,
       width: '120px',
       locked: true,
@@ -78,22 +98,21 @@ export class UserManagementComponent implements OnInit {
       filterOptions: [
         { label: 'Active', value: 'Active' },
         { label: 'Review', value: 'Review' },
-        { label: 'Suspended', value: 'Suspended' }
+        { label: 'Banned', value: 'Banned' }
       ]
     },
     {
       field: 'tier',
       title: 'TIER',
-      type: 'tier',
+      type: 'badge',
+      badgeStyle: 'userTier',
       sortable: true,
       width: '100px',
       filterType: 'select',
       filterOptions: [
         { label: 'Elite', value: 'Elite' },
-        { label: 'Premium', value: 'Premium' },
         { label: 'Pro', value: 'Pro' },
         { label: 'Basic', value: 'Basic' },
-        { label: 'Free', value: 'Free' }
       ]
     },
     { field: 'sessions', title: 'SESSIONS', type: 'number', sortable: true, width: '100px', filterType: 'number', filterMode: 'compare' },
@@ -141,12 +160,16 @@ export class UserManagementComponent implements OnInit {
           ];
 
           const enrichedData = data.map((u: any, index: number) => {
-            let calculatedStatus = 'Active';
+            let calculatedStatus: UserGridStatus = 'Active';
             if (u.lockoutEnd && new Date(u.lockoutEnd) > new Date()) {
-              calculatedStatus = 'Suspended';
+              calculatedStatus = 'Banned';
             } else if (u.emailConfirmed === false) {
               calculatedStatus = 'Review';
             }
+
+            const calculatedTier: UserGridTier = u.tier === 'Elite' || u.tier === 'Pro' || u.tier === 'Basic'
+              ? u.tier
+              : 'Basic';
 
             const mockDate = new Date();
             mockDate.setDate(mockDate.getDate() - (index * 2)); 
@@ -154,6 +177,7 @@ export class UserManagementComponent implements OnInit {
             return {
               ...u,
               status: calculatedStatus,
+              tier: calculatedTier,
               profileImageUrl: avatarUrls[index % avatarUrls.length],
               dailyWeights: Math.floor(u.sessions * 0.6),
               lastLogin: mockDate.toISOString() 
@@ -221,16 +245,121 @@ export class UserManagementComponent implements OnInit {
   }
 
   handleGridAction(event: { type: string, row: any }) {
-    if (event.type === 'row-click' || event.type === 'edit') {
+    if (event.type === 'row-click') {
       this.selectedUserId.set(event.row.id);
       this.isDrawerOpen.set(true);
       document.body.style.overflow = 'hidden';
+      return;
+    }
+
+    if (event.type === 'edit') {
+      this.openUserForm(event.row);
+    }
+  }
+
+  openQuickAddUser(): void {
+    this.editingUserId.set(null);
+    this.userForm.set({
+      fullName: '',
+      email: '',
+      tier: 'Basic',
+      status: 'Active'
+    });
+    this.isUserFormOpen.set(true);
+    document.body.style.overflow = 'hidden';
+  }
+
+  openUserForm(row: any): void {
+    this.editingUserId.set(row.id);
+    this.userForm.set({
+      fullName: String(row.name ?? ''),
+      email: String(row.email ?? ''),
+      tier: (row.tier ?? 'Basic') as UserGridTier,
+      status: (row.status === 'Review' ? 'Review' : 'Active')
+    });
+    this.isUserFormOpen.set(true);
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeUserForm(): void {
+    this.isUserFormOpen.set(false);
+    this.editingUserId.set(null);
+    if (!this.isDrawerOpen()) {
+      document.body.style.overflow = 'auto';
+    }
+  }
+
+  updateUserFormField<K extends keyof UserFormState>(field: K, value: UserFormState[K]): void {
+    this.userForm.update((current) => ({ ...current, [field]: value }));
+  }
+
+  submitUserForm(): void {
+    const form = this.userForm();
+    const fullName = form.fullName.trim();
+    const email = form.email.trim();
+
+    if (!fullName || !email) {
+      return;
+    }
+
+    const editingId = this.editingUserId();
+    if (editingId) {
+      this.users.update((current) =>
+        current.map((user) =>
+          user.id === editingId
+            ? {
+                ...user,
+                name: fullName,
+                email,
+                tier: form.tier,
+                status: form.status,
+              }
+            : user
+        )
+      );
+    } else {
+      const createdAt = new Date().toISOString();
+      const nextUser = {
+        id: `usr-${Date.now()}`,
+        userName: email.split('@')[0] ?? `user-${Date.now()}`,
+        name: fullName,
+        email,
+        emailConfirmed: form.status === 'Active',
+        phoneNumberConfirmed: false,
+        twoFactorEnabled: false,
+        accessFailedCount: 0,
+        sessions: 0,
+        weights: 0,
+        tier: form.tier,
+        status: form.status,
+        profileImageUrl: '',
+        dailyWeights: 0,
+        lastLogin: createdAt,
+        isSelected: false,
+      };
+
+      this.users.update((current) => [nextUser, ...current]);
+    }
+
+    this.onSearch(this.searchTerm());
+    this.closeUserForm();
+  }
+
+  closeOverlays(): void {
+    if (this.isUserFormOpen()) {
+      this.closeUserForm();
+    }
+
+    if (this.isDrawerOpen()) {
+      this.closeDrawer();
     }
   }
 
   closeDrawer() {
     this.isDrawerOpen.set(false);
-    document.body.style.overflow = 'auto';
+    if (!this.isUserFormOpen()) {
+      document.body.style.overflow = 'auto';
+    }
     setTimeout(() => { this.selectedUserId.set(null); }, 300);
   }
 

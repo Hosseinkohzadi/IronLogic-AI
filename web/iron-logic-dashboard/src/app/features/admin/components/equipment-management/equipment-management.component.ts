@@ -28,6 +28,7 @@ interface EquipmentRecord {
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule, GridComponent],
   templateUrl: './equipment-management.component.html',
+  styleUrls: ['./equipment-management.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EquipmentManagementComponent {

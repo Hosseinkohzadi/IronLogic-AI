@@ -12,15 +12,16 @@ import { AdminComponent } from '@features/admin/MainAdminPage/admin.component';
 export const routes: Routes = [
   {
     path: 'admin',
-    component: AdminComponent, // این کامپوننت نقش Shell را دارد
+    component: AdminComponent,
     data: { hideSidebar: false },
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
         path: 'dashboard',
-        // نکته مهم: اینجا نباید دوباره AdminComponent لود شود.
-        // یا یک کامپوننت داشبورد جدید بسازید یا فعلاً این مسیر را خالی بگذارید.
-        loadComponent: () => import('@features/admin/MainAdminPage/admin.component').then(m => m.AdminComponent)
+        loadComponent: () =>
+          import('@features/admin/MainAdminPage/admin-dashboard-home.component').then(
+            (m) => m.AdminDashboardHomeComponent
+          )
       },
       {
         path: 'users',
@@ -35,12 +36,20 @@ export const routes: Routes = [
         loadComponent: () => import('@features/admin/components/workout-logs/workout-logs').then(m => m.WorkoutLogsComponent)
       },
       {
+        path: 'financial',
+        loadComponent: () => import('@features/admin/components/financial-dashboard/financial-dashboard').then(m => m.FinancialDashboardComponent)
+      },
+      {
         path: 'equipment',
         loadComponent: () => import('@features/admin/components/equipment-management/equipment-management.component').then(m => m.EquipmentManagementComponent)
       },
       {
         path: 'muscles',
         loadComponent: () => import('@features/admin/components/muscle-management/muscle-management.component').then(m => m.MuscleManagementComponent)
+      },
+      {
+        path: 'settings',
+        loadComponent: () => import('@features/admin/components/settings-page/settings-page').then(m => m.SettingsPageComponent)
       }
     ]
   },

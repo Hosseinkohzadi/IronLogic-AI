@@ -3,6 +3,12 @@ import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
+interface NavItem {
+  label: string;
+  route: string;
+  icon: string;
+}
+
 @Component({
   selector: 'app-sidebar',
   standalone: true,
@@ -16,10 +22,11 @@ import { LucideAngularModule } from 'lucide-angular';
   styleUrl: './sidebar.component.css'
 })
 export class SidebarComponent {
-  navItems = [
+  readonly navItems: NavItem[] = [
     { label: 'Dashboard', route: '/admin/dashboard', icon: 'layout-dashboard' },
     { label: 'Users', route: '/admin/users', icon: 'users' },
     { label: 'Sessions', route: '/admin/sessions', icon: 'calendar' },
+    { label: 'Financial', route: '/admin/financial', icon: 'credit-card' },
     { label: 'Exercises', route: '/admin/exercises', icon: 'dumbbell' },
     { label: 'Exercise Sessions', route: '/admin/exercise-sessions', icon: 'activity' },
     { label: 'Daily Weights', route: '/admin/daily-weights', icon: 'weight' },

@@ -1,0 +1,26 @@
+:host {
+  display: block;
+  height: 100%;
+}
+
+.tab-active {
+  background-color: var(--ai-600);
+  color: #ffffff;
+}
+
+.tab-idle {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+.toggle-on {
+  background-color: var(--finance-600);
+}
+
+.toggle-off {
+  background-color: #cbd5e1;
+}
+
+.ai-range {
+  accent-color: var(--ai-600);
+}

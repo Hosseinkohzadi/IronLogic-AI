@@ -1,0 +1,172 @@
+<div class="flex h-full min-h-0 flex-col gap-6 overflow-hidden">
+  <header class="rounded-2xl border border-[var(--ai-200)] bg-white p-5 shadow-sm">
+    <p class="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--ai-600)]">Admin / Settings</p>
+    <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-900">Coach Settings</h1>
+    <p class="mt-1 text-sm text-slate-500">Configure profile, billing rules, and AI generation behavior.</p>
+  </header>
+
+  <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+    <div class="settings-tabs flex flex-wrap gap-2" role="tablist" aria-label="Settings sections">
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'general'"
+        [class.tab-active]="activeTab() === 'general'"
+        [class.tab-idle]="activeTab() !== 'general'"
+        (click)="setTab('general')"
+        class="rounded-xl px-4 py-2 text-xs font-black uppercase tracking-[0.11em] transition-colors"
+      >
+        General
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'billing'"
+        [class.tab-active]="activeTab() === 'billing'"
+        [class.tab-idle]="activeTab() !== 'billing'"
+        (click)="setTab('billing')"
+        class="rounded-xl px-4 py-2 text-xs font-black uppercase tracking-[0.11em] transition-colors"
+      >
+        Billing
+      </button>
+      <button
+        type="button"
+        role="tab"
+        [attr.aria-selected]="activeTab() === 'ai'"
+        [class.tab-active]="activeTab() === 'ai'"
+        [class.tab-idle]="activeTab() !== 'ai'"
+        (click)="setTab('ai')"
+        class="rounded-xl px-4 py-2 text-xs font-black uppercase tracking-[0.11em] transition-colors"
+      >
+        AI Preferences
+      </button>
+    </div>
+
+    @if (activeTab() === 'general') {
+      <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <article class="rounded-2xl border border-[var(--ai-200)] bg-[var(--ai-surface)] p-5 lg:col-span-1">
+          <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--ai-700)]">Avatar</p>
+          <div class="mt-3 flex h-40 items-center justify-center rounded-2xl border border-dashed border-[var(--ai-300)] bg-white">
+            <div class="text-center">
+              <span class="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--ai-100)]">
+                <lucide-icon name="upload" class="h-5 w-5 text-[var(--ai-700)]"></lucide-icon>
+              </span>
+              <p class="mt-2 text-xs font-semibold text-slate-600">Avatar upload placeholder</p>
+            </div>
+          </div>
+        </article>
+
+        <article class="rounded-2xl border border-slate-200 bg-white p-5 lg:col-span-2">
+          <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--ai-700)]">Profile</p>
+
+          <label class="mt-4 block space-y-1.5">
+            <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Coach Name</span>
+            <input
+              [ngModel]="coachName()"
+              (ngModelChange)="updateCoachName($event)"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-[var(--ai-400)] focus:ring-2 focus:ring-[var(--ai-100)]"
+            />
+          </label>
+
+          <label class="mt-4 block space-y-1.5">
+            <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Bio</span>
+            <textarea
+              rows="4"
+              [ngModel]="coachBio()"
+              (ngModelChange)="updateCoachBio($event)"
+              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-[var(--ai-400)] focus:ring-2 focus:ring-[var(--ai-100)]"
+            ></textarea>
+          </label>
+        </article>
+      </div>
+    }
+
+    @if (activeTab() === 'billing') {
+      <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <article class="rounded-2xl border border-[var(--finance-200)] bg-[var(--finance-surface)] p-5">
+          <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--finance-700)]">Business Rules</p>
+
+          <label class="mt-4 block space-y-1.5">
+            <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Monthly Subscription Fee</span>
+            <input
+              type="number"
+              [ngModel]="monthlyFee()"
+              (ngModelChange)="updateMonthlyFee($event)"
+              min="0"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-[var(--finance-400)] focus:ring-2 focus:ring-[var(--finance-100)]"
+            />
+          </label>
+
+          <label class="mt-4 block space-y-1.5">
+            <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Currency</span>
+            <select
+              [ngModel]="currency()"
+              (ngModelChange)="updateCurrency($event)"
+              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-[var(--finance-400)] focus:ring-2 focus:ring-[var(--finance-100)]"
+            >
+              <option value="USD">USD</option>
+              <option value="IRT">IRT</option>
+            </select>
+          </label>
+        </article>
+
+        <article class="rounded-2xl border border-slate-200 bg-white p-5">
+          <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--finance-700)]">Automation</p>
+
+          <div class="mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+            <div>
+              <p class="text-sm font-bold text-slate-800">Auto-remind athletes</p>
+              <p class="text-xs text-slate-500">Send reminder notifications before renewal date</p>
+            </div>
+            <button
+              type="button"
+              (click)="updateAutoRemind(!autoRemindAthletes())"
+              [attr.aria-pressed]="autoRemindAthletes()"
+              class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
+              [class.toggle-on]="autoRemindAthletes()"
+              [class.toggle-off]="!autoRemindAthletes()"
+            >
+              <span
+                class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
+                [class.translate-x-6]="autoRemindAthletes()"
+                [class.translate-x-1]="!autoRemindAthletes()"
+              ></span>
+            </button>
+          </div>
+        </article>
+      </div>
+    }
+
+    @if (activeTab() === 'ai') {
+      <div class="mt-5 rounded-2xl border border-[var(--ai-200)] bg-[var(--ai-surface)] p-5">
+        <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--ai-700)]">AI Program Aggressiveness</p>
+        <p class="mt-1 text-sm text-slate-600">Control generated workout volume from conservative to high-volume progressions.</p>
+
+        <div class="mt-5 rounded-xl border border-[var(--ai-200)] bg-white p-4">
+          <div class="flex items-center justify-between text-xs font-bold uppercase tracking-[0.1em] text-slate-500">
+            <span>Low Volume</span>
+            <span>High Volume</span>
+          </div>
+
+          <input
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            [ngModel]="aiAggressiveness()"
+            (ngModelChange)="updateAiAggressiveness($event)"
+            class="ai-range mt-3 w-full"
+            aria-label="AI Program Aggressiveness"
+          />
+
+          <div class="mt-3 flex items-center justify-between">
+            <p class="text-sm font-semibold text-slate-600">Current Mode</p>
+            <span class="inline-flex rounded-full bg-[var(--ai-100)] px-3 py-1 text-xs font-black uppercase tracking-[0.1em] text-[var(--ai-700)]">
+              {{ getAggressivenessLabel(aiAggressiveness()) }} ({{ aiAggressiveness() }}%)
+            </span>
+          </div>
+        </div>
+      </div>
+    }
+  </section>
+</div>

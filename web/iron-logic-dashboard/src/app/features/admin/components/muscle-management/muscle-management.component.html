@@ -1,50 +1,53 @@
-<div class="relative min-h-[90vh]">
+<div class="relative flex h-full min-h-0 flex-col overflow-hidden">
   <div
-    class="space-y-6 animate-in transition-all duration-500 ease-in-out"
+    class="flex min-h-0 flex-1 flex-col gap-6 animate-in transition-all duration-500 ease-in-out"
     [class.blur-md]="isDrawerOpen()"
     [class.pointer-events-none]="isDrawerOpen()">
 
-    <div class="flex flex-col gap-4 pt-2 md:flex-row md:items-end md:justify-between">
-      <div>
-        <h1 class="text-[28px] font-black tracking-tight text-slate-900">Muscle Management</h1>
-        <p class="mt-1 text-[13px] font-medium text-slate-500">Manage anatomical targets and reference regions for exercises.</p>
-      </div>
-
-      <button
-        type="button"
-        class="bg-black text-white hover:bg-slate-800 px-5 py-2.5 rounded-xl font-bold text-[13px]"
-        (click)="openAddModal()">
-        + Add Muscle
-      </button>
-    </div>
-
-    <div class="flex items-center gap-3">
-      <div class="relative w-full xl:w-[400px]">
-        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none z-10">
-          <lucide-icon name="search" class="w-4 h-4 text-slate-400"></lucide-icon>
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p class="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Admin / Coaching</p>
+          <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-900">Muscle Management</h1>
+          <p class="mt-1 text-sm text-slate-500">Manage anatomical targets and reference regions for exercises.</p>
         </div>
-        <input
-          type="text"
-          placeholder="Search muscles, regions..."
-          class="w-full pl-11 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-medium text-slate-700 placeholder-slate-400 focus:outline-none focus:border-slate-300 focus:ring-2 focus:ring-slate-100 transition-all"
-          [value]="searchTerm()"
-          (input)="onSearch($any($event).target.value)">
+
+        <button
+          type="button"
+          class="quick-add-btn inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold text-white"
+          (click)="openAddModal()">
+          <lucide-icon name="plus" class="h-4 w-4"></lucide-icon>
+          Add Muscle
+        </button>
+      </div>
+    </section>
+
+    <div class="relative flex-1 min-h-0 overflow-hidden rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+      <div class="mb-4 flex items-center justify-between">
+        <div>
+          <p class="text-[11px] font-black uppercase tracking-[0.14em] text-indigo-600">Master Data Center</p>
+          <h2 class="mt-1 text-sm font-black uppercase tracking-[0.12em] text-slate-700">Muscle Registry</h2>
+        </div>
+        <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-600">{{ filteredMuscles().length }} items</span>
+      </div>
+
+      <div class="min-h-0 h-[calc(100%-4rem)] overflow-hidden">
+        <app-grid
+          class="h-full"
+          [columns]="columns"
+          [data]="filteredMuscles()"
+          [isLoading]="isLoading()"
+          [searchTerm]="searchTerm()"
+          [editSettings]="editSettings"
+          [showExport]="true"
+          [showFilters]="false"
+          [showSearch]="false"
+          (search)="onSearch($event)"
+          (refresh)="loadData()"
+          (actionTriggered)="handleGridAction($event)">
+        </app-grid>
       </div>
     </div>
-
-    <app-grid
-      [columns]="columns"
-      [data]="filteredMuscles()"
-      [isLoading]="isLoading()"
-      [searchTerm]="searchTerm()"
-      [editSettings]="editSettings"
-      [showExport]="true"
-      [showFilters]="false"
-      [showSearch]="false"
-      (search)="onSearch($event)"
-      (refresh)="loadData()"
-      (actionTriggered)="handleGridAction($event)">
-    </app-grid>
   </div>
 
   @if (isDrawerOpen()) {

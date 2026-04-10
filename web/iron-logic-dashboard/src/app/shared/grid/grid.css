@@ -1,3 +1,9 @@
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+}
+
 app-grid-header,
 app-grid-body,
 app-grid-footer {
@@ -14,6 +20,9 @@ app-grid-footer {
   overflow-x: hidden !important;
 }
 
+.fit-viewport-scroll.custom-scrollbar {
+  overflow-y: auto !important;
+}
 
 .scroll-container {
   display: block;

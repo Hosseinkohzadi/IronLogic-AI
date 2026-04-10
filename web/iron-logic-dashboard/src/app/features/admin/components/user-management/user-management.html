@@ -1,34 +1,45 @@
-<div class="relative min-h-[90vh]">
+<div class="flex w-full flex-col gap-6 bg-slate-50 p-6">
 
-  <div [class.blur-md]="isDrawerOpen()"
-       [class.pointer-events-none]="isDrawerOpen()"
-       class="space-y-6 animate-in transition-all duration-500 ease-in-out">
+  <div
+    [class.pointer-events-none]="isUserFormOpen() || isDrawerOpen()"
+    class="flex flex-col gap-6"
+  >
 
-    <div class="flex flex-col md:flex-row md:justify-between md:items-end gap-4 pt-2">
-      <div>
-        <h1 class="text-[28px] font-black text-slate-900 tracking-tight">Users Directory</h1>
-        <p class="text-[13px] font-medium text-slate-500 mt-1">Search, review, and take action on account records</p>
+    <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <p class="text-[11px] font-black uppercase tracking-[0.16em] text-slate-400">Admin / Coaching</p>
+            <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-900">Users Directory</h1>
+            <p class="mt-1 text-sm text-slate-500">Search, review, and take action on account records</p>
+          </div>
+
+        <button
+          type="button"
+          (click)="openQuickAddUser()"
+          class="quick-add-btn inline-flex shrink-0 items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-xs font-bold text-white"
+        >
+          <lucide-icon name="user-plus" class="h-4 w-4"></lucide-icon>
+          Quick Add User
+        </button>
       </div>
 
-    </div>
+        <div class="mt-4 grid h-fit grid-cols-1 gap-4 md:grid-cols-4">
+        @for (card of cards; track card.label) {
+          <app-kpi-card
+           themeColor="indigo"
+            [label]="card.label"
+            [value]="card.val"
+            [trend]="card.trend"
+            [context]="card.context"
+            [mainIcon]="card.icon"
+            [showInfoIcon]="true"
+            [infoText]="card.info">
+          </app-kpi-card>
+        }
+      </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-      @for (card of cards; track card.label) {
-        <app-kpi-card
-          [label]="card.label"
-          [value]="card.val"
-          [trend]="card.trend"
-          [context]="card.context"
-          [mainIcon]="card.icon"
-          [showInfoIcon]="true"
-          [infoText]="card.info">
-        </app-kpi-card>
-      }
-    </div>
-
-    <div class="flex flex-col gap-4">
-      @if (selectedUsers().length > 0) {
-      <div class="flex justify-between items-center bg-white border border-slate-200 rounded-[16px] p-4 shadow-sm animate-in transition-all">
+        @if (selectedUsers().length > 0) {
+        <div class="mt-4 flex items-center justify-between rounded-[16px] border border-slate-200 bg-white p-4 shadow-sm animate-in transition-all">
         <div>
           <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Selection</p>
           <p class="text-sm font-bold text-slate-800">{{ selectedUsers().length }} account selected</p>
@@ -39,25 +50,133 @@
             <button class="px-5 py-2.5 bg-slate-100 text-slate-700 text-[11px] font-bold rounded-xl hover:bg-slate-200 transition-all">Assign Role</button>
           </div>
         </div>
-      }
+        }
+      </section>
+
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-sm">
+      <div class="flex items-center justify-between border-b border-slate-100 px-5 py-3">
+        <div>
+          <p class="text-[11px] font-black uppercase tracking-[0.14em] text-indigo-600">User Registry</p>
+          <h2 class="mt-0.5 text-sm font-black uppercase tracking-[0.12em] text-slate-700">Active Accounts</h2>
+        </div>
+        <span class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-600">{{ filteredUsers().length }} users</span>
+      </div>
+      <div class="p-4 grid-shell">
+        <app-grid
+          class="h-full w-full"
+          [columns]="userColumns"
+          [data]="filteredUsers()"
+          [isLoading]="isLoading()"
+          [searchTerm]="searchTerm()"
+          [showExport]="true"
+          [showFilters]="true"
+          [showSearch]="true"
+          (search)="onSearch($event)"
+          (refresh)="loadData()"
+          (actionTriggered)="handleGridAction($event)"
+          (selectionChanged)="selectedUsers.set($event)">
+        </app-grid>
+      </div>
     </div>
-    <app-grid
-      [columns]="userColumns"
-      [data]="filteredUsers()"
-      [isLoading]="isLoading()"
-      [searchTerm]="searchTerm()"
-      [showExport]="true"
-      [showFilters]="true"
-      [showSearch]="false"
-      (search)="onSearch($event)"
-      (refresh)="loadData()"
-      (actionTriggered)="handleGridAction($event)"
-      (selectionChanged)="selectedUsers.set($event)">
-    </app-grid>
   </div>
 
-  @if (isDrawerOpen()) {
-  <div (click)="closeDrawer()" class="fixed inset-0 z-40 bg-slate-900/5 backdrop-blur-[2px] transition-opacity"></div>
+  @if (isDrawerOpen() || isUserFormOpen()) {
+  <div (click)="closeOverlays()" class="fixed inset-0 z-40 bg-slate-900/5 backdrop-blur-[2px] transition-opacity"></div>
+  }
+
+  @if (isUserFormOpen()) {
+    <section class="fixed right-0 top-0 z-[100] h-full w-full max-w-[440px] border-l border-slate-200 bg-gradient-to-b from-white to-slate-50 p-6 shadow-2xl">
+      <div class="flex h-full flex-col">
+        <div class="mb-5 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] font-black uppercase tracking-[0.14em] text-slate-400">User Directory</p>
+            <h2 class="text-xl font-black text-slate-900">{{ editingUserId() ? 'Edit User' : 'New User' }}</h2>
+          </div>
+          <button
+            type="button"
+            class="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-800"
+            (click)="closeUserForm()"
+            aria-label="Close user form"
+          >
+            <lucide-icon name="x" class="h-4 w-4"></lucide-icon>
+          </button>
+        </div>
+
+        <form class="flex min-h-0 flex-1 flex-col" (ngSubmit)="submitUserForm()">
+          <div class="form-scroll-area flex-1 min-h-0 space-y-4 overflow-y-auto pr-1">
+            <label class="block space-y-1">
+              <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Full Name</span>
+              <input
+                [ngModel]="userForm().fullName"
+                (ngModelChange)="updateUserFormField('fullName', $event)"
+                name="fullName"
+                required
+                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                placeholder="Alex Morgan"
+              />
+            </label>
+
+            <label class="block space-y-1">
+              <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Email</span>
+              <input
+                type="email"
+                [ngModel]="userForm().email"
+                (ngModelChange)="updateUserFormField('email', $event)"
+                name="email"
+                required
+                class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                placeholder="alex@ironlogic.ai"
+              />
+            </label>
+
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <label class="block space-y-1">
+                <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Tier</span>
+                <select
+                  [ngModel]="userForm().tier"
+                  (ngModelChange)="updateUserFormField('tier', $event)"
+                  name="tier"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                >
+                  <option value="Basic">Basic</option>
+                  <option value="Pro">Pro</option>
+                  <option value="Elite">Elite</option>
+                </select>
+              </label>
+
+              <label class="block space-y-1">
+                <span class="text-xs font-bold uppercase tracking-[0.12em] text-slate-500">Initial Status</span>
+                <select
+                  [ngModel]="userForm().status"
+                  (ngModelChange)="updateUserFormField('status', $event)"
+                  name="status"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm text-slate-700 outline-none focus:border-indigo-300 focus:ring-2 focus:ring-indigo-100"
+                >
+                  <option value="Active">Active</option>
+                  <option value="Review">Review</option>
+                </select>
+              </label>
+            </div>
+          </div>
+
+          <div class="mt-6 flex items-center justify-end gap-2 border-t border-slate-100 pt-4">
+            <button
+              type="button"
+              (click)="closeUserForm()"
+              class="rounded-xl border border-violet-200 bg-violet-50 px-4 py-2 text-xs font-bold text-violet-700 transition-colors hover:bg-violet-100"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="quick-add-btn rounded-xl px-4 py-2 text-xs font-bold text-white"
+            >
+              {{ editingUserId() ? 'Update User' : 'Save User' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </section>
   }
 
   @if (isDrawerOpen() && activeUserDetails()) {
@@ -132,10 +251,10 @@
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-slate-400">Lockout Status</span>
-                <span *ngIf="activeUserDetails()?.status === 'Suspended'" class="px-2 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-bold uppercase tracking-widest">
+                <span *ngIf="activeUserDetails()?.status === 'Banned'" class="px-2 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-bold uppercase tracking-widest">
                   Locked Out
                 </span>
-                <span *ngIf="activeUserDetails()?.status !== 'Suspended'" class="text-emerald-500 font-bold">
+                <span *ngIf="activeUserDetails()?.status !== 'Banned'" class="text-emerald-500 font-bold">
                   Clear
                 </span>
               </div>
@@ -193,7 +312,7 @@
           <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
             <h3 class="text-sm font-black text-slate-900 mb-3.5">Admin Actions</h3>
             <div class="flex flex-wrap gap-2.5">
-              <button class="flex items-center gap-1.5 px-4 py-2 bg-black text-white rounded-lg text-[11px] font-bold hover:bg-slate-800 transition-colors">
+              <button (click)="activeUserDetails() && openUserForm(activeUserDetails())" class="flex items-center gap-1.5 px-4 py-2 bg-black text-white rounded-lg text-[11px] font-bold hover:bg-slate-800 transition-colors">
                 <lucide-icon name="edit-3" class="w-3.5 h-3.5"></lucide-icon>
                 Edit
               </button>

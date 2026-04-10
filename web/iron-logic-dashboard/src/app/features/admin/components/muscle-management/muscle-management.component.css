@@ -1,5 +1,6 @@
 :host {
   display: block;
+  height: 100%;
 }
 
 @keyframes slideInDrawer {
@@ -39,4 +40,20 @@
 
 .animate-in {
   animation: fadeInScale 0.2s ease-out;
+}
+
+.quick-add-btn {
+  background: var(--primary-gradient, linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%));
+  box-shadow: 0 10px 24px rgba(79, 70, 229, 0.28);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.quick-add-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(79, 70, 229, 0.32);
+}
+
+.quick-add-btn:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
 }

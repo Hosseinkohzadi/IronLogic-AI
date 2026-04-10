@@ -18,9 +18,10 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
         path: 'dashboard',
-        // نکته مهم: اینجا نباید دوباره AdminComponent لود شود.
-        // یا یک کامپوننت داشبورد جدید بسازید یا فعلاً این مسیر را خالی بگذارید.
-        loadComponent: () => import('@features/admin/MainAdminPage/admin.component').then(m => m.AdminComponent)
+        loadComponent: () =>
+          import('@features/admin/MainAdminPage/admin-dashboard-home.component').then(
+            (m) => m.AdminDashboardHomeComponent
+          )
       },
       {
         path: 'users',

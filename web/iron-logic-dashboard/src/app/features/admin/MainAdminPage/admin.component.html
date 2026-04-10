@@ -1,22 +1,9 @@
-<div class="p-8 bg-white min-h-screen">
-  <header class="flex justify-between items-start mb-10 border-b border-slate-100 pb-6">
-    <div>
-      <h1 class="text-2xl font-black text-slate-800 tracking-tighter uppercase">Infrastructure Dashboard</h1>
-      <p class="text-[10px] font-bold text-slate-400 tracking-[0.2em] mt-1">CORE_SYSTEM_MONITOR</p>
-    </div>
+<div class="min-h-screen bg-slate-50 p-4 sm:p-6 lg:p-8">
+  <div class="mx-auto max-w-[1400px] space-y-6">
 
-    <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-slate-100"
-         [ngClass]="{'bg-emerald-50 border-emerald-100': serverStatus() === 'OPERATIONAL', 'bg-red-50 border-red-100': serverStatus() === 'DOWN'}">
-      <span class="w-2 h-2 rounded-full shadow-sm"
-            [ngClass]="{'bg-emerald-500 animate-pulse': serverStatus() === 'OPERATIONAL', 'bg-red-500': serverStatus() === 'DOWN', 'bg-slate-300': serverStatus() === 'CHECKING'}"></span>
-      <span class="text-[10px] font-black uppercase tracking-widest"
-            [ngClass]="{'text-emerald-700': serverStatus() === 'OPERATIONAL', 'text-red-700': serverStatus() === 'DOWN', 'text-slate-500': serverStatus() === 'CHECKING'}">
-        NODE_STATUS: {{ serverStatus() }}
-      </span>
-    </div>
-  </header>
-
-  <div class="mt-8 pt-8 border-t border-slate-50">
-    <router-outlet></router-outlet>
-  </div>
-</div>
+    <!-- ── Header ─────────────────────────────────────────── -->
+    <header class="flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-start lg:justify-between">
+      <div>
+        <h1 class="text-2xl font-black uppercase tracking-tight text-slate-900 sm:text-3xl">Coaching Management</h1>
+        <router-outlet></router-outlet>
+      </div>

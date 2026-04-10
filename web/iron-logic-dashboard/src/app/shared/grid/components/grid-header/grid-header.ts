@@ -3,6 +3,7 @@ import {
   ElementRef,
   EventEmitter,
   Input,
+  OnDestroy,
   Output,
   HostListener,
   OnChanges,
@@ -32,7 +33,7 @@ import { GridDataService } from '../../services/grid-data';
   templateUrl: './grid-header.html',
   styleUrls: ['./grid-header.css'],
 })
-export class GridHeaderComponent implements OnChanges {
+export class GridHeaderComponent implements OnChanges, OnDestroy {
   @Input() columns: ColumnConfig[] = [];
   @Input() fitViewportMode: boolean = false;
   @Input() reorderable: boolean = false;
@@ -77,10 +78,13 @@ export class GridHeaderComponent implements OnChanges {
   numberMin: Record<string, number | null> = {};
   numberMax: Record<string, number | null> = {};
 
-  // وضعیت‌های Resizing
-  private resizingColumn?: ColumnConfig;
-  private startX = 0;
-  private startWidth = 0;
+  // Resize state
+  resizingColumn: ColumnConfig | null = null;
+  startMouseX = 0;
+  startColWidth = 0;
+
+  private readonly resizeMouseMoveListener = (event: MouseEvent) => this.onMouseMove(event);
+  private readonly resizeMouseUpListener = () => this.onMouseUp();
 
   constructor(
     private elementRef: ElementRef<HTMLElement>,
@@ -111,41 +115,92 @@ export class GridHeaderComponent implements OnChanges {
     }
   }
 
+  ngOnDestroy(): void {
+    this.onMouseUp();
+  }
+
   // --- مدیریت Drag & Drop ---
   onColumnDrop(event: CdkDragDrop<ColumnConfig[]>) {
     this.columnDrop.emit(event);
   }
 
   // --- مدیریت Resizing ---
-  onResizeStart(event: MouseEvent, column: ColumnConfig) {
+  onResizeStart(event: MouseEvent, column: ColumnConfig): void {
+    if (!this.isColumnResizable(column)) {
+      return;
+    }
+
     event.preventDefault();
     event.stopPropagation(); // جلوگیری از تداخل با Drag
 
     this.resizingColumn = column;
-    this.startX = event.pageX;
-    this.startWidth = this.getSafeWidth(column.width);
+    this.startMouseX = event.clientX;
+    this.startColWidth = this.getSafeWidth(column.width);
+
+    document.addEventListener('mousemove', this.resizeMouseMoveListener);
+    document.addEventListener('mouseup', this.resizeMouseUpListener);
 
     document.body.style.cursor = 'col-resize';
     document.body.style.userSelect = 'none';
   }
 
-  @HostListener('document:mousemove', ['$event'])
-  onMouseMove(event: MouseEvent) {
+  onMouseMove(event: MouseEvent): void {
     if (!this.resizingColumn) return;
-    // محاسبه RTL: کشیدن به سمت چپ باعث افزایش عرض می‌شود
-    const delta = this.startX - event.pageX;
-    const minWidth = this.getMinWidth(this.resizingColumn);
-    const newWidth = Math.max(minWidth, this.startWidth + delta);
-    this.resizingColumn.width = `${newWidth}px`;
+
+    const deltaX = event.clientX - this.startMouseX;
+    const minWidth = this.getColumnResizeMinWidth(this.resizingColumn);
+    const nextWidth = Math.max(minWidth, this.startColWidth + deltaX);
+    this.resizingColumn.width = `${Math.round(nextWidth)}px`;
   }
 
-  @HostListener('document:mouseup')
-  onMouseUp() {
+  onMouseUp(): void {
+    document.removeEventListener('mousemove', this.resizeMouseMoveListener);
+    document.removeEventListener('mouseup', this.resizeMouseUpListener);
+
     if (this.resizingColumn) {
-      this.resizingColumn = undefined;
-      document.body.style.cursor = 'default';
-      document.body.style.userSelect = 'auto';
+      this.resizingColumn = null;
     }
+
+    document.body.style.cursor = 'default';
+    document.body.style.userSelect = 'auto';
+  }
+
+  autoFitColumn(column: ColumnConfig): void {
+    if (!this.isColumnResizable(column)) {
+      return;
+    }
+
+    this.gridDataService.processedData$.pipe(take(1)).subscribe((rows) => {
+      const headerText = String(column.title || column.field || '').trim();
+      const sampleCell = this.elementRef.nativeElement.querySelector(
+        '.header-cell',
+      ) as HTMLElement | null;
+      const computedFont = sampleCell
+        ? `${getComputedStyle(sampleCell).fontWeight} ${getComputedStyle(sampleCell).fontSize} ${getComputedStyle(sampleCell).fontFamily}`
+        : '500 12px Inter, sans-serif';
+
+      let maxTextWidth = this.measureTextWidth(headerText, computedFont);
+
+      for (const row of rows) {
+        const rawValue = row?.[column.field];
+        const text = rawValue == null ? '' : String(rawValue);
+        const textWidth = this.measureTextWidth(text, computedFont);
+        if (textWidth > maxTextWidth) {
+          maxTextWidth = textWidth;
+        }
+      }
+
+      const paddedWidth = maxTextWidth + 24;
+      const minWidth = this.getColumnResizeMinWidth(column);
+      const maxWidth = this.getColumnResizeMaxWidth(column);
+
+      let nextWidth = Math.max(minWidth, paddedWidth);
+      if (maxWidth != null) {
+        nextWidth = Math.min(nextWidth, maxWidth);
+      }
+
+      column.width = `${Math.ceil(nextWidth)}px`;
+    });
   }
 
   @HostListener('document:click', ['$event'])
@@ -559,6 +614,56 @@ export class GridHeaderComponent implements OnChanges {
   private getSafeWidth(width?: string): number {
     const parsed = Number.parseInt(String(width ?? '150').replace('px', ''), 10);
     return Number.isFinite(parsed) && parsed > 0 ? parsed : 150;
+  }
+
+  private getColumnResizeMinWidth(column: ColumnConfig): number {
+    const rawMinWidth = (column as ColumnConfig & { minWidth?: string | number }).minWidth;
+
+    if (typeof rawMinWidth === 'number' && Number.isFinite(rawMinWidth)) {
+      return Math.max(50, rawMinWidth);
+    }
+
+    if (typeof rawMinWidth === 'string') {
+      const parsed = Number.parseInt(rawMinWidth.replace('px', '').trim(), 10);
+      if (Number.isFinite(parsed)) {
+        return Math.max(50, parsed);
+      }
+    }
+
+    return 50;
+  }
+
+  private getColumnResizeMaxWidth(column: ColumnConfig): number | null {
+    const rawMaxWidth = (column as ColumnConfig & { maxWidth?: string | number }).maxWidth;
+
+    if (typeof rawMaxWidth === 'number' && Number.isFinite(rawMaxWidth)) {
+      return Math.max(50, rawMaxWidth);
+    }
+
+    if (typeof rawMaxWidth === 'string') {
+      const parsed = Number.parseInt(rawMaxWidth.replace('px', '').trim(), 10);
+      if (Number.isFinite(parsed)) {
+        return Math.max(50, parsed);
+      }
+    }
+
+    return null;
+  }
+
+  private measureTextWidth(text: string, font: string): number {
+    const canvas = document.createElement('canvas');
+    const context = canvas.getContext('2d');
+    if (!context) {
+      return Math.max(0, text.length * 7);
+    }
+
+    context.font = font;
+    return context.measureText(text).width;
+  }
+
+  isColumnResizable(column: ColumnConfig): boolean {
+    const resizable = (column as ColumnConfig & { resizable?: boolean }).resizable;
+    return resizable !== false;
   }
 
   isColumnFiltered(field: string): boolean {

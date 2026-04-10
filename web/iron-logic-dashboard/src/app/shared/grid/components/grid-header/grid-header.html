@@ -42,7 +42,7 @@
         <input
           type="checkbox"
           (change)="onToggleAll($event)"
-          class="w-4 h-4 rounded border-slate-300 text-black focus:ring-black cursor-pointer"
+          class="w-4 h-4 rounded border-slate-300 text-indigo-500 focus:ring-indigo-500/20 cursor-pointer accent-indigo-500"
         />
       </ng-container>
 
@@ -65,7 +65,7 @@
             <ng-container *ngIf="col.sortable">
               <span
                 *ngIf="getSortOrder(col.field) as sortOrder"
-                class="text-[10px] font-bold text-blue-500"
+                class="text-[10px] font-bold text-indigo-500"
               >
                 {{ sortOrder === 'asc' ? '↑' : '↓' }}
                 <span *ngIf="hasMultiSort()">{{ getSortPriority(col.field) }}</span>
@@ -94,13 +94,13 @@
           >
             <lucide-icon
               name="filter"
-              class="w-3.5 h-3.5"
-              [class.text-blue-600]="isColumnFiltered(col.field)"
+              class="w-3.5 h-3.5 transition-colors hover:text-slate-500"
+              [class.text-indigo-500]="isColumnFiltered(col.field)"
               [class.text-slate-400]="!isColumnFiltered(col.field)"
             ></lucide-icon>
             <span
               *ngIf="isColumnFiltered(col.field)"
-              class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-600 ring-2 ring-white"
+              class="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-indigo-500 ring-2 ring-white"
             ></span>
           </button>
         </div>
@@ -122,7 +122,7 @@
             <select
               [ngModel]="tempFilterOperator()"
               (ngModelChange)="tempFilterOperator.set($event)"
-              class="w-full h-10 px-3 text-sm border border-slate-200 rounded-xl bg-white shadow-sm outline-none focus:border-blue-500 transition-all duration-200"
+              class="filter-modern-select w-full h-9 px-3 text-[11px] font-medium border border-slate-200 bg-white rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all duration-200"
             >
               <option value="equals">Is equal to</option>
               <option value="notEqual">Is not equal to</option>
@@ -134,13 +134,13 @@
               <option value="isNotNull">Is not null</option>
             </select>
 
-            <div *ngIf="shouldShowCalendarInputs()" class="flex items-center gap-2">
+            <div *ngIf="shouldShowCalendarInputs()" class="flex gap-2 items-center">
               <div class="relative flex-1">
                 <input
                   type="date"
                   [ngModel]="tempDate()"
                   (ngModelChange)="tempDate.set($event)"
-                  class="w-full h-10 pl-3 pr-10 text-xs border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/10 transition-all duration-200 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                  class="native-date-time-input filter-modern-date relative w-full h-9 pl-3 pr-10 text-[11px] border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all duration-200 accent-indigo-600"
                 />
                 <lucide-icon
                   name="calendar"
@@ -153,7 +153,7 @@
                   type="time"
                   [ngModel]="tempTime()"
                   (ngModelChange)="tempTime.set($event)"
-                  class="w-full h-10 pl-3 pr-10 text-xs border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500/10 transition-all duration-200 appearance-none [&::-webkit-calendar-picker-indicator]:opacity-0 [&::-webkit-calendar-picker-indicator]:absolute [&::-webkit-calendar-picker-indicator]:w-full [&::-webkit-calendar-picker-indicator]:h-full [&::-webkit-calendar-picker-indicator]:cursor-pointer"
+                  class="native-date-time-input filter-modern-time relative w-full h-9 pl-3 pr-10 text-[11px] border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all duration-200 accent-indigo-600"
                 />
                 <svg
                   class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
@@ -182,7 +182,7 @@
           <select
             [ngModel]="tempFilterOperator()"
             (ngModelChange)="tempFilterOperator.set($event)"
-            class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+            class="filter-modern-select w-full h-9 px-3 text-[11px] font-medium border border-slate-200 bg-white rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all duration-200"
           >
             <option value="contains">Contains</option>
             <option value="startsWith">Starts with</option>
@@ -191,7 +191,7 @@
           </select>
 
           <div
-            class="flex items-center w-full border border-slate-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-blue-500/20 transition-all duration-200"
+            class="flex items-center w-full border border-slate-200 rounded-lg bg-white overflow-hidden focus-within:ring-2 focus-within:ring-indigo-400/20 transition-all duration-200"
           >
             <div class="p-2.5 border-r border-slate-100 bg-slate-50">
               <lucide-icon name="search" class="w-4 h-4 text-slate-400"></lucide-icon>
@@ -215,7 +215,7 @@
           <select
             [ngModel]="tempFilterOperator()"
             (ngModelChange)="tempFilterOperator.set($event)"
-            class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+            class="filter-modern-select w-full h-9 px-3 text-[11px] font-medium border border-slate-200 bg-white rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all duration-200"
           >
             <option value="eq">=</option>
             <option value="gt">&gt;</option>
@@ -229,7 +229,7 @@
               [ngModel]="tempFilterValue()"
               (ngModelChange)="tempFilterValue.set($event)"
               placeholder="Enter value..."
-              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-indigo-400/20 transition-all duration-200"
             />
           </div>
 
@@ -239,14 +239,14 @@
               [ngModel]="tempRangeStart()"
               (ngModelChange)="tempRangeStart.set($event)"
               placeholder="Min"
-              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-indigo-400/20 transition-all duration-200"
             />
             <input
               type="number"
               [ngModel]="tempRangeEnd()"
               (ngModelChange)="tempRangeEnd.set($event)"
               placeholder="Max"
-              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-indigo-400/20 transition-all duration-200"
             />
           </div>
         </ng-container>
@@ -260,7 +260,7 @@
           <select
             [ngModel]="tempFilterOperator()"
             (ngModelChange)="tempFilterOperator.set($event)"
-            class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+            class="filter-modern-select w-full h-9 px-3 text-[11px] font-medium border border-slate-200 bg-white rounded-lg outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all duration-200"
           >
             <option value="equals">Equals</option>
             <option value="before">Before</option>
@@ -273,23 +273,39 @@
               type="date"
               [ngModel]="tempFilterValue()"
               (ngModelChange)="tempFilterValue.set($event)"
-              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+              class="native-date-time-input w-full h-9 pl-3 pr-10 border border-slate-200 rounded-lg text-[11px] font-medium bg-white outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all duration-200"
             />
+            <lucide-icon
+              name="calendar"
+              class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+            ></lucide-icon>
           </div>
 
           <div *ngIf="tempFilterOperator() === 'range'" class="grid grid-cols-2 gap-2">
-            <input
-              type="date"
-              [ngModel]="tempRangeStart()"
-              (ngModelChange)="tempRangeStart.set($event)"
-              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
-            />
-            <input
-              type="date"
-              [ngModel]="tempRangeEnd()"
-              (ngModelChange)="tempRangeEnd.set($event)"
-              class="w-full h-9 px-3 border border-slate-200 rounded-lg text-xs font-medium bg-white outline-none focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
-            />
+            <div class="relative">
+              <input
+                type="date"
+                [ngModel]="tempRangeStart()"
+                (ngModelChange)="tempRangeStart.set($event)"
+                class="native-date-time-input w-full h-9 pl-3 pr-10 border border-slate-200 rounded-lg text-[11px] font-medium bg-white outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all duration-200"
+              />
+              <lucide-icon
+                name="calendar"
+                class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+              ></lucide-icon>
+            </div>
+            <div class="relative">
+              <input
+                type="date"
+                [ngModel]="tempRangeEnd()"
+                (ngModelChange)="tempRangeEnd.set($event)"
+                class="native-date-time-input w-full h-9 pl-3 pr-10 border border-slate-200 rounded-lg text-[11px] font-medium bg-white outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all duration-200"
+              />
+              <lucide-icon
+                name="calendar"
+                class="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none"
+              ></lucide-icon>
+            </div>
           </div>
         </ng-container>
 
@@ -310,7 +326,7 @@
               <input
                 type="checkbox"
                 [checked]="tempSelectedOptions().includes(option)"
-                class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500/20 cursor-pointer"
+                class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500/20 cursor-pointer accent-indigo-600"
               />
               <span class="text-xs font-medium text-slate-700 flex-1">{{ option }}</span>
             </div>
@@ -327,18 +343,25 @@
         <div class="flex items-center gap-2 pt-1">
           <button
             (click)="applyFilter(col.field)"
-            class="flex-1 h-9 bg-[#0275d8] text-white rounded-lg text-xs font-bold hover:bg-blue-700 transition-all duration-200 active:scale-95"
+            class="flex-1 h-9 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold transition-all duration-200 active:scale-95"
           >
             Filter
           </button>
           <button
             (click)="clearFilter(col.field)"
-            class="flex-1 h-9 bg-slate-100 text-slate-700 rounded-lg text-xs font-bold border border-slate-200 hover:bg-slate-200 transition-all duration-200 active:scale-95"
+            class="flex-1 h-9 bg-white text-slate-500 rounded-lg text-xs font-bold border border-slate-200 hover:bg-slate-100 transition-all duration-200 active:scale-95"
           >
             Clear
           </button>
         </div>
       </div>
+
+      <div
+        *ngIf="isColumnResizable(col)"
+        class="column-resizer"
+        (mousedown)="onResizeStart($event, col)"
+        (dblclick)="autoFitColumn(col)"
+      ></div>
     </div>
   </div>
 </div>

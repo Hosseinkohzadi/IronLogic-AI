@@ -188,6 +188,10 @@ export class GridComponent implements OnInit, OnChanges {
     return fieldName !== headerName;
   }
 
+  isColumnFiltered(field: string): boolean {
+    return !!this.gridDataService.getFilter(field);
+  }
+
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
     if (!this.isColumnMenuOpen) {

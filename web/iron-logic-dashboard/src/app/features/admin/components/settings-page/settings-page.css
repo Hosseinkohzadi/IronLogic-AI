@@ -3,24 +3,26 @@
   height: 100%;
 }
 
-.tab-active {
-  background-color: var(--ai-600);
-  color: #ffffff;
+.ai-range {
+  accent-color: var(--ai-600);
 }
 
-.tab-idle {
-  background-color: #f1f5f9;
-  color: #64748b;
+.indigo-range {
+  accent-color: #4f46e5;
 }
 
-.toggle-on {
-  background-color: var(--finance-600);
+.indigo-toggle-on {
+  background-color: #4f46e5;
 }
 
-.toggle-off {
+.indigo-toggle-off {
   background-color: #cbd5e1;
 }
 
-.ai-range {
-  accent-color: var(--ai-600);
+.label-help {
+  color: #6366f1;
+}
+
+.settings-scroll {
+  scroll-behavior: smooth;
 }

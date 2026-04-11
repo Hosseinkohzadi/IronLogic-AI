@@ -3,4 +3,5 @@ export * from './coach.service';
 export * from './workout.service';
 export * from './workout-import.service';
 export * from './dashboard-filter.service';
-
+export * from './config.service';
+export * from './ai-engine-connection.service';

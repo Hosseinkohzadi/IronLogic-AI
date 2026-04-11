@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { take } from 'rxjs';
 import {
@@ -17,6 +17,7 @@ import {
   FinancialSettings,
   PaymentProvider,
   SubscriptionTierSettings,
+  UserAccessConfig,
 } from '@core/models';
 
 @Component({
@@ -61,6 +62,9 @@ export class SettingsPageComponent {
 
   readonly aiSettingsForm = this.createAiSettingsForm();
   readonly financialSettingsForm = this.createFinancialSettingsForm();
+  readonly settingsForm = this.formBuilder.nonNullable.group({
+    accessControl: this.createAccessControlForm(),
+  });
 
   readonly selectedModelStatus = computed(() => {
     const selectedModel = this.aiSettingsForm.controls.model.value;
@@ -75,6 +79,12 @@ export class SettingsPageComponent {
     });
 
     this.financialSettingsForm.valueChanges.subscribe(() => {
+      if (this.saveMessage()) {
+        this.saveMessage.set('');
+      }
+    });
+
+    this.settingsForm.controls.accessControl.valueChanges.subscribe(() => {
       if (this.saveMessage()) {
         this.saveMessage.set('');
       }
@@ -158,8 +168,38 @@ export class SettingsPageComponent {
     });
   }
 
+  private createAccessControlForm() {
+    const settings = this.configService.userAccessConfig();
+    return this.formBuilder.nonNullable.group({
+      requireAdminApprovalForCoaches: this.formBuilder.nonNullable.control(
+        settings.requireAdminApprovalForCoaches,
+      ),
+      allowCoachesExportData: this.formBuilder.nonNullable.control(settings.allowCoachesExportData),
+      allowAthletesEditHistory: this.formBuilder.nonNullable.control(
+        settings.allowAthletesEditHistory,
+      ),
+      guestViewOnlyMode: this.formBuilder.nonNullable.control(settings.guestViewOnlyMode),
+      maxLoginAttempts: this.formBuilder.nonNullable.control(settings.maxLoginAttempts, [
+        Validators.required,
+        Validators.min(1),
+        Validators.max(10),
+      ]),
+      lockoutDurationMinutes: this.formBuilder.nonNullable.control(
+        settings.lockoutDurationMinutes,
+        [Validators.required, Validators.min(1), Validators.max(1440)],
+      ),
+      sendEmailAlertOnLockout: this.formBuilder.nonNullable.control(
+        settings.sendEmailAlertOnLockout,
+      ),
+    });
+  }
+
   get tierControls() {
     return this.financialSettingsForm.controls.tiers.controls;
+  }
+
+  get accessControlForm() {
+    return this.settingsForm.controls.accessControl;
   }
 
   updateCoachName(value: string): void {
@@ -233,18 +273,25 @@ export class SettingsPageComponent {
   }
 
   saveAll(): void {
-    if (this.aiSettingsForm.invalid || this.financialSettingsForm.invalid) {
+    if (
+      this.aiSettingsForm.invalid ||
+      this.financialSettingsForm.invalid ||
+      this.accessControlForm.invalid
+    ) {
       this.aiSettingsForm.markAllAsTouched();
       this.financialSettingsForm.markAllAsTouched();
+      this.accessControlForm.markAllAsTouched();
       this.saveMessage.set('Please fix form validation errors before saving.');
       return;
     }
 
     const aiPayload: AiEngineSettings = this.aiSettingsForm.getRawValue();
     const financialPayload: FinancialSettings = this.financialSettingsForm.getRawValue();
+    const accessControlPayload: UserAccessConfig = this.accessControlForm.getRawValue();
 
     this.configService.updateAiEngineSettings(aiPayload);
     this.configService.updateFinancialSettings(financialPayload);
+    this.configService.updateUserAccessConfig(accessControlPayload);
     this.saveMessage.set('All settings saved successfully.');
   }
 }

@@ -24,53 +24,14 @@
     </div>
   </header>
 
-  <!-- ── Two-column body ── -->
-  <div class="mt-4 flex min-h-0 flex-1 gap-5 overflow-hidden">
-    <!-- Jump-to sidebar (hidden on mobile) -->
-    <nav aria-label="Settings sections" class="hidden w-44 shrink-0 overflow-y-auto lg:block">
-      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <p class="mb-3 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
-          Jump to
-        </p>
-        <ul class="space-y-0.5" role="list">
-          <li>
-            <a
-              href="#section-general"
-              class="settings-nav-link flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-            >
-              <lucide-icon name="settings" class="h-4 w-4 shrink-0 text-slate-400"></lucide-icon>
-              General
-            </a>
-          </li>
-          <li>
-            <a
-              href="#section-billing"
-              class="settings-nav-link flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-            >
-              <lucide-icon name="credit-card" class="h-4 w-4 shrink-0 text-slate-400"></lucide-icon>
-              Billing
-            </a>
-          </li>
-          <li>
-            <a
-              href="#section-ai"
-              class="settings-nav-link flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-            >
-              <lucide-icon name="zap" class="h-4 w-4 shrink-0 text-slate-400"></lucide-icon>
-              AI Engine
-            </a>
-          </li>
-        </ul>
-      </div>
-    </nav>
-
-    <!-- scrollable section cards -->
-    <div class="settings-scroll flex-1 overflow-y-auto">
-      <div class="space-y-8 pb-8">
+  <!-- Single-column body -->
+  <div class="mt-4 min-h-0 flex-1 overflow-hidden">
+    <div class="settings-scroll h-full overflow-y-auto">
+      <div class="flex flex-col gap-8 pb-8">
         <!-- ═══════════════ GENERAL SETTINGS ═══════════════ -->
         <section
           id="section-general"
-          class="scroll-mt-2 rounded-2xl border border-slate-200 bg-white shadow-sm"
+          class="order-1 scroll-mt-2 rounded-2xl border border-slate-200 bg-white shadow-sm"
         >
           <div class="flex items-start gap-4 p-6">
             <div
@@ -133,10 +94,244 @@
           </div>
         </section>
 
-        <!-- ═══════════════ BILLING & PLANS ═══════════════ -->
+        <!-- ═══════════════ USER & ACCESS CONTROL ═══════════════ -->
         <section
-          id="section-billing"
-          class="scroll-mt-2 rounded-2xl border border-slate-200 bg-white shadow-sm"
+          id="section-access"
+          class="order-2 scroll-mt-2 rounded-2xl border border-slate-200 bg-slate-50 shadow-sm"
+          [formGroup]="accessControlForm"
+        >
+          <div class="flex items-start gap-4 p-6">
+            <div
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100"
+            >
+              <lucide-icon name="shield-check" class="h-5 w-5 text-indigo-700"></lucide-icon>
+            </div>
+            <div>
+              <h2 class="text-base font-black text-slate-900">User &amp; Access Control</h2>
+              <p class="mt-0.5 text-sm text-slate-500">
+                Define registration approvals, role-level permissions, and account lockout policy
+                for secure operations.
+              </p>
+            </div>
+          </div>
+          <div class="mx-6 border-t border-slate-200"></div>
+
+          <div class="space-y-5 p-6">
+            <article class="rounded-2xl border border-slate-200 bg-white p-5">
+              <p class="text-[11px] font-black uppercase tracking-[0.13em] text-indigo-700">
+                Approval Queue (Registration Workflow)
+              </p>
+              <div
+                class="mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+              >
+                <div>
+                  <p class="text-sm font-bold text-slate-800">Require Admin Approval for Coaches</p>
+                  <p class="text-xs text-slate-500">
+                    New coaches won't have access to athlete data until manually approved.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
+                  [class.indigo-toggle-on]="
+                    accessControlForm.controls.requireAdminApprovalForCoaches.value
+                  "
+                  [class.indigo-toggle-off]="
+                    !accessControlForm.controls.requireAdminApprovalForCoaches.value
+                  "
+                  [attr.aria-pressed]="
+                    accessControlForm.controls.requireAdminApprovalForCoaches.value
+                  "
+                  (click)="
+                    accessControlForm.controls.requireAdminApprovalForCoaches.setValue(
+                      !accessControlForm.controls.requireAdminApprovalForCoaches.value
+                    )
+                  "
+                >
+                  <span
+                    class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
+                    [class.translate-x-6]="
+                      accessControlForm.controls.requireAdminApprovalForCoaches.value
+                    "
+                    [class.translate-x-1]="
+                      !accessControlForm.controls.requireAdminApprovalForCoaches.value
+                    "
+                  ></span>
+                </button>
+              </div>
+            </article>
+
+            <article class="rounded-2xl border border-slate-200 bg-white p-5">
+              <p class="text-[11px] font-black uppercase tracking-[0.13em] text-indigo-700">
+                Role Definitions &amp; Permissions
+              </p>
+              <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <div
+                  class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+                >
+                  <p class="text-sm font-semibold text-slate-700">Allow Coaches to Export Data</p>
+                  <button
+                    type="button"
+                    class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
+                    [class.indigo-toggle-on]="
+                      accessControlForm.controls.allowCoachesExportData.value
+                    "
+                    [class.indigo-toggle-off]="
+                      !accessControlForm.controls.allowCoachesExportData.value
+                    "
+                    [attr.aria-pressed]="accessControlForm.controls.allowCoachesExportData.value"
+                    (click)="
+                      accessControlForm.controls.allowCoachesExportData.setValue(
+                        !accessControlForm.controls.allowCoachesExportData.value
+                      )
+                    "
+                  >
+                    <span
+                      class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
+                      [class.translate-x-6]="
+                        accessControlForm.controls.allowCoachesExportData.value
+                      "
+                      [class.translate-x-1]="
+                        !accessControlForm.controls.allowCoachesExportData.value
+                      "
+                    ></span>
+                  </button>
+                </div>
+
+                <div
+                  class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+                >
+                  <p class="text-sm font-semibold text-slate-700">Allow Athletes to Edit History</p>
+                  <button
+                    type="button"
+                    class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
+                    [class.indigo-toggle-on]="
+                      accessControlForm.controls.allowAthletesEditHistory.value
+                    "
+                    [class.indigo-toggle-off]="
+                      !accessControlForm.controls.allowAthletesEditHistory.value
+                    "
+                    [attr.aria-pressed]="accessControlForm.controls.allowAthletesEditHistory.value"
+                    (click)="
+                      accessControlForm.controls.allowAthletesEditHistory.setValue(
+                        !accessControlForm.controls.allowAthletesEditHistory.value
+                      )
+                    "
+                  >
+                    <span
+                      class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
+                      [class.translate-x-6]="
+                        accessControlForm.controls.allowAthletesEditHistory.value
+                      "
+                      [class.translate-x-1]="
+                        !accessControlForm.controls.allowAthletesEditHistory.value
+                      "
+                    ></span>
+                  </button>
+                </div>
+
+                <div
+                  class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+                >
+                  <p class="text-sm font-semibold text-slate-700">Guest View-Only Mode</p>
+                  <button
+                    type="button"
+                    class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
+                    [class.indigo-toggle-on]="accessControlForm.controls.guestViewOnlyMode.value"
+                    [class.indigo-toggle-off]="!accessControlForm.controls.guestViewOnlyMode.value"
+                    [attr.aria-pressed]="accessControlForm.controls.guestViewOnlyMode.value"
+                    (click)="
+                      accessControlForm.controls.guestViewOnlyMode.setValue(
+                        !accessControlForm.controls.guestViewOnlyMode.value
+                      )
+                    "
+                  >
+                    <span
+                      class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
+                      [class.translate-x-6]="accessControlForm.controls.guestViewOnlyMode.value"
+                      [class.translate-x-1]="!accessControlForm.controls.guestViewOnlyMode.value"
+                    ></span>
+                  </button>
+                </div>
+              </div>
+            </article>
+
+            <article class="rounded-2xl border border-slate-200 bg-white p-5">
+              <p class="text-[11px] font-black uppercase tracking-[0.13em] text-indigo-700">
+                Account Lockout Policy
+              </p>
+              <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <label class="block space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Max Login Attempts</span
+                  >
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    formControlName="maxLoginAttempts"
+                    class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  />
+                </label>
+
+                <label class="block space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Lockout Duration (Minutes)</span
+                  >
+                  <input
+                    type="number"
+                    min="1"
+                    max="1440"
+                    formControlName="lockoutDurationMinutes"
+                    class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  />
+                </label>
+
+                <div
+                  class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 lg:mt-6"
+                >
+                  <div>
+                    <p class="text-sm font-semibold text-slate-700">Send Email Alert on Lockout</p>
+                    <p class="text-xs text-slate-500">
+                      Notify admins when an account is blocked by risk rules.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
+                    [class.indigo-toggle-on]="
+                      accessControlForm.controls.sendEmailAlertOnLockout.value
+                    "
+                    [class.indigo-toggle-off]="
+                      !accessControlForm.controls.sendEmailAlertOnLockout.value
+                    "
+                    [attr.aria-pressed]="accessControlForm.controls.sendEmailAlertOnLockout.value"
+                    (click)="
+                      accessControlForm.controls.sendEmailAlertOnLockout.setValue(
+                        !accessControlForm.controls.sendEmailAlertOnLockout.value
+                      )
+                    "
+                  >
+                    <span
+                      class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
+                      [class.translate-x-6]="
+                        accessControlForm.controls.sendEmailAlertOnLockout.value
+                      "
+                      [class.translate-x-1]="
+                        !accessControlForm.controls.sendEmailAlertOnLockout.value
+                      "
+                    ></span>
+                  </button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ═══════════════ FINANCIALS ═══════════════ -->
+        <section
+          id="section-financials"
+          class="order-4 scroll-mt-2 rounded-2xl border border-slate-200 bg-white shadow-sm"
         >
           <div class="flex items-start gap-4 p-6">
             <div
@@ -148,7 +343,7 @@
               ></lucide-icon>
             </div>
             <div>
-              <h2 class="text-base font-black text-slate-900">Billing &amp; Plans</h2>
+              <h2 class="text-base font-black text-slate-900">Financials</h2>
               <p class="mt-0.5 text-sm text-slate-500">
                 Configure subscription pricing, currency, and renewal automation rules.
               </p>
@@ -490,7 +685,7 @@
         <!-- ═══════════════ AI ENGINE LOGIC ═══════════════ -->
         <section
           id="section-ai"
-          class="scroll-mt-2 rounded-2xl border border-slate-200 bg-white shadow-sm"
+          class="order-3 scroll-mt-2 rounded-2xl border border-slate-200 bg-white shadow-sm"
         >
           <div class="flex items-start gap-4 p-6">
             <div

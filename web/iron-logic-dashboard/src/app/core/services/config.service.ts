@@ -2,8 +2,10 @@ import { Injectable, signal } from '@angular/core';
 import {
   AiEngineSettings,
   FinancialSettings,
+  UserAccessConfig,
   defaultAiEngineSettings,
   defaultFinancialSettings,
+  defaultUserAccessConfig,
 } from '@core/models';
 
 @Injectable({
@@ -12,9 +14,11 @@ import {
 export class ConfigService {
   private readonly aiStorageKey = 'ironlogic.aiEngineSettings';
   private readonly financialStorageKey = 'ironlogic.financialSettings';
+  private readonly userAccessStorageKey = 'ironlogic.userAccessConfig';
 
   readonly aiEngineSettings = signal<AiEngineSettings>(this.loadAiEngineSettings());
   readonly financialSettings = signal<FinancialSettings>(this.loadFinancialSettings());
+  readonly userAccessConfig = signal<UserAccessConfig>(this.loadUserAccessConfig());
 
   updateAiEngineSettings(settings: AiEngineSettings): void {
     this.aiEngineSettings.set(settings);
@@ -24,6 +28,11 @@ export class ConfigService {
   updateFinancialSettings(settings: FinancialSettings): void {
     this.financialSettings.set(settings);
     this.persistFinancialSettings(settings);
+  }
+
+  updateUserAccessConfig(settings: UserAccessConfig): void {
+    this.userAccessConfig.set(settings);
+    this.persistUserAccessConfig(settings);
   }
 
   private loadAiEngineSettings(): AiEngineSettings {
@@ -82,6 +91,35 @@ export class ConfigService {
     }
 
     localStorage.setItem(this.financialStorageKey, JSON.stringify(settings));
+  }
+
+  private loadUserAccessConfig(): UserAccessConfig {
+    if (!this.hasBrowserStorage()) {
+      return defaultUserAccessConfig;
+    }
+
+    const raw = localStorage.getItem(this.userAccessStorageKey);
+    if (!raw) {
+      return defaultUserAccessConfig;
+    }
+
+    try {
+      const parsed = JSON.parse(raw) as Partial<UserAccessConfig>;
+      return {
+        ...defaultUserAccessConfig,
+        ...parsed,
+      };
+    } catch {
+      return defaultUserAccessConfig;
+    }
+  }
+
+  private persistUserAccessConfig(settings: UserAccessConfig): void {
+    if (!this.hasBrowserStorage()) {
+      return;
+    }
+
+    localStorage.setItem(this.userAccessStorageKey, JSON.stringify(settings));
   }
 
   private hasBrowserStorage(): boolean {

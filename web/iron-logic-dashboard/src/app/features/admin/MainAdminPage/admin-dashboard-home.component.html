@@ -1,7 +1,7 @@
 <div class="flex h-full min-h-0 flex-col overflow-hidden bg-slate-50 p-4 sm:p-6 lg:p-8">
-  <div class="mx-auto flex h-full min-h-0 w-full max-w-[1400px] flex-col gap-6 overflow-auto">
+  <div class="mx-auto flex h-full min-h-0 w-full max-w-[1400px] flex-col gap-8 overflow-auto">
     <header
-      class="relative flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-start lg:justify-between"
+      class="relative mb-8 flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-start lg:justify-between"
     >
       <div>
         <h1 class="text-2xl font-black uppercase tracking-tight text-slate-900 sm:text-3xl">
@@ -72,7 +72,11 @@
                       [disabled]="hasAppliedAction(action.id, action.primaryAction)"
                       (click)="applyBlockingAction(action.id, action.primaryAction)"
                     >
-                      {{ hasAppliedAction(action.id, action.primaryAction) ? 'Applied' : action.primaryAction }}
+                      {{
+                        hasAppliedAction(action.id, action.primaryAction)
+                          ? 'Applied'
+                          : action.primaryAction
+                      }}
                     </button>
 
                     @if (action.secondaryAction; as secondary) {
@@ -92,9 +96,13 @@
           </div>
         }
 
-        <div class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2">
+        <div
+          class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2"
+        >
           <span class="relative inline-flex h-2.5 w-2.5">
-            <span class="absolute inline-flex h-full w-full rounded-full bg-emerald-400 animate-ping"></span>
+            <span
+              class="absolute inline-flex h-full w-full rounded-full bg-emerald-400 animate-ping"
+            ></span>
             <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-600"></span>
           </span>
           <span class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">
@@ -140,7 +148,7 @@
 
     <section
       aria-label="Key Performance Indicators"
-      class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"
+      class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4"
     >
       <app-kpi-card
         themeColor="indigo"
@@ -195,22 +203,30 @@
       ></button>
     }
 
-    <section aria-label="Super Admin Priorities" class="grid grid-cols-1 gap-4 xl:grid-cols-12">
-      <article class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm xl:col-span-8">
+    <section aria-label="Super Admin Priorities" class="grid grid-cols-12 gap-8">
+      <article
+        class="col-span-12 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-8"
+      >
         <div class="mb-4 flex items-center justify-between">
           <div>
-            <h2 class="text-sm font-black uppercase tracking-[0.12em] text-slate-700">High-Priority Grid</h2>
-            <p class="mt-0.5 text-[11px] text-slate-400">Blocking items requiring super-admin action</p>
+            <h2 class="text-sm font-black uppercase tracking-[0.12em] text-slate-700">
+              High-Priority Grid
+            </h2>
+            <p class="mt-0.5 text-[11px] text-slate-400">
+              Blocking items requiring super-admin action
+            </p>
           </div>
-          <span class="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-indigo-700">
+          <span
+            class="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-indigo-700"
+          >
             {{ urgentPendingCount() }} urgent
           </span>
         </div>
 
-        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
           @for (item of highPriorityGridItems; track item.id) {
             <article
-              class="rounded-xl border p-4"
+              class="rounded-2xl border p-6"
               [class.border-indigo-100]="item.accent === 'indigo'"
               [class.bg-indigo-50/50]="item.accent === 'indigo'"
               [class.border-rose-100]="item.accent === 'rose'"
@@ -242,10 +258,11 @@
         </div>
       </article>
 
-      <div class="flex flex-col gap-4 xl:col-span-4">
+      <div class="col-span-12 flex h-full flex-col gap-6 lg:col-span-4">
         <app-kpi-card
-          class="w-full xl:ml-auto xl:max-w-[320px]"
+          class="w-full h-full"
           [useCustomContent]="true"
+          customClass="w-full min-h-[26rem] p-8 shadow-sm"
           themeColor="indigo"
           label="Global User Density"
           mainIcon="globe"
@@ -266,27 +283,37 @@
             }
           </div>
 
-          <app-world-map [compactMode]="true" class="block h-full"></app-world-map>
+          <app-world-map [compactMode]="true" class="block h-full flex-1"></app-world-map>
         </app-kpi-card>
 
-        <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm xl:ml-auto xl:max-w-[320px]">
+        <article
+          class="flex min-h-[24rem] flex-1 flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+        >
           <div class="mb-3 flex items-center justify-between">
-            <h2 class="text-[11px] font-black uppercase tracking-[0.12em] text-slate-700">Blocking Feed</h2>
+            <h2 class="text-[11px] font-black uppercase tracking-[0.12em] text-slate-700">
+              Blocking Feed
+            </h2>
             <span class="relative inline-flex h-2.5 w-2.5" aria-hidden="true">
-              <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400"></span>
+              <span
+                class="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400"
+              ></span>
               <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-indigo-600"></span>
             </span>
           </div>
 
-          <div class="space-y-2.5">
+          <div class="flex-1 space-y-4">
             @for (item of liveBlockingActivity; track item.id) {
-              <div class="rounded-xl border border-slate-100 bg-slate-50/70 px-3 py-2.5">
+              <div class="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-4">
                 <div class="flex items-start gap-2.5">
-                  <span class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100">
+                  <span
+                    class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100"
+                  >
                     <lucide-icon [name]="item.icon" class="h-4 w-4 text-indigo-700"></lucide-icon>
                   </span>
                   <div class="min-w-0">
-                    <p class="text-xs font-semibold leading-snug text-slate-800">{{ item.title }}</p>
+                    <p class="text-xs font-semibold leading-snug text-slate-800">
+                      {{ item.title }}
+                    </p>
                     <p class="mt-0.5 text-[10px] font-medium text-slate-400">{{ item.time }}</p>
                   </div>
                 </div>

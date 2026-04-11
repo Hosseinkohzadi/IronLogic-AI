@@ -27,7 +27,6 @@ export class SidebarComponent {
     { label: 'Sessions', route: '/admin/sessions', icon: 'calendar' },
     { label: 'Financial', route: '/admin/financial', icon: 'credit-card' },
     { label: 'Exercises', route: '/admin/exercises', icon: 'dumbbell' },
-    { label: 'Exercise Sessions', route: '/admin/exercise-sessions', icon: 'activity' },
     { label: 'Muscles', route: '/admin/muscles', icon: 'layers' },
     { label: 'Equipment', route: '/admin/equipment', icon: 'wrench' },
     { label: 'Integrity', route: '/admin/integrity', icon: 'shield-check' },

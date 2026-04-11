@@ -1,6 +1,7 @@
 <div
   class="p-6 rounded-[1.5rem] border transition-all hover:shadow-md flex flex-col h-full group overflow-visible"
   [ngStyle]="containerStyles()"
+  [ngClass]="customClass()"
   [class.cursor-pointer]="actionType() !== 'none'"
   (click)="handleClick()"
 >

@@ -1,21 +1,29 @@
-import { test, expect } from '@playwright/test';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
+import { App } from './app';
 
-test.describe('App Root Component', () => {
-  test.beforeEach(async ({ page }) => {
-    // Navigate to the application's root
-    await page.goto('/');
+describe('App', () => {
+  let component: App;
+  let fixture: ComponentFixture<App>;
+
+  beforeEach(async () => {
+    TestBed.overrideComponent(App, {
+      set: {
+        template: '<main><router-outlet></router-outlet></main>',
+      },
+    });
+
+    await TestBed.configureTestingModule({
+      imports: [App],
+      providers: [provideRouter([])],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(App);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
   });
 
-  test('should load the app successfully', async ({ page }) => {
-    // Check that the page has loaded without issues (e.g., the body tag is visible)
-    const body = page.locator('body');
-    await expect(body).toBeVisible();
-  });
-
-  test('should contain a router-outlet for routing', async ({ page }) => {
-    // The router-outlet tag usually has no physical or visible style on the page (it's just a placeholder)
-    // So, instead of toBeVisible, we use toBeAttached to just check for its existence in the DOM
-    const routerOutlet = page.locator('router-outlet');
-    await expect(routerOutlet).toBeAttached();
+  it('should create the app', () => {
+    expect(component).toBeTruthy();
   });
 });

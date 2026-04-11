@@ -1,172 +1,765 @@
-<div class="flex h-full min-h-0 flex-col gap-6 overflow-hidden">
-  <header class="rounded-2xl border border-[var(--ai-200)] bg-white p-5 shadow-sm">
-    <p class="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--ai-600)]">Admin / Settings</p>
-    <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-900">Coach Settings</h1>
-    <p class="mt-1 text-sm text-slate-500">Configure profile, billing rules, and AI generation behavior.</p>
-  </header>
-
-  <section class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
-    <div class="settings-tabs flex flex-wrap gap-2" role="tablist" aria-label="Settings sections">
+<form class="flex h-full min-h-0 flex-col overflow-hidden" (submit)="$event.preventDefault()">
+  <!-- ── Sticky top action bar ── -->
+  <header
+    class="flex shrink-0 flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--ai-200)] bg-white px-5 py-4 shadow-sm"
+  >
+    <div>
+      <p class="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--ai-600)]">
+        Admin / Settings
+      </p>
+      <h1 class="mt-0.5 text-xl font-black tracking-tight text-slate-900">Coach Settings</h1>
+    </div>
+    <div class="flex items-center gap-3">
+      @if (saveMessage()) {
+        <p class="text-xs font-semibold text-indigo-700">{{ saveMessage() }}</p>
+      }
       <button
         type="button"
-        role="tab"
-        [attr.aria-selected]="activeTab() === 'general'"
-        [class.tab-active]="activeTab() === 'general'"
-        [class.tab-idle]="activeTab() !== 'general'"
-        (click)="setTab('general')"
-        class="rounded-xl px-4 py-2 text-xs font-black uppercase tracking-[0.11em] transition-colors"
+        (click)="saveAll()"
+        class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2 text-xs font-black uppercase tracking-[0.1em] text-white shadow-sm transition hover:bg-indigo-700"
       >
-        General
-      </button>
-      <button
-        type="button"
-        role="tab"
-        [attr.aria-selected]="activeTab() === 'billing'"
-        [class.tab-active]="activeTab() === 'billing'"
-        [class.tab-idle]="activeTab() !== 'billing'"
-        (click)="setTab('billing')"
-        class="rounded-xl px-4 py-2 text-xs font-black uppercase tracking-[0.11em] transition-colors"
-      >
-        Billing
-      </button>
-      <button
-        type="button"
-        role="tab"
-        [attr.aria-selected]="activeTab() === 'ai'"
-        [class.tab-active]="activeTab() === 'ai'"
-        [class.tab-idle]="activeTab() !== 'ai'"
-        (click)="setTab('ai')"
-        class="rounded-xl px-4 py-2 text-xs font-black uppercase tracking-[0.11em] transition-colors"
-      >
-        AI Preferences
+        <lucide-icon name="check" class="h-4 w-4"></lucide-icon>
+        Save Changes
       </button>
     </div>
+  </header>
 
-    @if (activeTab() === 'general') {
-      <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
-        <article class="rounded-2xl border border-[var(--ai-200)] bg-[var(--ai-surface)] p-5 lg:col-span-1">
-          <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--ai-700)]">Avatar</p>
-          <div class="mt-3 flex h-40 items-center justify-center rounded-2xl border border-dashed border-[var(--ai-300)] bg-white">
-            <div class="text-center">
-              <span class="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--ai-100)]">
-                <lucide-icon name="upload" class="h-5 w-5 text-[var(--ai-700)]"></lucide-icon>
-              </span>
-              <p class="mt-2 text-xs font-semibold text-slate-600">Avatar upload placeholder</p>
-            </div>
-          </div>
-        </article>
-
-        <article class="rounded-2xl border border-slate-200 bg-white p-5 lg:col-span-2">
-          <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--ai-700)]">Profile</p>
-
-          <label class="mt-4 block space-y-1.5">
-            <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Coach Name</span>
-            <input
-              [ngModel]="coachName()"
-              (ngModelChange)="updateCoachName($event)"
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-[var(--ai-400)] focus:ring-2 focus:ring-[var(--ai-100)]"
-            />
-          </label>
-
-          <label class="mt-4 block space-y-1.5">
-            <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Bio</span>
-            <textarea
-              rows="4"
-              [ngModel]="coachBio()"
-              (ngModelChange)="updateCoachBio($event)"
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-[var(--ai-400)] focus:ring-2 focus:ring-[var(--ai-100)]"
-            ></textarea>
-          </label>
-        </article>
-      </div>
-    }
-
-    @if (activeTab() === 'billing') {
-      <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-2">
-        <article class="rounded-2xl border border-[var(--finance-200)] bg-[var(--finance-surface)] p-5">
-          <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--finance-700)]">Business Rules</p>
-
-          <label class="mt-4 block space-y-1.5">
-            <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Monthly Subscription Fee</span>
-            <input
-              type="number"
-              [ngModel]="monthlyFee()"
-              (ngModelChange)="updateMonthlyFee($event)"
-              min="0"
-              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-[var(--finance-400)] focus:ring-2 focus:ring-[var(--finance-100)]"
-            />
-          </label>
-
-          <label class="mt-4 block space-y-1.5">
-            <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Currency</span>
-            <select
-              [ngModel]="currency()"
-              (ngModelChange)="updateCurrency($event)"
-              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-[var(--finance-400)] focus:ring-2 focus:ring-[var(--finance-100)]"
+  <!-- ── Two-column body ── -->
+  <div class="mt-4 flex min-h-0 flex-1 gap-5 overflow-hidden">
+    <!-- Jump-to sidebar (hidden on mobile) -->
+    <nav aria-label="Settings sections" class="hidden w-44 shrink-0 overflow-y-auto lg:block">
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="mb-3 text-[10px] font-black uppercase tracking-[0.14em] text-slate-400">
+          Jump to
+        </p>
+        <ul class="space-y-0.5" role="list">
+          <li>
+            <a
+              href="#section-general"
+              class="settings-nav-link flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
             >
-              <option value="USD">USD</option>
-              <option value="IRT">IRT</option>
-            </select>
-          </label>
-        </article>
+              <lucide-icon name="settings" class="h-4 w-4 shrink-0 text-slate-400"></lucide-icon>
+              General
+            </a>
+          </li>
+          <li>
+            <a
+              href="#section-billing"
+              class="settings-nav-link flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+            >
+              <lucide-icon name="credit-card" class="h-4 w-4 shrink-0 text-slate-400"></lucide-icon>
+              Billing
+            </a>
+          </li>
+          <li>
+            <a
+              href="#section-ai"
+              class="settings-nav-link flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
+            >
+              <lucide-icon name="zap" class="h-4 w-4 shrink-0 text-slate-400"></lucide-icon>
+              AI Engine
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
 
-        <article class="rounded-2xl border border-slate-200 bg-white p-5">
-          <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--finance-700)]">Automation</p>
-
-          <div class="mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+    <!-- scrollable section cards -->
+    <div class="settings-scroll flex-1 overflow-y-auto">
+      <div class="space-y-8 pb-8">
+        <!-- ═══════════════ GENERAL SETTINGS ═══════════════ -->
+        <section
+          id="section-general"
+          class="scroll-mt-2 rounded-2xl border border-slate-200 bg-white shadow-sm"
+        >
+          <div class="flex items-start gap-4 p-6">
+            <div
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--ai-100)]"
+            >
+              <lucide-icon name="settings" class="h-5 w-5 text-[var(--ai-700)]"></lucide-icon>
+            </div>
             <div>
-              <p class="text-sm font-bold text-slate-800">Auto-remind athletes</p>
-              <p class="text-xs text-slate-500">Send reminder notifications before renewal date</p>
+              <h2 class="text-base font-black text-slate-900">General Settings</h2>
+              <p class="mt-0.5 text-sm text-slate-500">
+                Manage your coach profile, display name, and public biography.
+              </p>
             </div>
-            <button
-              type="button"
-              (click)="updateAutoRemind(!autoRemindAthletes())"
-              [attr.aria-pressed]="autoRemindAthletes()"
-              class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
-              [class.toggle-on]="autoRemindAthletes()"
-              [class.toggle-off]="!autoRemindAthletes()"
+          </div>
+          <div class="mx-6 border-t border-slate-100"></div>
+
+          <div class="grid grid-cols-1 gap-5 p-6 lg:grid-cols-3">
+            <div
+              class="flex flex-col rounded-2xl border border-dashed border-[var(--ai-300)] bg-[var(--ai-surface)] p-4 lg:col-span-1"
             >
-              <span
-                class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
-                [class.translate-x-6]="autoRemindAthletes()"
-                [class.translate-x-1]="!autoRemindAthletes()"
-              ></span>
-            </button>
+              <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--ai-700)]">
+                Avatar
+              </p>
+              <div
+                class="mt-3 flex flex-1 items-center justify-center rounded-2xl border border-dashed border-[var(--ai-300)] bg-white py-8"
+              >
+                <div class="text-center">
+                  <span
+                    class="mx-auto inline-flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--ai-100)]"
+                  >
+                    <lucide-icon name="upload" class="h-5 w-5 text-[var(--ai-700)]"></lucide-icon>
+                  </span>
+                  <p class="mt-2 text-xs font-semibold text-slate-600">Avatar upload placeholder</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4 lg:col-span-2">
+              <label class="block space-y-1.5">
+                <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                  >Coach Name</span
+                >
+                <input
+                  [ngModel]="coachName()"
+                  (ngModelChange)="updateCoachName($event)"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                />
+              </label>
+
+              <label class="block space-y-1.5">
+                <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500">Bio</span>
+                <textarea
+                  rows="5"
+                  [ngModel]="coachBio()"
+                  (ngModelChange)="updateCoachBio($event)"
+                  class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
+                ></textarea>
+              </label>
+            </div>
           </div>
-        </article>
+        </section>
+
+        <!-- ═══════════════ BILLING & PLANS ═══════════════ -->
+        <section
+          id="section-billing"
+          class="scroll-mt-2 rounded-2xl border border-slate-200 bg-white shadow-sm"
+        >
+          <div class="flex items-start gap-4 p-6">
+            <div
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--finance-100)]"
+            >
+              <lucide-icon
+                name="credit-card"
+                class="h-5 w-5 text-[var(--finance-700)]"
+              ></lucide-icon>
+            </div>
+            <div>
+              <h2 class="text-base font-black text-slate-900">Billing &amp; Plans</h2>
+              <p class="mt-0.5 text-sm text-slate-500">
+                Configure subscription pricing, currency, and renewal automation rules.
+              </p>
+            </div>
+          </div>
+          <div class="mx-6 border-t border-slate-100"></div>
+
+          <div class="space-y-5 p-6" [formGroup]="financialSettingsForm">
+            <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+              <article
+                class="rounded-2xl border border-[var(--finance-200)] bg-[var(--finance-surface)] p-5"
+              >
+                <p
+                  class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--finance-700)]"
+                >
+                  Currency &amp; Localization
+                </p>
+
+                <label class="mt-4 block space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Base Currency</span
+                  >
+                  <select
+                    formControlName="baseCurrency"
+                    class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  >
+                    @for (currencyCode of currencyOptions; track currencyCode) {
+                      <option [value]="currencyCode">{{ currencyCode }}</option>
+                    }
+                  </select>
+                </label>
+
+                <label class="mt-4 block space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Tax Rate (%)</span
+                  >
+                  <input
+                    type="number"
+                    min="0"
+                    max="40"
+                    step="0.1"
+                    formControlName="taxRate"
+                    class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  />
+                </label>
+
+                <div class="mt-4 space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Currency Display</span
+                  >
+                  <div class="inline-flex rounded-xl border border-slate-200 bg-white p-1">
+                    <button
+                      type="button"
+                      (click)="setCurrencyDisplay('symbol')"
+                      class="rounded-lg px-3 py-1 text-xs font-bold transition"
+                      [class.bg-indigo-600]="
+                        financialSettingsForm.controls.currencyDisplay.value === 'symbol'
+                      "
+                      [class.text-white]="
+                        financialSettingsForm.controls.currencyDisplay.value === 'symbol'
+                      "
+                      [class.text-slate-600]="
+                        financialSettingsForm.controls.currencyDisplay.value !== 'symbol'
+                      "
+                    >
+                      Symbol ($)
+                    </button>
+                    <button
+                      type="button"
+                      (click)="setCurrencyDisplay('code')"
+                      class="rounded-lg px-3 py-1 text-xs font-bold transition"
+                      [class.bg-indigo-600]="
+                        financialSettingsForm.controls.currencyDisplay.value === 'code'
+                      "
+                      [class.text-white]="
+                        financialSettingsForm.controls.currencyDisplay.value === 'code'
+                      "
+                      [class.text-slate-600]="
+                        financialSettingsForm.controls.currencyDisplay.value !== 'code'
+                      "
+                    >
+                      Code (USD)
+                    </button>
+                  </div>
+                </div>
+
+                <div class="mt-4 flex items-center gap-3">
+                  <button
+                    type="button"
+                    (click)="syncRates()"
+                    [disabled]="syncState() === 'syncing'"
+                    class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-black uppercase tracking-[0.1em] text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    <lucide-icon name="refresh-cw" class="h-4 w-4"></lucide-icon>
+                    {{ syncState() === 'syncing' ? 'Syncing...' : 'Sync Rates' }}
+                  </button>
+                  <p
+                    class="text-xs font-semibold"
+                    [class.text-emerald-700]="syncState() === 'success'"
+                    [class.text-rose-600]="syncState() === 'error'"
+                    [class.text-slate-500]="syncState() === 'idle' || syncState() === 'syncing'"
+                  >
+                    {{
+                      syncMessage() || 'Pull latest tax/conversion hints for this base currency.'
+                    }}
+                  </p>
+                </div>
+              </article>
+
+              <article class="rounded-2xl border border-slate-200 bg-white p-5">
+                <div class="flex items-center justify-between">
+                  <p
+                    class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--finance-700)]"
+                  >
+                    Payment Gateway Integration
+                  </p>
+                  <span
+                    class="rounded-full bg-indigo-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-indigo-700"
+                    >Financial Blue</span
+                  >
+                </div>
+
+                <label class="mt-4 block space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Active Provider</span
+                  >
+                  <select
+                    formControlName="activeProvider"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  >
+                    @for (provider of providerOptions; track provider.value) {
+                      <option [value]="provider.value">{{ provider.label }}</option>
+                    }
+                  </select>
+                </label>
+
+                <label class="mt-4 block space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Webhook Secret</span
+                  >
+                  <div class="flex items-center gap-2">
+                    <input
+                      [type]="showWebhookSecret() ? 'text' : 'password'"
+                      formControlName="webhookSecret"
+                      class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                      placeholder="whsec_..."
+                    />
+                    <button
+                      type="button"
+                      (click)="toggleWebhookSecretVisibility()"
+                      class="inline-flex rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                    >
+                      {{ showWebhookSecret() ? 'Hide' : 'Show' }}
+                    </button>
+                  </div>
+                </label>
+
+                <div
+                  class="mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+                >
+                  <div>
+                    <p class="text-sm font-bold text-slate-800">Test Mode</p>
+                    <p class="text-xs text-slate-500">
+                      Switch between Sandbox and Production environments.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
+                    [class.indigo-toggle-on]="financialSettingsForm.controls.testMode.value"
+                    [class.indigo-toggle-off]="!financialSettingsForm.controls.testMode.value"
+                    [attr.aria-pressed]="financialSettingsForm.controls.testMode.value"
+                    (click)="
+                      financialSettingsForm.controls.testMode.setValue(
+                        !financialSettingsForm.controls.testMode.value
+                      )
+                    "
+                  >
+                    <span
+                      class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
+                      [class.translate-x-6]="financialSettingsForm.controls.testMode.value"
+                      [class.translate-x-1]="!financialSettingsForm.controls.testMode.value"
+                    ></span>
+                  </button>
+                </div>
+              </article>
+            </div>
+
+            <article class="rounded-2xl border border-slate-200 bg-white p-5">
+              <p
+                class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--finance-700)]"
+              >
+                Subscription Management
+              </p>
+              <p class="mt-1 text-xs text-slate-500">
+                Edit your default plan economics for Basic, Pro, and Elite tiers.
+              </p>
+
+              <div class="mt-4 overflow-x-auto">
+                <table class="min-w-full text-left text-sm">
+                  <thead>
+                    <tr
+                      class="border-b border-slate-200 text-[10px] font-black uppercase tracking-[0.1em] text-slate-500"
+                    >
+                      <th class="px-2 py-2">Tier</th>
+                      <th class="px-2 py-2">Monthly Price</th>
+                      <th class="px-2 py-2">Annual Discount (%)</th>
+                      <th class="px-2 py-2">Trial Period (Days)</th>
+                    </tr>
+                  </thead>
+                  <tbody formArrayName="tiers">
+                    @for (tierForm of tierControls; track $index) {
+                      <tr
+                        [formGroupName]="$index"
+                        class="border-b border-slate-100 last:border-b-0"
+                      >
+                        <td class="px-2 py-2 font-bold text-slate-700">
+                          {{ tierForm.controls.name.value }}
+                        </td>
+                        <td class="px-2 py-2">
+                          <input
+                            type="number"
+                            min="0"
+                            formControlName="monthlyPrice"
+                            class="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                          />
+                        </td>
+                        <td class="px-2 py-2">
+                          <input
+                            type="number"
+                            min="0"
+                            max="90"
+                            formControlName="annualDiscount"
+                            class="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                          />
+                        </td>
+                        <td class="px-2 py-2">
+                          <input
+                            type="number"
+                            min="0"
+                            max="60"
+                            formControlName="trialPeriodDays"
+                            class="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                          />
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </article>
+
+            <article class="rounded-2xl border border-slate-200 bg-white p-5">
+              <p
+                class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--finance-700)]"
+              >
+                Automated Actions
+              </p>
+
+              <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div
+                  class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+                >
+                  <div>
+                    <p class="flex items-center gap-2 text-sm font-bold text-slate-800">
+                      Auto-Invoice
+                      <lucide-icon
+                        name="trending-up"
+                        class="h-4 w-4 text-indigo-500"
+                        title="Helps keep payment receipts consistent for accounting and athlete support."
+                      ></lucide-icon>
+                    </p>
+                    <p class="text-xs text-slate-500">
+                      Send PDF receipt to athletes automatically on payment.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
+                    [class.indigo-toggle-on]="financialSettingsForm.controls.autoInvoice.value"
+                    [class.indigo-toggle-off]="!financialSettingsForm.controls.autoInvoice.value"
+                    [attr.aria-pressed]="financialSettingsForm.controls.autoInvoice.value"
+                    (click)="
+                      financialSettingsForm.controls.autoInvoice.setValue(
+                        !financialSettingsForm.controls.autoInvoice.value
+                      )
+                    "
+                  >
+                    <span
+                      class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
+                      [class.translate-x-6]="financialSettingsForm.controls.autoInvoice.value"
+                      [class.translate-x-1]="!financialSettingsForm.controls.autoInvoice.value"
+                    ></span>
+                  </button>
+                </div>
+
+                <div
+                  class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+                >
+                  <div>
+                    <p class="flex items-center gap-2 text-sm font-bold text-slate-800">
+                      Churn Prevention
+                      <lucide-icon
+                        name="activity"
+                        class="h-4 w-4 text-indigo-500"
+                        title="Flags pending actions and helps reduce churn rate by alerting admins within 48 hours."
+                      ></lucide-icon>
+                    </p>
+                    <p class="text-xs text-slate-500">
+                      Notify admin if renewal is not completed within 48 hours of expiry.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
+                    [class.indigo-toggle-on]="financialSettingsForm.controls.churnPrevention.value"
+                    [class.indigo-toggle-off]="
+                      !financialSettingsForm.controls.churnPrevention.value
+                    "
+                    [attr.aria-pressed]="financialSettingsForm.controls.churnPrevention.value"
+                    (click)="
+                      financialSettingsForm.controls.churnPrevention.setValue(
+                        !financialSettingsForm.controls.churnPrevention.value
+                      )
+                    "
+                  >
+                    <span
+                      class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
+                      [class.translate-x-6]="financialSettingsForm.controls.churnPrevention.value"
+                      [class.translate-x-1]="!financialSettingsForm.controls.churnPrevention.value"
+                    ></span>
+                  </button>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ═══════════════ AI ENGINE LOGIC ═══════════════ -->
+        <section
+          id="section-ai"
+          class="scroll-mt-2 rounded-2xl border border-slate-200 bg-white shadow-sm"
+        >
+          <div class="flex items-start gap-4 p-6">
+            <div
+              class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50"
+            >
+              <lucide-icon name="zap" class="h-5 w-5 text-indigo-600"></lucide-icon>
+            </div>
+            <div>
+              <h2 class="text-base font-black text-slate-900">AI Engine Logic</h2>
+              <p class="mt-0.5 text-sm text-slate-500">
+                Configure the LLM model, API credentials, token quota, and behavioral parameters
+                used by the workout analysis pipeline.
+              </p>
+            </div>
+          </div>
+          <div class="mx-6 border-t border-slate-100"></div>
+
+          <div class="space-y-5 p-6" [formGroup]="aiSettingsForm">
+            <!-- Model + API row -->
+            <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+              <div class="rounded-2xl border border-[var(--ai-200)] bg-[var(--ai-surface)] p-5">
+                <div class="flex items-center justify-between">
+                  <p
+                    class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--ai-700)]"
+                  >
+                    Model Selection
+                  </p>
+                  <span
+                    class="inline-flex rounded-full bg-[var(--ai-100)] px-3 py-1 text-[11px] font-black uppercase tracking-[0.08em] text-[var(--ai-700)]"
+                    >{{ selectedModelStatus() }}</span
+                  >
+                </div>
+                <label class="mt-3 block space-y-1.5">
+                  <span
+                    class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                  >
+                    Active LLM Model
+                    <button
+                      type="button"
+                      title="Select the model used by analysis and recommendation workflows."
+                      aria-label="Information about model selection"
+                      class="label-help"
+                    >
+                      <lucide-icon name="info" class="h-4 w-4"></lucide-icon>
+                    </button>
+                  </span>
+                  <select
+                    formControlName="model"
+                    class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  >
+                    @for (model of aiModelOptions; track model.id) {
+                      <option [value]="model.id">{{ model.label }}</option>
+                    }
+                  </select>
+                </label>
+              </div>
+
+              <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--ai-700)]">
+                  API Configuration
+                </p>
+                <label class="mt-4 block space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >API Key</span
+                  >
+                  <div class="flex items-center gap-2">
+                    <input
+                      [type]="showApiKey() ? 'text' : 'password'"
+                      formControlName="apiKey"
+                      autocomplete="off"
+                      class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                      placeholder="sk-..."
+                    />
+                    <button
+                      type="button"
+                      (click)="toggleApiKeyVisibility()"
+                      class="inline-flex rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                    >
+                      {{ showApiKey() ? 'Hide' : 'Show' }}
+                    </button>
+                  </div>
+                </label>
+                <label class="mt-4 block space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Base URL</span
+                  >
+                  <input
+                    type="url"
+                    formControlName="baseUrl"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                    placeholder="https://api.provider.com/v1"
+                  />
+                </label>
+                <div class="mt-4 flex flex-wrap items-center gap-3">
+                  <button
+                    type="button"
+                    (click)="testConnection()"
+                    [disabled]="connectionState() === 'testing'"
+                    class="inline-flex items-center rounded-xl bg-indigo-600 px-4 py-2 text-xs font-black uppercase tracking-[0.1em] text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    {{ connectionState() === 'testing' ? 'Testing...' : 'Test Connection' }}
+                  </button>
+                  <p
+                    class="text-xs font-semibold"
+                    [class.text-emerald-700]="connectionState() === 'success'"
+                    [class.text-rose-600]="connectionState() === 'error'"
+                    [class.text-slate-500]="
+                      connectionState() === 'idle' || connectionState() === 'testing'
+                    "
+                  >
+                    {{
+                      connectionMessage() ||
+                        'Verify the current API key and endpoint before saving.'
+                    }}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tokens & Quota -->
+            <div class="rounded-2xl border border-slate-200 bg-white p-5">
+              <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--ai-700)]">
+                Tokens and Quota
+              </p>
+              <div class="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-2">
+                <label class="block space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Max Tokens per User / Month</span
+                  >
+                  <input
+                    type="number"
+                    min="1000"
+                    step="1000"
+                    formControlName="maxTokensPerUserMonth"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  />
+                </label>
+                <div class="space-y-2">
+                  <p
+                    class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                  >
+                    Context Window Size
+                    <button
+                      type="button"
+                      title="The maximum context in tokens the model can consider per request."
+                      aria-label="Information about context window"
+                      class="label-help"
+                    >
+                      <lucide-icon name="info" class="h-4 w-4"></lucide-icon>
+                    </button>
+                  </p>
+                  <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                    <input
+                      type="range"
+                      min="4000"
+                      max="128000"
+                      step="1000"
+                      class="indigo-range w-full"
+                      formControlName="contextWindowSize"
+                      aria-label="Context Window Size"
+                    />
+                    <div class="mt-2 flex items-center justify-between text-xs text-slate-500">
+                      <span>4k</span>
+                      <span class="font-bold text-indigo-700"
+                        >{{
+                          (aiSettingsForm.controls.contextWindowSize.value / 1000).toFixed(0)
+                        }}k</span
+                      >
+                      <span>128k</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- AI Behavior + System Prompt -->
+            <div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+              <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--ai-700)]">
+                  AI Behavior
+                </p>
+                <div class="mt-4 space-y-4">
+                  <div class="space-y-2">
+                    <p
+                      class="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >
+                      Temperature
+                      <button
+                        type="button"
+                        title="Lower values are more deterministic; higher values generate more creative plans."
+                        aria-label="Information about temperature"
+                        class="label-help"
+                      >
+                        <lucide-icon name="info" class="h-4 w-4"></lucide-icon>
+                      </button>
+                    </p>
+                    <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3">
+                      <input
+                        type="range"
+                        min="0"
+                        max="1"
+                        step="0.05"
+                        class="indigo-range w-full"
+                        formControlName="temperature"
+                        aria-label="Temperature"
+                      />
+                      <div class="mt-2 flex items-center justify-between text-xs text-slate-500">
+                        <span>0.0 Precision</span>
+                        <span class="font-bold text-indigo-700">{{
+                          aiSettingsForm.controls.temperature.value.toFixed(2)
+                        }}</span>
+                        <span>1.0 Creative</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div
+                    class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+                  >
+                    <div>
+                      <p class="text-sm font-bold text-slate-800">Strict Form Checking</p>
+                      <p class="text-xs text-slate-500">
+                        Enable high-sensitivity posture and movement checks.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
+                      [class.indigo-toggle-on]="aiSettingsForm.controls.strictFormChecking.value"
+                      [class.indigo-toggle-off]="!aiSettingsForm.controls.strictFormChecking.value"
+                      [attr.aria-pressed]="aiSettingsForm.controls.strictFormChecking.value"
+                      (click)="
+                        aiSettingsForm.controls.strictFormChecking.setValue(
+                          !aiSettingsForm.controls.strictFormChecking.value
+                        )
+                      "
+                    >
+                      <span
+                        class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
+                        [class.translate-x-6]="aiSettingsForm.controls.strictFormChecking.value"
+                        [class.translate-x-1]="!aiSettingsForm.controls.strictFormChecking.value"
+                      ></span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-2xl border border-slate-200 bg-white p-5">
+                <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--ai-700)]">
+                  System Prompt
+                </p>
+                <p class="mt-1 text-sm text-slate-500">
+                  Master instructions that shape the AI personality as an elite fitness coach.
+                </p>
+                <label class="mt-4 block space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Master Instructions</span
+                  >
+                  <textarea
+                    rows="9"
+                    formControlName="masterPrompt"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                    placeholder="You are IronLogic's elite fitness coach..."
+                  ></textarea>
+                </label>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
-    }
-
-    @if (activeTab() === 'ai') {
-      <div class="mt-5 rounded-2xl border border-[var(--ai-200)] bg-[var(--ai-surface)] p-5">
-        <p class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--ai-700)]">AI Program Aggressiveness</p>
-        <p class="mt-1 text-sm text-slate-600">Control generated workout volume from conservative to high-volume progressions.</p>
-
-        <div class="mt-5 rounded-xl border border-[var(--ai-200)] bg-white p-4">
-          <div class="flex items-center justify-between text-xs font-bold uppercase tracking-[0.1em] text-slate-500">
-            <span>Low Volume</span>
-            <span>High Volume</span>
-          </div>
-
-          <input
-            type="range"
-            min="0"
-            max="100"
-            step="1"
-            [ngModel]="aiAggressiveness()"
-            (ngModelChange)="updateAiAggressiveness($event)"
-            class="ai-range mt-3 w-full"
-            aria-label="AI Program Aggressiveness"
-          />
-
-          <div class="mt-3 flex items-center justify-between">
-            <p class="text-sm font-semibold text-slate-600">Current Mode</p>
-            <span class="inline-flex rounded-full bg-[var(--ai-100)] px-3 py-1 text-xs font-black uppercase tracking-[0.1em] text-[var(--ai-700)]">
-              {{ getAggressivenessLabel(aiAggressiveness()) }} ({{ aiAggressiveness() }}%)
-            </span>
-          </div>
-        </div>
-      </div>
-    }
-  </section>
-</div>
+    </div>
+  </div>
+</form>

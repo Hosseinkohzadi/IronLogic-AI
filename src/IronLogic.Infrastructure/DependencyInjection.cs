@@ -47,6 +47,10 @@ public static class DependencyInjection
         {
             options.UseSqlite(connectionString);
 
+            // Suppress pending model changes warning (migration will be created before production)
+            options.ConfigureWarnings(warnings =>
+                warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+
             if (environment.IsDevelopment())
             {
                 options.LogTo(Console.WriteLine, LogLevel.Information)

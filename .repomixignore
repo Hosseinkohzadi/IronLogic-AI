@@ -1,0 +1,14 @@
+# .repomixignore
+bin/
+obj/
+.vs/
+.git/
+node_modules/
+dist/
+*.exe
+*.dll
+*.pdb
+*.svg
+*.json
+*.csv
+ironlogic.db

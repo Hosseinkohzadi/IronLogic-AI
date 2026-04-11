@@ -3,6 +3,35 @@
   width: 100%;
 }
 
+.grid-row {
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.row-resizer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -4px;
+  height: 8px;
+  cursor: row-resize;
+  z-index: 35;
+}
+
+.row-resizer::before {
+  content: '';
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: 3px;
+  border-top: 1px solid transparent;
+  transition: border-color 140ms ease;
+}
+
+.row-resizer:hover::before,
+.row-resizing .row-resizer::before {
+  border-top-color: #c7d2fe;
+}
+
 .badge-finance-plan-gold {
   background-color: var(--finance-100);
   color: var(--finance-700);

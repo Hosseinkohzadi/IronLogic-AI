@@ -1,4 +1,6 @@
-<div class="flex h-full min-h-0 w-full flex-col gap-2 overflow-hidden">
+<div
+  class="grid-container flex h-full min-h-0 w-full flex-col gap-2 overflow-hidden"
+>
   <div class="mb-4 flex w-full items-center justify-between shrink-0">
     <div
       *ngIf="showSearch"
@@ -134,7 +136,7 @@
 
   <div
     #gridScrollContainer
-    class="min-h-0 flex-1 w-full overflow-auto custom-scrollbar border border-slate-200 rounded-2xl"
+    class="relative min-h-0 flex-1 w-full overflow-auto custom-scrollbar border border-slate-200 rounded-2xl"
     [class.fit-viewport-scroll]="isFitViewportMode"
     style="overflow-x: auto !important; display: block !important"
   >
@@ -155,10 +157,12 @@
     <app-grid-body
       [columns]="visibleColumns"
       [fitViewportMode]="isFitViewportMode"
+      [resizableRows]="resizableRows"
       [style.display]="'contents'"
       [data$]="pagedData$"
       [editSettings]="editSettings"
       (action)="actionTriggered.emit($event)"
+      (rowResize)="onRowResize()"
       (saveChanges)="saveChanges.emit($event)"
       (inlineSave)="inlineSave.emit($event)"
     >

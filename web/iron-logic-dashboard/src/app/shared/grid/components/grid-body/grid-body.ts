@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { ColumnConfig } from '../../models/column-config';
@@ -18,11 +18,12 @@ interface GridEditSettings {
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './grid-body.html',
-  styleUrls: ['./grid-body.css']
+  styleUrls: ['./grid-body.css'],
 })
-export class GridBodyComponent {
+export class GridBodyComponent implements OnDestroy {
   @Input() columns: ColumnConfig[] = [];
   @Input() fitViewportMode: boolean = false;
+  @Input() resizableRows: boolean = true;
 
   get visibleColumns(): ColumnConfig[] {
     return this.columns.filter((col) => !col.hidden);
@@ -30,20 +31,33 @@ export class GridBodyComponent {
 
   @Input() data$!: Observable<any[]>;
   @Input() editSettings: GridEditSettings = { mode: 'None', allowEditing: false };
-  @Output() action = new EventEmitter<{ type: string, row: any }>();
+  @Output() action = new EventEmitter<{ type: string; row: any }>();
   @Output() saveChanges = new EventEmitter<any>();
   @Output() inlineSave = new EventEmitter<any>();
+  @Output() rowResize = new EventEmitter<{ rowIndex: number; height: number }>();
 
   editingRowId = signal<string | null>(null);
   private inlineOriginalData: any | null = null;
   popupEditData: any | null = null;
   popupOriginalData: any | null = null;
   batchChanges = new Map<string, Record<string, any>>();
+  readonly minRowHeight = 40;
+  private readonly defaultRowHeight = 64;
+  private readonly rowHeights: number[] = [];
+  private resizingRowIndex: number | null = null;
+  private rowResizeStartY = 0;
+  private rowResizeStartHeight = this.defaultRowHeight;
+  private readonly onWindowMouseMove = (event: MouseEvent) => this.onRowResizeMove(event);
+  private readonly onWindowMouseUp = () => this.onRowResizeEnd();
 
   constructor(private gridDataService: GridDataService) {}
 
+  ngOnDestroy(): void {
+    this.removeRowResizeListeners();
+  }
+
   onAction(type: string, row: any, event?: Event) {
-    if(event) event.stopPropagation(); // جلوگیری از تداخل کلیک دکمه با کلیک سطر
+    if (event) event.stopPropagation(); // جلوگیری از تداخل کلیک دکمه با کلیک سطر
 
     if (this.editSettings.allowEditing && type === 'edit') {
       if (this.editSettings.mode === 'Inline') {
@@ -57,7 +71,7 @@ export class GridBodyComponent {
       }
     }
 
-    this.action.emit({type, row});
+    this.action.emit({ type, row });
   }
 
   onRowSelect(row: any) {
@@ -65,7 +79,7 @@ export class GridBodyComponent {
   }
 
   // متد جدید برای کلیک روی کل سطر (باز کردن Drawer)
-  onRowClick(row: any) {
+  onRowClick(row: any, rowIndex: number) {
     this.action.emit({ type: 'row-click', row });
   }
 
@@ -73,9 +87,7 @@ export class GridBodyComponent {
     const value = String(row[col.field] ?? '');
 
     if (col.badgeStyle === 'mechanics') {
-      return value === 'Compound'
-        ? 'badge-mechanics-compound'
-        : 'badge-mechanics-isolation';
+      return value === 'Compound' ? 'badge-mechanics-compound' : 'badge-mechanics-isolation';
     }
 
     if (col.badgeStyle === 'aiTag') {
@@ -83,15 +95,11 @@ export class GridBodyComponent {
     }
 
     if (col.badgeStyle === 'financePlan') {
-      return value === 'Gold'
-        ? 'badge-finance-plan-gold'
-        : 'badge-finance-plan-silver';
+      return value === 'Gold' ? 'badge-finance-plan-gold' : 'badge-finance-plan-silver';
     }
 
     if (col.badgeStyle === 'financeStatus') {
-      return value === 'Paid'
-        ? 'badge-finance-status-paid'
-        : 'badge-finance-status-pending';
+      return value === 'Paid' ? 'badge-finance-status-paid' : 'badge-finance-status-pending';
     }
 
     if (col.badgeStyle === 'verified') {
@@ -199,7 +207,11 @@ export class GridBodyComponent {
   }
 
   isInlineEditingRow(row: any): boolean {
-    return this.editSettings.allowEditing && this.editSettings.mode === 'Inline' && this.editingRowId() === row?.id;
+    return (
+      this.editSettings.allowEditing &&
+      this.editSettings.mode === 'Inline' &&
+      this.editingRowId() === row?.id
+    );
   }
 
   startInlineEdit(row: any): void {
@@ -220,7 +232,7 @@ export class GridBodyComponent {
     this.saveChanges.emit({
       mode: 'Inline',
       row: { ...row },
-      id: row?.id
+      id: row?.id,
     });
     this.editingRowId.set(null);
     this.inlineOriginalData = null;
@@ -270,7 +282,7 @@ export class GridBodyComponent {
     this.saveChanges.emit({
       mode: 'Popup',
       row: { ...this.popupEditData },
-      id: this.popupEditData.id
+      id: this.popupEditData.id,
     });
 
     this.popupEditData = null;
@@ -304,13 +316,78 @@ export class GridBodyComponent {
       return;
     }
 
-    const changes = Array.from(this.batchChanges.entries()).map(([id, values]) => ({ id, values: { ...values } }));
+    const changes = Array.from(this.batchChanges.entries()).map(([id, values]) => ({
+      id,
+      values: { ...values },
+    }));
     this.saveChanges.emit({ mode: 'Batch', changes });
     this.batchChanges.clear();
   }
 
   cancelBatchEdit(): void {
     this.batchChanges.clear();
+  }
+
+  getRowHeight(rowIndex: number): string {
+    const height = this.rowHeights[rowIndex] ?? this.defaultRowHeight;
+    return `${height}px`;
+  }
+
+  isRowResizing(rowIndex: number): boolean {
+    return this.resizingRowIndex === rowIndex;
+  }
+
+  onRowResizeStart(rowIndex: number, event: MouseEvent): void {
+    if (!this.resizableRows) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const rowElement = (event.currentTarget as HTMLElement | null)?.closest(
+      '[data-grid-row]',
+    ) as HTMLElement | null;
+    const currentHeight =
+      rowElement?.getBoundingClientRect().height ??
+      this.rowHeights[rowIndex] ??
+      this.defaultRowHeight;
+
+    this.resizingRowIndex = rowIndex;
+    this.rowResizeStartY = event.clientY;
+    this.rowResizeStartHeight = Math.max(this.minRowHeight, Math.round(currentHeight));
+
+    window.addEventListener('mousemove', this.onWindowMouseMove);
+    window.addEventListener('mouseup', this.onWindowMouseUp);
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'row-resize';
+  }
+
+  private onRowResizeMove(event: MouseEvent): void {
+    if (this.resizingRowIndex === null) {
+      return;
+    }
+
+    const delta = event.clientY - this.rowResizeStartY;
+    const nextHeight = Math.max(this.minRowHeight, Math.round(this.rowResizeStartHeight + delta));
+    this.rowHeights[this.resizingRowIndex] = nextHeight;
+    this.rowResize.emit({ rowIndex: this.resizingRowIndex, height: nextHeight });
+  }
+
+  private onRowResizeEnd(): void {
+    if (this.resizingRowIndex === null) {
+      return;
+    }
+
+    this.resizingRowIndex = null;
+    this.removeRowResizeListeners();
+  }
+
+  private removeRowResizeListeners(): void {
+    window.removeEventListener('mousemove', this.onWindowMouseMove);
+    window.removeEventListener('mouseup', this.onWindowMouseUp);
+    document.body.style.removeProperty('user-select');
+    document.body.style.removeProperty('cursor');
   }
 
   private getSafeWidth(width?: string): number {

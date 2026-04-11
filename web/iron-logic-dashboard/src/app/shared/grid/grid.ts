@@ -69,6 +69,7 @@ export class GridComponent implements OnInit, OnChanges {
   @Input() showFilters: boolean = false; // نمایش فیلترهای زیر هدر
   @Input() showSearch: boolean = true; // نمایش نوار جستجوی بالا
   @Input() pagerPosition: 'top' | 'bottom' | 'both' = 'bottom';
+  @Input() resizableRows: boolean = true;
   reorderable = input<boolean>(false);
 
   filterResetKey = 0;
@@ -152,6 +153,16 @@ export class GridComponent implements OnInit, OnChanges {
     this.search.emit(this._searchTerm);
   }
 
+  onRowResize(): void {
+    const viewport = this.elementRef.nativeElement.querySelector('cdk-virtual-scroll-viewport') as {
+      checkViewportSize?: () => void;
+    } | null;
+
+    if (viewport?.checkViewportSize) {
+      viewport.checkViewportSize();
+    }
+  }
+
   drop(event: CdkDragDrop<ColumnConfig[]>) {
     const visible = this.visibleColumns;
     const actionIdx = visible.findIndex((c) => c.type === 'action');
@@ -194,23 +205,21 @@ export class GridComponent implements OnInit, OnChanges {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (!this.isColumnMenuOpen) {
-      return;
-    }
-
     const clickTarget = event.target as Node | null;
     const menuContainer = this.columnMenuContainerRef?.nativeElement;
 
-    if (menuContainer && clickTarget && !menuContainer.contains(clickTarget)) {
-      this.isColumnMenuOpen = false;
-      this.cdr.markForCheck();
-      return;
+    if (this.isColumnMenuOpen) {
+      if (menuContainer && clickTarget && !menuContainer.contains(clickTarget)) {
+        this.isColumnMenuOpen = false;
+        this.cdr.markForCheck();
+      }
+
+      if (!menuContainer && clickTarget && !this.elementRef.nativeElement.contains(clickTarget)) {
+        this.isColumnMenuOpen = false;
+        this.cdr.markForCheck();
+      }
     }
 
-    if (!menuContainer && clickTarget && !this.elementRef.nativeElement.contains(clickTarget)) {
-      this.isColumnMenuOpen = false;
-      this.cdr.markForCheck();
-    }
   }
 
   private captureInitialColumnWidths(): void {

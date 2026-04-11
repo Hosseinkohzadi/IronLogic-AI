@@ -6,3 +6,4 @@ export * from './user.model';
 export * from './muscle.model';
 export * from './ai-engine-settings.model';
 export * from './financial-settings.model';
+export * from './user-access-config.model';

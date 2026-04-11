@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
@@ -12,16 +12,16 @@ interface NavItem {
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterLink,
-    RouterLinkActive,
-    LucideAngularModule
-  ],
+  imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule],
   templateUrl: './sidebar.component.html',
-  styleUrl: './sidebar.component.css'
+  styleUrl: './sidebar.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SidebarComponent {
+export class SidebarComponent implements OnInit {
+  private readonly sidebarStorageKey = 'ironlogic.admin.sidebar.collapsed';
+
+  readonly isCollapsed = signal(true);
+
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', route: '/admin/dashboard', icon: 'layout-dashboard' },
     { label: 'Users', route: '/admin/users', icon: 'users' },
@@ -34,4 +34,19 @@ export class SidebarComponent {
     { label: 'Integrity', route: '/admin/integrity', icon: 'shield-check' },
     { label: 'Settings', route: '/admin/settings', icon: 'settings' },
   ];
+
+  ngOnInit(): void {
+    const savedState = localStorage.getItem(this.sidebarStorageKey);
+    if (savedState !== null) {
+      this.isCollapsed.set(savedState === 'true');
+    }
+  }
+
+  toggleSidebar(): void {
+    this.isCollapsed.update((current) => {
+      const next = !current;
+      localStorage.setItem(this.sidebarStorageKey, String(next));
+      return next;
+    });
+  }
 }

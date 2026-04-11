@@ -1,48 +1,77 @@
-<aside class="w-72 flex-none bg-white border-r border-slate-100 flex flex-col z-10 h-screen sticky top-0 overflow-hidden">
-  <div class="px-8 py-8 flex justify-between items-center">
-    <div>
-      <h1 class="text-2xl font-black tracking-tighter text-slate-950">IronLogic AI</h1>
-      <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mt-1">Admin Console</p>
-    </div>
-    <button class="text-slate-400 hover:text-slate-950 transition-colors">
-      <lucide-icon name="chevron-left" class="w-4 h-4"></lucide-icon>
+<aside
+  class="flex-none bg-white border-r border-slate-100 flex flex-col z-10 h-screen sticky top-0 overflow-hidden transition-[width] duration-300 ease-out"
+  [class.w-20]="isCollapsed()"
+  [class.w-72]="!isCollapsed()"
+>
+  <div
+    class="flex items-center py-8"
+    [class.justify-center]="isCollapsed()"
+    [class.px-4]="isCollapsed()"
+    [class.justify-between]="!isCollapsed()"
+    [class.px-8]="!isCollapsed()"
+  >
+    @if (isCollapsed()) {
+      <div
+        class="inline-flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-950 text-sm font-black tracking-[0.18em] text-white"
+      >
+        IL
+      </div>
+    } @else {
+      <div>
+        <h1 class="text-2xl font-black tracking-tighter text-slate-950">IronLogic AI</h1>
+        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mt-1">
+          Admin Console
+        </p>
+      </div>
+    }
+
+    <button
+      type="button"
+      class="text-slate-400 hover:text-slate-950 transition-colors"
+      [attr.aria-label]="isCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+      (click)="toggleSidebar()"
+    >
+      <lucide-icon
+        [name]="isCollapsed() ? 'chevron-right' : 'chevron-left'"
+        class="w-4 h-4"
+      ></lucide-icon>
     </button>
   </div>
 
   <div class="flex-1 px-4 overflow-y-auto custom-scrollbar">
-    <p class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.25em] mb-4">Navigation</p>
+    @if (!isCollapsed()) {
+      <p class="px-4 text-[10px] font-bold text-slate-400 uppercase tracking-[0.25em] mb-4">
+        Navigation
+      </p>
+    }
 
     <nav class="space-y-1">
       @for (item of navItems; track item.label) {
-      <a [routerLink]="item.route"
-         routerLinkActive="bg-black text-white shadow-xl shadow-black/20 active-link"
-         [routerLinkActiveOptions]="{exact: true}"
-         class="group flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-xl transition-all duration-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900">
+        <a
+          [routerLink]="item.route"
+          routerLinkActive="bg-black text-white shadow-xl shadow-black/20 active-link"
+          [routerLinkActiveOptions]="{ exact: true }"
+          class="group flex items-center py-3 text-sm font-bold rounded-xl transition-all duration-200 text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+          [class.gap-3]="!isCollapsed()"
+          [class.justify-center]="isCollapsed()"
+          [class.px-3]="isCollapsed()"
+          [class.px-4]="!isCollapsed()"
+          [attr.aria-label]="item.label"
+        >
+          <lucide-icon
+            [name]="item.icon"
+            class="w-5 h-5 opacity-70 group-hover:opacity-100"
+          ></lucide-icon>
 
-          <lucide-icon [name]="item.icon" class="w-5 h-5 opacity-70 group-hover:opacity-100"></lucide-icon>
-          <span class="flex-1">{{ item.label }}</span>
-
-          <lucide-icon name="arrow-up-right" class="w-4 h-4 opacity-0 transition-opacity active-arrow"></lucide-icon>
+          @if (!isCollapsed()) {
+            <span class="flex-1">{{ item.label }}</span>
+            <lucide-icon
+              name="arrow-up-right"
+              class="w-4 h-4 opacity-0 transition-opacity active-arrow"
+            ></lucide-icon>
+          }
         </a>
       }
     </nav>
-  </div>
-
-  <div class="p-4">
-    <div class="rounded-3xl system-card p-5 text-white shadow-2xl">
-      <div class="flex items-start justify-between mb-4">
-        <div>
-          <p class="text-[13px] font-bold text-white tracking-tight">System Integrity</p>
-          <p class="text-[10px] text-slate-400 mt-0.5">Nightly validation job healthy</p>
-        </div>
-        <lucide-icon name="gauge" class="w-5 h-5 text-slate-400"></lucide-icon>
-      </div>
-
-      <div class="relative h-1.5 w-full rounded-full bg-white/10 overflow-hidden">
-        <div class="h-full w-[86%] rounded-full bg-white transition-all duration-1000"></div>
-      </div>
-
-      <p class="mt-3 text-[10px] font-bold text-slate-400 tracking-wide">86% throughput utilization</p>
-    </div>
   </div>
 </aside>

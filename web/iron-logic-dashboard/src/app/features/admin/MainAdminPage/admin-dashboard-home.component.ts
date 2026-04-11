@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  DestroyRef,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { interval, of } from 'rxjs';
 import { catchError, startWith, switchMap } from 'rxjs/operators';
@@ -39,6 +47,16 @@ interface ExpiringAthlete {
   initials: string;
 }
 
+interface BlockingActionItem {
+  id: number;
+  title: string;
+  detail: string;
+  dueIn: string;
+  urgent: boolean;
+  primaryAction: 'Approve' | 'View';
+  secondaryAction: 'Reject' | 'Dismiss';
+}
+
 @Component({
   selector: 'app-admin-dashboard-home',
   imports: [CommonModule, LucideAngularModule, KpiCardComponent, WorldMapComponent],
@@ -53,10 +71,20 @@ export class AdminDashboardHomeComponent implements OnInit {
 
   serverStatus = signal<'OPERATIONAL' | 'DOWN' | 'CHECKING'>('CHECKING');
   remindedSet = signal<Set<number>>(new Set());
+  appliedActionSet = signal<Set<string>>(new Set());
   isRevenueDetailOpen = signal(false);
+  isNotificationMenuOpen = signal(false);
   selectedCountry = this.dashboardFilterService.selectedCountry;
 
-    private readonly countryMetrics: Record<string, { activeAthletes: number; complianceRate: number; pendingPrograms: number; monthlyRevenue: number }> = {
+  private readonly countryMetrics: Record<
+    string,
+    {
+      activeAthletes: number;
+      complianceRate: number;
+      pendingPrograms: number;
+      monthlyRevenue: number;
+    }
+  > = {
     Canada: { activeAthletes: 10, complianceRate: 84, pendingPrograms: 1, monthlyRevenue: 700 },
     Iran: { activeAthletes: 18, complianceRate: 89, pendingPrograms: 3, monthlyRevenue: 1400 },
     USA: { activeAthletes: 9, complianceRate: 82, pendingPrograms: 2, monthlyRevenue: 800 },
@@ -115,14 +143,32 @@ export class AdminDashboardHomeComponent implements OnInit {
 
   readonly weeklyExpiring = [
     { id: 1, name: 'Reza T.', plan: 'Elite Athlete', daysLeft: 1, amount: 280, initials: 'RT' },
-        { id: 2, name: 'Dariush K.', plan: 'Premium Coaching', daysLeft: 2, amount: 200, initials: 'DK' },
-        { id: 3, name: 'Niloofar M.', plan: 'Strength Program', daysLeft: 4, amount: 180, initials: 'NM' },
+    {
+      id: 2,
+      name: 'Dariush K.',
+      plan: 'Premium Coaching',
+      daysLeft: 2,
+      amount: 200,
+      initials: 'DK',
+    },
+    {
+      id: 3,
+      name: 'Niloofar M.',
+      plan: 'Strength Program',
+      daysLeft: 4,
+      amount: 180,
+      initials: 'NM',
+    },
     { id: 4, name: 'Babak S.', plan: 'Elite Athlete', daysLeft: 5, amount: 280, initials: 'BS' },
     { id: 5, name: 'Arman F.', plan: 'Basic Coaching', daysLeft: 7, amount: 160, initials: 'AF' },
   ];
 
-    openRevenueDetail(): void { this.isRevenueDetailOpen.set(true); }
-    closeRevenueDetail(): void { this.isRevenueDetailOpen.set(false); }
+  openRevenueDetail(): void {
+    this.isRevenueDetailOpen.set(true);
+  }
+  closeRevenueDetail(): void {
+    this.isRevenueDetailOpen.set(false);
+  }
 
   readonly kpiCards: CoachKpiCard[] = [
     {
@@ -159,10 +205,28 @@ export class AdminDashboardHomeComponent implements OnInit {
   ];
 
   readonly activityFeed: ActivityFeedItem[] = [
-        { id: 1, athlete: 'Hossein', action: 'set a new PR in Deadlift - 180 kg', time: '2m ago', type: 'pr' },
+    {
+      id: 1,
+      athlete: 'Hossein',
+      action: 'set a new PR in Deadlift - 180 kg',
+      time: '2m ago',
+      type: 'pr',
+    },
     { id: 2, athlete: 'Kasra', action: 'finished Leg Day', time: '14m ago', type: 'completed' },
-        { id: 3, athlete: 'Reza', action: 'uploaded a form check video', time: '31m ago', type: 'upload' },
-        { id: 4, athlete: 'Arman', action: 'set a new PR in Bench Press - 100 kg', time: '1h ago', type: 'pr' },
+    {
+      id: 3,
+      athlete: 'Reza',
+      action: 'uploaded a form check video',
+      time: '31m ago',
+      type: 'upload',
+    },
+    {
+      id: 4,
+      athlete: 'Arman',
+      action: 'set a new PR in Bench Press - 100 kg',
+      time: '1h ago',
+      type: 'pr',
+    },
     { id: 5, athlete: 'Matin', action: 'finished Pull Day', time: '2h ago', type: 'completed' },
     { id: 6, athlete: 'Sara', action: 'skipped Shoulder Day', time: '3h ago', type: 'generic' },
   ];
@@ -173,8 +237,58 @@ export class AdminDashboardHomeComponent implements OnInit {
     { id: 3, name: 'Babak S.', plan: 'Elite Athlete', expiresIn: '41h', initials: 'BS' },
   ];
 
+  readonly blockingActions: BlockingActionItem[] = [
+    {
+      id: 1,
+      title: 'Pending Coach Approvals',
+      detail: '3 coach profiles are waiting for verification and final decision.',
+      dueIn: 'Now',
+      urgent: true,
+      primaryAction: 'Approve',
+      secondaryAction: 'Reject',
+    },
+    {
+      id: 2,
+      title: 'Critical Security Risks',
+      detail: '5 lockout bursts detected from a shared IP segment.',
+      dueIn: '15m',
+      urgent: true,
+      primaryAction: 'View',
+      secondaryAction: 'Dismiss',
+    },
+    {
+      id: 3,
+      title: 'Payment Discrepancies',
+      detail: '2 billing records differ from settlement values.',
+      dueIn: '1h',
+      urgent: true,
+      primaryAction: 'View',
+      secondaryAction: 'Dismiss',
+    },
+  ];
+
+  readonly hasBlockingActions = computed(() =>
+    this.blockingActions.some((action) => action.urgent),
+  );
+
   sendReminder(id: number): void {
     this.remindedSet.update((prev) => new Set([...prev, id]));
+  }
+
+  toggleNotificationsMenu(): void {
+    this.isNotificationMenuOpen.update((isOpen) => !isOpen);
+  }
+
+  closeNotificationsMenu(): void {
+    this.isNotificationMenuOpen.set(false);
+  }
+
+  applyBlockingAction(itemId: number, actionLabel: string): void {
+    this.appliedActionSet.update((prev) => new Set([...prev, `${itemId}:${actionLabel}`]));
+  }
+
+  hasAppliedAction(itemId: number, actionLabel: string): boolean {
+    return this.appliedActionSet().has(`${itemId}:${actionLabel}`);
   }
 
   clearCountrySelection(): void {
@@ -190,11 +304,10 @@ export class AdminDashboardHomeComponent implements OnInit {
       .pipe(
         startWith(0),
         switchMap(() => this.api.pingServer().pipe(catchError(() => of(false)))),
-                takeUntilDestroyed(this.destroyRef)
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe((isUp) => {
         this.serverStatus.set(isUp ? 'OPERATIONAL' : 'DOWN');
       });
   }
-
 }

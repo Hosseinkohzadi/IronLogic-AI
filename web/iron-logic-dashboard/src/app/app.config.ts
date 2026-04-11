@@ -10,6 +10,7 @@ import { routes } from './app.routes';
 import {
   Activity,
   ArrowUpRight,
+  Bell,
   Banknote,
   Calendar,
   Check,
@@ -65,6 +66,7 @@ export const appConfig: ApplicationConfig = {
         Activity,
         AlertTriangle,
         ArrowUpRight,
+        Bell,
         Banknote,
         Calendar,
         Check,

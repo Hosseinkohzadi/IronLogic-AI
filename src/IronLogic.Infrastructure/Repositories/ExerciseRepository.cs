@@ -14,7 +14,7 @@ public class ExerciseRepository(AppDbContext context) : GenericRepository<Exerci
     public async Task<IReadOnlyList<Exercise>> GetAvailableExercisesAsync(string userId)
     {
         return await _context.Exercises
-            .Where(e => e.IsGlobal || e.CreatorUserId == userId)
+            .Where(e => e.Status == ExerciseStatus.Approved || e.CreatorUserId == userId)
             .Include(e => e.PrimaryMuscle)
             .Include(e => e.Equipment)
             .Include(e => e.SecondaryMuscles)

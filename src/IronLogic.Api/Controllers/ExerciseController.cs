@@ -1,4 +1,4 @@
-using IronLogic.Domain.Interfaces;
+using IronLogic.Application.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IronLogic.Api.Controllers;
@@ -6,15 +6,15 @@ namespace IronLogic.Api.Controllers;
 /// <summary>
 /// Controller for managing user-accessible exercises.
 /// </summary>
-/// <param name="exerciseRepository">The exercise repository.</param>
+/// <param name="exerciseService">The exercise service.</param>
 [ApiController]
 [Route("api/v1/exercises")]
 [Produces("application/json")]
-public class ExerciseController(IExerciseRepository exerciseRepository) : ControllerBase
+public class ExerciseController(IExerciseService exerciseService) : ControllerBase
 {
     /// <summary>
     /// Retrieves all exercises available to the current user.
-    /// Includes globally approved exercises and user's private exercises.
+    /// Includes approved exercises and user's private exercises with ImageUrl support.
     /// </summary>
     /// <param name="userId">The unique identifier of the user.</param>
     /// <returns>A list of available exercises.</returns>
@@ -26,12 +26,12 @@ public class ExerciseController(IExerciseRepository exerciseRepository) : Contro
         if (string.IsNullOrWhiteSpace(userId))
             return BadRequest(new { Message = "User ID is required" });
 
-        var exercises = await exerciseRepository.GetAvailableExercisesAsync(userId);
+        var exercises = await exerciseService.GetAvailableExercisesAsync(userId);
         return Ok(exercises);
     }
 
     /// <summary>
-    /// Retrieves exercises created by a specific user.
+    /// Retrieves exercises created by a specific user, including ImageUrl.
     /// </summary>
     /// <param name="userId">The unique identifier of the user.</param>
     /// <returns>A list of exercises created by the user.</returns>
@@ -43,7 +43,7 @@ public class ExerciseController(IExerciseRepository exerciseRepository) : Contro
         if (string.IsNullOrWhiteSpace(userId))
             return BadRequest(new { Message = "User ID is required" });
 
-        var exercises = await exerciseRepository.GetExercisesByCreatorAsync(userId);
+        var exercises = await exerciseService.GetExercisesByCreatorAsync(userId);
         return Ok(exercises);
     }
 }

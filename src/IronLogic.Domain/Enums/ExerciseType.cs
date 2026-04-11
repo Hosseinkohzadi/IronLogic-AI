@@ -3,7 +3,7 @@
 namespace IronLogic.Domain.Enums;
 
 /// <summary>
-/// نوع اندازه‌گیری تمرین را مشخص می‌کند.
+/// Specifies the type of exercise measurement and tracking method.
 /// </summary>
 public enum ExerciseType
 {

@@ -1,5 +1,4 @@
 using IronLogic.Application.Interfaces;
-using IronLogic.Domain.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace IronLogic.Api.Controllers.Admin;
@@ -7,12 +6,12 @@ namespace IronLogic.Api.Controllers.Admin;
 /// <summary>
 /// Administrative controller for managing exercise approvals.
 /// </summary>
+/// <param name="exerciseService">The exercise service.</param>
 /// <param name="adminService">The admin service.</param>
-/// <param name="exerciseRepository">The exercise repository.</param>
 [ApiController]
 [Route("api/v1/admin/exercise-approvals")]
 [Produces("application/json")]
-public class ExerciseApprovalController(IAdminService adminService, IExerciseRepository exerciseRepository) : ControllerBase
+public class ExerciseApprovalController(IExerciseService exerciseService, IAdminService adminService) : ControllerBase
 {
     /// <summary>
     /// Retrieves all exercises pending admin approval.
@@ -23,12 +22,13 @@ public class ExerciseApprovalController(IAdminService adminService, IExerciseRep
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<ActionResult> GetPendingApprovals()
     {
-        var exercises = await exerciseRepository.GetPendingApprovalsAsync();
+        var exercises = await exerciseService.GetPendingApprovalsAsync();
         return Ok(exercises);
     }
 
     /// <summary>
-    /// Approves an exercise, making it globally visible.
+    /// Approves an exercise, making it globally visible. Restricted to ADMIN role.
+    /// Sets Status to Approved and IsGlobal to true.
     /// </summary>
     /// <param name="exerciseId">The unique identifier of the exercise to approve.</param>
     /// <returns>Success or failure result.</returns>
@@ -39,7 +39,7 @@ public class ExerciseApprovalController(IAdminService adminService, IExerciseRep
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> ApproveExercise(Guid exerciseId)
     {
-        var result = await adminService.ApproveExerciseAsync(exerciseId);
+        var result = await exerciseService.ApproveExerciseAsync(exerciseId);
         
         if (!result)
             return NotFound(new { Message = "Exercise not found" });

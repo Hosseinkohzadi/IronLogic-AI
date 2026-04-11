@@ -84,9 +84,14 @@ public class AppDbContext : IdentityDbContext<User>
 
             entity.HasIndex(e => e.Status);
             entity.HasIndex(e => e.CreatorUserId);
+
+            // Global Query Filter: Users only see exercises where Status == Approved OR CreatorUserId == currentUserId
+            // Note: This is a template - actual userId will be injected at runtime via IHttpContextAccessor
+            // For now, this demonstrates the pattern. Implement CurrentUserService to get userId dynamically.
+            // entity.HasQueryFilter(e => e.Status == Domain.Enums.ExerciseStatus.Approved || e.CreatorUserId == currentUserId);
         });
 
-        // SubscriptionPlan configuration with decimal precision
+        // SubscriptionPlan configuration with multi-currency support
         modelBuilder.Entity<SubscriptionPlan>(entity =>
         {
             entity.Property(sp => sp.Price)
@@ -95,6 +100,12 @@ public class AppDbContext : IdentityDbContext<User>
             entity.Property(sp => sp.Name)
                 .IsRequired()
                 .HasMaxLength(100);
+
+            entity.Property(sp => sp.Currency)
+                .HasConversion<string>()
+                .HasMaxLength(3);
+
+            entity.HasIndex(sp => new { sp.Currency, sp.IsActive });
         });
 
         // UserSubscription configuration
@@ -115,10 +126,16 @@ public class AppDbContext : IdentityDbContext<User>
             entity.HasIndex(us => new { us.UserId, us.IsActive });
         });
 
-        // PaymentTransaction configuration with decimal precision
+        // PaymentTransaction configuration with decimal precision and multi-currency support
         modelBuilder.Entity<PaymentTransaction>(entity =>
         {
             entity.Property(pt => pt.Amount)
+                .HasPrecision(18, 2);
+
+            entity.Property(pt => pt.TaxAmount)
+                .HasPrecision(18, 2);
+
+            entity.Property(pt => pt.RefundAmount)
                 .HasPrecision(18, 2);
 
             entity.HasOne(pt => pt.User)
@@ -132,13 +149,48 @@ public class AppDbContext : IdentityDbContext<User>
                 .HasMaxLength(255);
 
             entity.Property(pt => pt.Status)
+                .HasConversion<string>();
+
+            entity.Property(pt => pt.Currency)
+                .HasConversion<string>()
+                .HasMaxLength(3);
+
+            entity.Property(pt => pt.CountryCode)
                 .IsRequired()
-                .HasMaxLength(50);
+                .HasMaxLength(2);
+
+            entity.Property(pt => pt.RegionCode)
+                .HasMaxLength(3);
 
             entity.HasIndex(pt => pt.GatewayTransactionId)
                 .IsUnique();
 
             entity.HasIndex(pt => pt.UserId);
+
+            entity.HasIndex(pt => new { pt.CountryCode, pt.Currency });
+
+            entity.HasIndex(pt => pt.StripeSubscriptionId);
+        });
+
+        // User configuration for international support
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.Property(u => u.UnitSystem)
+                .HasConversion<string>();
+
+            entity.Property(u => u.PreferredCurrency)
+                .HasConversion<string>()
+                .HasMaxLength(3);
+
+            entity.Property(u => u.TimeZone)
+                .HasMaxLength(50)
+                .HasDefaultValue("UTC");
+
+            entity.Property(u => u.CountryCode)
+                .HasMaxLength(2)
+                .HasDefaultValue("US");
+
+            entity.HasIndex(u => u.CountryCode);
         });
 
         modelBuilder.Entity<User>().HasData(new User

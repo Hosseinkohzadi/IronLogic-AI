@@ -32,3 +32,4 @@ Thumbs.db
 *.sqlite
 /IronLogic.Scraper/user_data/Default
 /.idea
+/repomix-output.xml

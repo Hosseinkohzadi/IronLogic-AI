@@ -69,6 +69,7 @@ public static class DependencyInjection
         services.AddScoped<IWorkoutImportService, WorkoutImportService>();
         services.AddScoped<IWorkoutService, WorkoutService>();
         services.AddScoped<IAdminService, AdminService>();
+        services.AddScoped<IExerciseService, ExerciseService>();
 
         services.AddSingleton<IWorkoutParserService, WorkoutParserService>();
 

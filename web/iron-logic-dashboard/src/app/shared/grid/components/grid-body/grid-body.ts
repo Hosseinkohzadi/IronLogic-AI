@@ -18,7 +18,7 @@ interface GridEditSettings {
   standalone: true,
   imports: [CommonModule, FormsModule, LucideAngularModule],
   templateUrl: './grid-body.html',
-  styleUrls: ['./grid-body.css']
+  styleUrls: ['./grid-body.css'],
 })
 export class GridBodyComponent implements OnDestroy {
   @Input() columns: ColumnConfig[] = [];
@@ -31,7 +31,7 @@ export class GridBodyComponent implements OnDestroy {
 
   @Input() data$!: Observable<any[]>;
   @Input() editSettings: GridEditSettings = { mode: 'None', allowEditing: false };
-  @Output() action = new EventEmitter<{ type: string, row: any }>();
+  @Output() action = new EventEmitter<{ type: string; row: any }>();
   @Output() saveChanges = new EventEmitter<any>();
   @Output() inlineSave = new EventEmitter<any>();
   @Output() rowResize = new EventEmitter<{ rowIndex: number; height: number }>();
@@ -57,7 +57,7 @@ export class GridBodyComponent implements OnDestroy {
   }
 
   onAction(type: string, row: any, event?: Event) {
-    if(event) event.stopPropagation(); // جلوگیری از تداخل کلیک دکمه با کلیک سطر
+    if (event) event.stopPropagation(); // جلوگیری از تداخل کلیک دکمه با کلیک سطر
 
     if (this.editSettings.allowEditing && type === 'edit') {
       if (this.editSettings.mode === 'Inline') {
@@ -71,7 +71,7 @@ export class GridBodyComponent implements OnDestroy {
       }
     }
 
-    this.action.emit({type, row});
+    this.action.emit({ type, row });
   }
 
   onRowSelect(row: any) {
@@ -79,7 +79,7 @@ export class GridBodyComponent implements OnDestroy {
   }
 
   // متد جدید برای کلیک روی کل سطر (باز کردن Drawer)
-  onRowClick(row: any) {
+  onRowClick(row: any, rowIndex: number) {
     this.action.emit({ type: 'row-click', row });
   }
 
@@ -87,9 +87,7 @@ export class GridBodyComponent implements OnDestroy {
     const value = String(row[col.field] ?? '');
 
     if (col.badgeStyle === 'mechanics') {
-      return value === 'Compound'
-        ? 'badge-mechanics-compound'
-        : 'badge-mechanics-isolation';
+      return value === 'Compound' ? 'badge-mechanics-compound' : 'badge-mechanics-isolation';
     }
 
     if (col.badgeStyle === 'aiTag') {
@@ -97,15 +95,11 @@ export class GridBodyComponent implements OnDestroy {
     }
 
     if (col.badgeStyle === 'financePlan') {
-      return value === 'Gold'
-        ? 'badge-finance-plan-gold'
-        : 'badge-finance-plan-silver';
+      return value === 'Gold' ? 'badge-finance-plan-gold' : 'badge-finance-plan-silver';
     }
 
     if (col.badgeStyle === 'financeStatus') {
-      return value === 'Paid'
-        ? 'badge-finance-status-paid'
-        : 'badge-finance-status-pending';
+      return value === 'Paid' ? 'badge-finance-status-paid' : 'badge-finance-status-pending';
     }
 
     if (col.badgeStyle === 'verified') {
@@ -213,7 +207,11 @@ export class GridBodyComponent implements OnDestroy {
   }
 
   isInlineEditingRow(row: any): boolean {
-    return this.editSettings.allowEditing && this.editSettings.mode === 'Inline' && this.editingRowId() === row?.id;
+    return (
+      this.editSettings.allowEditing &&
+      this.editSettings.mode === 'Inline' &&
+      this.editingRowId() === row?.id
+    );
   }
 
   startInlineEdit(row: any): void {
@@ -234,7 +232,7 @@ export class GridBodyComponent implements OnDestroy {
     this.saveChanges.emit({
       mode: 'Inline',
       row: { ...row },
-      id: row?.id
+      id: row?.id,
     });
     this.editingRowId.set(null);
     this.inlineOriginalData = null;
@@ -284,7 +282,7 @@ export class GridBodyComponent implements OnDestroy {
     this.saveChanges.emit({
       mode: 'Popup',
       row: { ...this.popupEditData },
-      id: this.popupEditData.id
+      id: this.popupEditData.id,
     });
 
     this.popupEditData = null;
@@ -318,7 +316,10 @@ export class GridBodyComponent implements OnDestroy {
       return;
     }
 
-    const changes = Array.from(this.batchChanges.entries()).map(([id, values]) => ({ id, values: { ...values } }));
+    const changes = Array.from(this.batchChanges.entries()).map(([id, values]) => ({
+      id,
+      values: { ...values },
+    }));
     this.saveChanges.emit({ mode: 'Batch', changes });
     this.batchChanges.clear();
   }
@@ -344,10 +345,13 @@ export class GridBodyComponent implements OnDestroy {
     event.preventDefault();
     event.stopPropagation();
 
-    const rowElement = (event.currentTarget as HTMLElement | null)?.closest('[data-grid-row]') as HTMLElement | null;
-    const currentHeight = rowElement?.getBoundingClientRect().height
-      ?? this.rowHeights[rowIndex]
-      ?? this.defaultRowHeight;
+    const rowElement = (event.currentTarget as HTMLElement | null)?.closest(
+      '[data-grid-row]',
+    ) as HTMLElement | null;
+    const currentHeight =
+      rowElement?.getBoundingClientRect().height ??
+      this.rowHeights[rowIndex] ??
+      this.defaultRowHeight;
 
     this.resizingRowIndex = rowIndex;
     this.rowResizeStartY = event.clientY;

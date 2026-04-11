@@ -205,23 +205,21 @@ export class GridComponent implements OnInit, OnChanges {
 
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: MouseEvent): void {
-    if (!this.isColumnMenuOpen) {
-      return;
-    }
-
     const clickTarget = event.target as Node | null;
     const menuContainer = this.columnMenuContainerRef?.nativeElement;
 
-    if (menuContainer && clickTarget && !menuContainer.contains(clickTarget)) {
-      this.isColumnMenuOpen = false;
-      this.cdr.markForCheck();
-      return;
+    if (this.isColumnMenuOpen) {
+      if (menuContainer && clickTarget && !menuContainer.contains(clickTarget)) {
+        this.isColumnMenuOpen = false;
+        this.cdr.markForCheck();
+      }
+
+      if (!menuContainer && clickTarget && !this.elementRef.nativeElement.contains(clickTarget)) {
+        this.isColumnMenuOpen = false;
+        this.cdr.markForCheck();
+      }
     }
 
-    if (!menuContainer && clickTarget && !this.elementRef.nativeElement.contains(clickTarget)) {
-      this.isColumnMenuOpen = false;
-      this.cdr.markForCheck();
-    }
   }
 
   private captureInitialColumnWidths(): void {

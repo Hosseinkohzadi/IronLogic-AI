@@ -3,6 +3,10 @@
   width: 100%;
 }
 
+.grid-row {
+  transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
 .row-resizer {
   position: absolute;
   left: 0;

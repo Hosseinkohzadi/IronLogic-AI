@@ -5,21 +5,27 @@
 - **Backend:** .NET 10, C# 13 (Use Primary Constructors), Entity Framework Core 10.
 - **Architecture:** Clean Architecture (Domain, Application, Infrastructure, API).
 
+## 🌍 Global & Localization Standards
+- **Timezones:** ALWAYS use `DateTime.UtcNow` for storing dates/times in the database.
+- **Currencies:** System must support Multi-Currency (e.g., USD, CAD, EUR, GBP).
+- **Units:** Support dynamic Unit Systems (Metric/Imperial) for weights and measurements.
+
 ## 🛠️ Development Rules
 - **Naming:** Use PascalCase for C# and camelCase for TypeScript/JSON.
-- **Signals:** Always use Angular Signals for state management in new components.
+- **Signals:** Always use Angular Signals for state management in new frontend components.
 - **Consistency:** Ensure UI components match the aesthetics of `app-metric-card`.
-- **Financials:** Always use `decimal(18,2)` for money-related fields in C#.
+- **Financials:** Always use `decimal(18,2)` for money-related fields. Tax calculations (e.g., 13% HST for Ontario) must dynamically rely on the user's `CountryCode` and `RegionCode`.
+- **Media Handling:** NEVER store raw files or images in the database. Use `IFileStorageService` (Azure Blob) and store only the `ImageUrl`.
 
 ## 🧠 Business Logic Constraints
 - **Exercises:** Any user-created exercise must default to `Status = Pending` and `IsPublic = false`.
 - **Visibility:** Private exercises are only visible to the `CreatorUserId`.
-- **Admin Flow:** Only admins can toggle `IsPublic` to true after review.
+- **Admin Flow:** Only admins can approve exercises (toggle `IsGlobal` to true and `Status` to Approved).
+- **Subscriptions:** Rely strictly on Stripe Webhooks (`invoice.paid`, `customer.subscription.deleted`) to manage the `UserSubscription` active status.
 
 ## 📝 Code Generation Instructions
-- Always check `src/app/core/models` before creating new DTOs to ensure alignment.
+- Always check `src/app/core/models` before creating new DTOs to ensure frontend/backend alignment.
 - When generating Backend code, ensure it supports the "Live Logger" logic in the Athlete Portal.
-
 - **C# Standards:** Always use File-scoped namespaces.
-- **Dependency Injection:** Use Primary Constructors (C# 12/13) for Injecting Services into Controllers and Repositories.
-- **EF Core:** Follow the 'Code First' approach and ensure all Entities have a dedicated Configuration class (IEntityTypeConfiguration).
+- **Dependency Injection:** Use Primary Constructors (C# 12/13) for Injecting Services into Controllers, Services, and Repositories.
+- **EF Core:** Follow the 'Code First' approach and ensure all Entities have a dedicated Configuration class (`IEntityTypeConfiguration`). Securely configure precise column types.

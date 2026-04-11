@@ -1,6 +1,7 @@
 ﻿using IronLogic.Application.Interfaces;
 using IronLogic.Application.Services;
 using IronLogic.Domain.Interfaces;
+using IronLogic.Domain.Settings;
 using IronLogic.Infrastructure.Repositories;
 using IronLogic.Infrastructure.Services;
 using IronLogic.Infrastructure.Services.Parsing;
@@ -28,7 +29,8 @@ public static class DependencyInjection
         services.AddPersistence(configuration, environment)
             .AddRepositories()
             .AddDomainServices()
-            .AddExternalProviders();
+            .AddExternalProviders()
+            .AddExternalSettings(configuration);
 
         return services;
     }
@@ -70,6 +72,7 @@ public static class DependencyInjection
         services.AddScoped<IWorkoutService, WorkoutService>();
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IExerciseService, ExerciseService>();
+        services.AddScoped<ISubscriptionService, SubscriptionService>();
 
         services.AddSingleton<IWorkoutParserService, WorkoutParserService>();
 
@@ -82,6 +85,17 @@ public static class DependencyInjection
         services.AddScoped<IExerciseCacheService, ExerciseCacheService>();
         services.AddScoped<IPersonalRecordService, PersonalRecordService>();
         services.AddScoped<IWorkoutPersistenceService, WorkoutPersistenceService>();
+        
+        services.AddScoped<IStripeService, Services.Payment.StripeService>();
+        services.AddScoped<IFileStorageService, Services.Storage.AzureBlobStorageService>();
+        
+        return services;
+    }
+
+    private static IServiceCollection AddExternalSettings(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.Configure<StripeSettings>(configuration.GetSection("Stripe"));
+        services.Configure<AzureStorageSettings>(configuration.GetSection("AzureStorage"));
         
         return services;
     }

@@ -90,6 +90,10 @@ export class WorldMapComponent {
   }
 
   onCountryHover(event: MouseEvent, countryId: string): void {
+    if (this.compactMode()) {
+      return;
+    }
+
     const target = event.currentTarget as SVGPathElement;
     const svg = target.ownerSVGElement;
     if (!svg) return;

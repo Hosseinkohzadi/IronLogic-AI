@@ -15,12 +15,11 @@ interface NavItem {
   imports: [CommonModule, RouterLink, RouterLinkActive, LucideAngularModule],
   templateUrl: './sidebar.component.html',
   styleUrl: './sidebar.component.css',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class SidebarComponent implements OnInit {
-  private readonly sidebarStorageKey = 'ironlogic.admin.sidebar.collapsed';
+export class SidebarComponent {
+  private readonly sidebarStorageKey = 'ironlogic.sidebarCollapsed';
 
-  readonly isCollapsed = signal(true);
+  isCollapsed = true;
 
   readonly navItems: NavItem[] = [
     { label: 'Dashboard', route: '/admin/dashboard', icon: 'layout-dashboard' },
@@ -28,25 +27,43 @@ export class SidebarComponent implements OnInit {
     { label: 'Sessions', route: '/admin/sessions', icon: 'calendar' },
     { label: 'Financial', route: '/admin/financial', icon: 'credit-card' },
     { label: 'Exercises', route: '/admin/exercises', icon: 'dumbbell' },
-    { label: 'Exercise Sessions', route: '/admin/exercise-sessions', icon: 'activity' },
     { label: 'Muscles', route: '/admin/muscles', icon: 'layers' },
     { label: 'Equipment', route: '/admin/equipment', icon: 'wrench' },
     { label: 'Integrity', route: '/admin/integrity', icon: 'shield-check' },
     { label: 'Settings', route: '/admin/settings', icon: 'settings' },
   ];
 
-  ngOnInit(): void {
-    const savedState = localStorage.getItem(this.sidebarStorageKey);
-    if (savedState !== null) {
-      this.isCollapsed.set(savedState === 'true');
-    }
+  constructor() {
+    this.isCollapsed = this.readCollapsedState();
   }
 
   toggleSidebar(): void {
-    this.isCollapsed.update((current) => {
-      const next = !current;
-      localStorage.setItem(this.sidebarStorageKey, String(next));
-      return next;
-    });
+    this.isCollapsed = !this.isCollapsed;
+    this.persistCollapsedState(this.isCollapsed);
+  }
+
+  private readCollapsedState(): boolean {
+    if (!this.hasBrowserStorage()) {
+      return true;
+    }
+
+    const raw = localStorage.getItem(this.sidebarStorageKey);
+    if (raw === null) {
+      return true;
+    }
+
+    return raw === 'true';
+  }
+
+  private persistCollapsedState(value: boolean): void {
+    if (!this.hasBrowserStorage()) {
+      return;
+    }
+
+    localStorage.setItem(this.sidebarStorageKey, String(value));
+  }
+
+  private hasBrowserStorage(): boolean {
+    return typeof window !== 'undefined' && typeof localStorage !== 'undefined';
   }
 }

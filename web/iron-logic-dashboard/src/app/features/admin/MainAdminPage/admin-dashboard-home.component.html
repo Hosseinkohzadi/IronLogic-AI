@@ -1,7 +1,7 @@
 <div class="flex h-full min-h-0 flex-col overflow-hidden bg-slate-50 p-4 sm:p-6 lg:p-8">
-  <div class="mx-auto flex h-full min-h-0 w-full max-w-[1400px] flex-col gap-6 overflow-auto">
+  <div class="mx-auto flex h-full min-h-0 w-full max-w-[1400px] flex-col gap-8 overflow-auto">
     <header
-      class="relative flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-start lg:justify-between"
+      class="relative mb-8 flex flex-col gap-4 border-b border-slate-200 pb-5 lg:flex-row lg:items-start lg:justify-between"
     >
       <div>
         <h1 class="text-2xl font-black uppercase tracking-tight text-slate-900 sm:text-3xl">
@@ -12,28 +12,28 @@
         </p>
       </div>
 
-      <div class="relative inline-flex items-center gap-2">
+      <div class="relative inline-flex items-center gap-2 self-start lg:self-auto">
         <button
           type="button"
-          class="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-600 shadow-sm transition-colors hover:bg-slate-50"
+          class="relative inline-flex h-10 w-10 items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 text-indigo-700 transition-colors hover:bg-indigo-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           aria-label="Open blocking actions"
           [attr.aria-expanded]="isNotificationMenuOpen()"
           (click)="toggleNotificationsMenu()"
         >
-          <lucide-icon name="bell" class="h-5 w-5 text-slate-600"></lucide-icon>
-          @if (hasBlockingActions()) {
+          <lucide-icon name="bell" class="h-5 w-5"></lucide-icon>
+          @if (hasUrgentPending()) {
             <span
-              class="absolute -right-0.5 -top-0.5 inline-flex h-2.5 w-2.5 rounded-full bg-indigo-600"
+              class="absolute right-1.5 top-1.5 inline-flex h-2.5 w-2.5 rounded-full bg-indigo-600"
             ></span>
             <span
-              class="absolute -right-0.5 -top-0.5 inline-flex h-2.5 w-2.5 rounded-full bg-indigo-600 animate-ping"
+              class="absolute right-1.5 top-1.5 inline-flex h-2.5 w-2.5 rounded-full bg-indigo-600 animate-ping"
             ></span>
           }
         </button>
 
         @if (isNotificationMenuOpen()) {
           <div
-            class="absolute right-0 top-full z-30 mt-2 w-[340px] rounded-2xl border border-indigo-100 bg-white p-3 shadow-xl"
+            class="absolute right-0 top-full z-30 mt-2 w-[320px] rounded-2xl border border-indigo-100 bg-white p-3 shadow-xl"
             role="dialog"
             aria-label="Blocking actions"
           >
@@ -43,8 +43,9 @@
               </p>
               <span
                 class="rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-bold text-indigo-700"
-                >{{ blockingActions.length }}</span
               >
+                {{ blockingActions.length }}
+              </span>
             </div>
 
             <div class="space-y-2">
@@ -58,8 +59,9 @@
                       [class.text-indigo-700]="action.urgent"
                       [class.bg-slate-200]="!action.urgent"
                       [class.text-slate-600]="!action.urgent"
-                      >{{ action.dueIn }}</span
                     >
+                      {{ action.dueIn }}
+                    </span>
                   </div>
                   <p class="mt-1 text-[11px] text-slate-500">{{ action.detail }}</p>
 
@@ -77,18 +79,16 @@
                       }}
                     </button>
 
-                    <button
-                      type="button"
-                      class="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400"
-                      [disabled]="hasAppliedAction(action.id, action.secondaryAction)"
-                      (click)="applyBlockingAction(action.id, action.secondaryAction)"
-                    >
-                      {{
-                        hasAppliedAction(action.id, action.secondaryAction)
-                          ? 'Applied'
-                          : action.secondaryAction
-                      }}
-                    </button>
+                    @if (action.secondaryAction; as secondary) {
+                      <button
+                        type="button"
+                        class="rounded-md border border-slate-300 bg-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-slate-700 transition-colors hover:bg-slate-100 disabled:cursor-not-allowed disabled:text-slate-400"
+                        [disabled]="hasAppliedAction(action.id, secondary)"
+                        (click)="applyBlockingAction(action.id, secondary)"
+                      >
+                        {{ hasAppliedAction(action.id, secondary) ? 'Applied' : secondary }}
+                      </button>
+                    }
                   </div>
                 </div>
               }
@@ -99,9 +99,14 @@
         <div
           class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2"
         >
-          <lucide-icon name="gauge" class="h-4 w-4 text-emerald-700"></lucide-icon>
+          <span class="relative inline-flex h-2.5 w-2.5">
+            <span
+              class="absolute inline-flex h-full w-full rounded-full bg-emerald-400 animate-ping"
+            ></span>
+            <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-600"></span>
+          </span>
           <span class="text-[11px] font-bold uppercase tracking-[0.16em] text-emerald-700">
-            Healthy
+            System Integrity: 100%
           </span>
         </div>
 
@@ -141,17 +146,9 @@
       </div>
     </header>
 
-    @if (isNotificationMenuOpen()) {
-      <button
-        type="button"
-        class="fixed inset-0 z-20 cursor-default bg-transparent"
-        aria-label="Close blocking actions"
-        (click)="closeNotificationsMenu()"
-      ></button>
-    }
     <section
       aria-label="Key Performance Indicators"
-      class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4"
+      class="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4"
     >
       <app-kpi-card
         themeColor="indigo"
@@ -197,94 +194,134 @@
       </app-kpi-card>
     </section>
 
-    <section aria-label="Activity and Density" class="grid grid-cols-1 gap-4 xl:grid-cols-3">
-      <div class="xl:col-span-2">
+    @if (isNotificationMenuOpen()) {
+      <button
+        type="button"
+        class="fixed inset-0 z-20 cursor-default bg-transparent"
+        aria-label="Close blocking actions"
+        (click)="closeNotificationsMenu()"
+      ></button>
+    }
+
+    <section aria-label="Super Admin Priorities" class="grid grid-cols-12 gap-8">
+      <article
+        class="col-span-12 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm lg:col-span-8"
+      >
+        <div class="mb-4 flex items-center justify-between">
+          <div>
+            <h2 class="text-sm font-black uppercase tracking-[0.12em] text-slate-700">
+              High-Priority Grid
+            </h2>
+            <p class="mt-0.5 text-[11px] text-slate-400">
+              Blocking items requiring super-admin action
+            </p>
+          </div>
+          <span
+            class="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-indigo-700"
+          >
+            {{ urgentPendingCount() }} urgent
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+          @for (item of highPriorityGridItems; track item.id) {
+            <article
+              class="rounded-2xl border p-6"
+              [class.border-indigo-100]="item.accent === 'indigo'"
+              [class.bg-indigo-50/50]="item.accent === 'indigo'"
+              [class.border-rose-100]="item.accent === 'rose'"
+              [class.bg-rose-50/50]="item.accent === 'rose'"
+            >
+              <div class="mb-2 flex items-center justify-between">
+                <p
+                  class="text-[11px] font-black uppercase tracking-[0.11em]"
+                  [class.text-indigo-700]="item.accent === 'indigo'"
+                  [class.text-rose-700]="item.accent === 'rose'"
+                >
+                  {{ item.title }}
+                </p>
+                <span
+                  class="rounded-full px-2 py-0.5 text-[10px] font-bold"
+                  [class.bg-indigo-100]="item.accent === 'indigo'"
+                  [class.text-indigo-700]="item.accent === 'indigo'"
+                  [class.bg-rose-100]="item.accent === 'rose'"
+                  [class.text-rose-700]="item.accent === 'rose'"
+                >
+                  {{ item.badge }}
+                </span>
+              </div>
+
+              <p class="text-3xl font-black tracking-tight text-slate-900">{{ item.value }}</p>
+              <p class="mt-1 text-[11px] text-slate-500">{{ item.subtitle }}</p>
+            </article>
+          }
+        </div>
+      </article>
+
+      <div class="col-span-12 flex h-full flex-col gap-6 lg:col-span-4">
         <app-kpi-card
+          class="w-full h-full"
           [useCustomContent]="true"
+          customClass="w-full min-h-[26rem] p-8 shadow-sm"
           themeColor="indigo"
           label="Global User Density"
           mainIcon="globe"
           [showInfoIcon]="true"
-          infoText="Compact minimap focused on indigo density markers."
+          infoText="Super-admin minimap focused on active traffic regions."
         >
-          @if (selectedCountry()) {
-            <div class="mb-2 flex justify-end">
+          <div class="mb-2 flex items-center justify-between">
+            <p class="text-[11px] font-semibold text-slate-500">Minimap</p>
+            @if (selectedCountry()) {
               <button
                 type="button"
                 (click)="clearCountrySelection()"
                 class="inline-flex items-center gap-1 rounded-md border border-indigo-200 bg-white/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-indigo-600 transition-colors hover:bg-indigo-50"
               >
                 <lucide-icon name="x" class="h-3.5 w-3.5"></lucide-icon>
-                Clear Selection
+                Clear
               </button>
-            </div>
-          }
-
-          <div class="rounded-2xl border border-slate-100 bg-indigo-50/20 p-2">
-            <app-world-map [compactMode]="false" class="block h-full min-h-[340px]"></app-world-map>
+            }
           </div>
-        </app-kpi-card>
-      </div>
 
-      <app-kpi-card
-        [useCustomContent]="true"
-        themeColor="indigo"
-        label="Live Activity Feed"
-        mainIcon="activity"
-        context="Real-time athlete actions"
-        [showInfoIcon]="true"
-        infoText="Live stream of recent athlete milestones, uploads, and training events."
-      >
-        <div class="mb-4 flex items-center justify-end">
-          <span class="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-2.5 py-1">
+          <app-world-map [compactMode]="true" class="block h-full flex-1"></app-world-map>
+        </app-kpi-card>
+
+        <article
+          class="flex min-h-[24rem] flex-1 flex-col rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+        >
+          <div class="mb-3 flex items-center justify-between">
+            <h2 class="text-[11px] font-black uppercase tracking-[0.12em] text-slate-700">
+              Blocking Feed
+            </h2>
             <span class="relative inline-flex h-2.5 w-2.5" aria-hidden="true">
               <span
-                class="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400"
+                class="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400"
               ></span>
-              <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-600"></span>
+              <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-indigo-600"></span>
             </span>
-            <span class="text-[10px] font-bold uppercase tracking-[0.12em] text-emerald-700">
-              Live
-            </span>
-          </span>
-        </div>
+          </div>
 
-        <div class="space-y-2 pb-2">
-          @for (item of activityFeed; track item.id) {
-            <div
-              class="flex items-start gap-3 rounded-xl border border-slate-100 bg-slate-50/70 px-4 py-3 transition-colors hover:bg-slate-100/50"
-            >
-              <span
-                class="mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg"
-                [class.bg-emerald-100]="item.type === 'pr'"
-                [class.bg-emerald-50]="item.type === 'completed'"
-                [class.bg-indigo-50]="item.type === 'upload'"
-                [class.bg-slate-100]="item.type === 'generic'"
-              >
-                @if (item.type === 'pr') {
-                  <lucide-icon name="zap" class="h-4 w-4 text-emerald-700"></lucide-icon>
-                }
-                @if (item.type === 'completed') {
-                  <lucide-icon name="check" class="h-4 w-4 text-emerald-600"></lucide-icon>
-                }
-                @if (item.type === 'upload') {
-                  <lucide-icon name="eye" class="h-4 w-4 text-indigo-600"></lucide-icon>
-                }
-                @if (item.type === 'generic') {
-                  <lucide-icon name="info" class="h-4 w-4 text-slate-400"></lucide-icon>
-                }
-              </span>
-              <div class="min-w-0 flex-1">
-                <p class="text-sm leading-snug text-slate-800">
-                  <span class="font-bold">{{ item.athlete }}</span
-                  >&nbsp;{{ item.action }}
-                </p>
-                <p class="mt-0.5 text-[11px] font-medium text-slate-400">{{ item.time }}</p>
+          <div class="flex-1 space-y-4">
+            @for (item of liveBlockingActivity; track item.id) {
+              <div class="rounded-2xl border border-slate-100 bg-slate-50/70 px-4 py-4">
+                <div class="flex items-start gap-2.5">
+                  <span
+                    class="inline-flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-100"
+                  >
+                    <lucide-icon [name]="item.icon" class="h-4 w-4 text-indigo-700"></lucide-icon>
+                  </span>
+                  <div class="min-w-0">
+                    <p class="text-xs font-semibold leading-snug text-slate-800">
+                      {{ item.title }}
+                    </p>
+                    <p class="mt-0.5 text-[10px] font-medium text-slate-400">{{ item.time }}</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          }
-        </div>
-      </app-kpi-card>
+            }
+          </div>
+        </article>
+      </div>
     </section>
 
     <section aria-label="Attention Needed" class="grid grid-cols-1 gap-4 xl:grid-cols-3">

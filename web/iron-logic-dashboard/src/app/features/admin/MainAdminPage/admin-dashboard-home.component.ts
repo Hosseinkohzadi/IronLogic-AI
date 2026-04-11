@@ -47,14 +47,33 @@ interface ExpiringAthlete {
   initials: string;
 }
 
+type BlockingCategory = 'registration' | 'security' | 'financial';
+
 interface BlockingActionItem {
   id: number;
+  category: BlockingCategory;
   title: string;
   detail: string;
   dueIn: string;
   urgent: boolean;
-  primaryAction: 'Approve' | 'View';
-  secondaryAction: 'Reject' | 'Dismiss';
+  primaryAction: string;
+  secondaryAction?: string;
+}
+
+interface HighPriorityGridItem {
+  id: number;
+  title: string;
+  value: string;
+  subtitle: string;
+  badge: string;
+  accent: 'indigo' | 'rose';
+}
+
+interface LiveActivityItem {
+  id: number;
+  title: string;
+  time: string;
+  icon: 'user-plus' | 'shield-off' | 'banknote';
 }
 
 @Component({
@@ -240,8 +259,9 @@ export class AdminDashboardHomeComponent implements OnInit {
   readonly blockingActions: BlockingActionItem[] = [
     {
       id: 1,
-      title: 'Pending Coach Approvals',
-      detail: '3 coach profiles are waiting for verification and final decision.',
+      category: 'registration',
+      title: 'Coach registrations awaiting approval',
+      detail: '3 new coach profiles are pending compliance verification',
       dueIn: 'Now',
       urgent: true,
       primaryAction: 'Approve',
@@ -249,27 +269,79 @@ export class AdminDashboardHomeComponent implements OnInit {
     },
     {
       id: 2,
-      title: 'Critical Security Risks',
-      detail: '5 lockout bursts detected from a shared IP segment.',
+      category: 'security',
+      title: 'Detected lockout risk cluster',
+      detail: '5 failed login bursts from shared IP segment',
       dueIn: '15m',
       urgent: true,
-      primaryAction: 'View',
-      secondaryAction: 'Dismiss',
+      primaryAction: 'View Risk',
     },
     {
       id: 3,
-      title: 'Payment Discrepancies',
-      detail: '2 billing records differ from settlement values.',
+      category: 'financial',
+      title: 'Financial reconciliation mismatch',
+      detail: '2 billing records differ from gateway settlement values',
       dueIn: '1h',
       urgent: true,
-      primaryAction: 'View',
-      secondaryAction: 'Dismiss',
+      primaryAction: 'View Risk',
     },
   ];
 
-  readonly hasBlockingActions = computed(() =>
-    this.blockingActions.some((action) => action.urgent),
+  readonly highPriorityGridItems: HighPriorityGridItem[] = [
+    {
+      id: 1,
+      title: 'Pending Coach Approvals',
+      value: '3',
+      subtitle: 'Profiles waiting for super-admin decision',
+      badge: 'Blocking',
+      accent: 'indigo',
+    },
+    {
+      id: 2,
+      title: 'Critical System Alerts',
+      value: '2',
+      subtitle: 'Security and financial anomalies detected',
+      badge: 'Critical',
+      accent: 'rose',
+    },
+    {
+      id: 3,
+      title: 'Open Compliance Escalations',
+      value: '4',
+      subtitle: 'Escalations requiring legal/ops acknowledgement',
+      badge: 'Review',
+      accent: 'indigo',
+    },
+    {
+      id: 4,
+      title: 'Unresolved Lockouts',
+      value: '5',
+      subtitle: 'Athletes and coaches blocked in last 24h',
+      badge: 'Security',
+      accent: 'rose',
+    },
+  ];
+
+  readonly liveBlockingActivity: LiveActivityItem[] = [
+    { id: 1, title: 'Coach profile submitted by Farzad R.', time: '4m ago', icon: 'user-plus' },
+    {
+      id: 2,
+      title: 'Repeated lockout sequence flagged in region EU-2',
+      time: '11m ago',
+      icon: 'shield-off',
+    },
+    {
+      id: 3,
+      title: 'Settlement drift detected in monthly invoice batch',
+      time: '26m ago',
+      icon: 'banknote',
+    },
+  ];
+
+  readonly urgentPendingCount = computed(
+    () => this.blockingActions.filter((item) => item.urgent).length,
   );
+  readonly hasUrgentPending = computed(() => this.urgentPendingCount() > 0);
 
   sendReminder(id: number): void {
     this.remindedSet.update((prev) => new Set([...prev, id]));

@@ -1,13 +1,23 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { LucideAngularModule } from 'lucide-angular';
 import { take } from 'rxjs';
-import { AiEngineConnectionService, ConfigService, ConnectionTestResult } from '@core/services';
-import { AiEngineSettings, AiModelId } from '@core/models';
-
-type Currency = 'USD' | 'IRT';
+import {
+  AiEngineConnectionService,
+  ConfigService,
+  ConnectionTestResult,
+  FinancialRatesService,
+} from '@core/services';
+import {
+  AiEngineSettings,
+  AiModelId,
+  FinancialCurrency,
+  FinancialSettings,
+  PaymentProvider,
+  SubscriptionTierSettings,
+} from '@core/models';
 
 @Component({
   selector: 'app-settings-page',
@@ -20,20 +30,28 @@ export class SettingsPageComponent {
   private readonly formBuilder = inject(FormBuilder);
   private readonly configService = inject(ConfigService);
   private readonly aiConnectionService = inject(AiEngineConnectionService);
+  private readonly financialRatesService = inject(FinancialRatesService);
 
   readonly coachName = signal('Coach Hossein Karimi');
   readonly coachBio = signal(
     'Strength coach focused on progressive overload, fatigue management, and long-term athlete development.',
   );
 
-  readonly monthlyFee = signal(220);
-  readonly currency = signal<Currency>('USD');
-  readonly autoRemindAthletes = signal(true);
   readonly showApiKey = signal(false);
+  readonly showWebhookSecret = signal(false);
 
   readonly connectionState = signal<'idle' | 'testing' | 'success' | 'error'>('idle');
   readonly connectionMessage = signal('');
+  readonly syncState = signal<'idle' | 'syncing' | 'success' | 'error'>('idle');
+  readonly syncMessage = signal('');
   readonly saveMessage = signal('');
+
+  readonly currencyOptions: ReadonlyArray<FinancialCurrency> = ['USD', 'CAD', 'EUR', 'GBP', 'AUD'];
+  readonly providerOptions: ReadonlyArray<{ label: string; value: PaymentProvider }> = [
+    { label: 'Stripe', value: 'stripe' },
+    { label: 'PayPal', value: 'paypal' },
+    { label: 'Manual', value: 'manual' },
+  ];
 
   readonly aiModelOptions: ReadonlyArray<{ id: AiModelId; label: string; status: string }> = [
     { id: 'gpt-4o', label: 'GPT-4o', status: 'Fastest' },
@@ -42,6 +60,7 @@ export class SettingsPageComponent {
   ];
 
   readonly aiSettingsForm = this.createAiSettingsForm();
+  readonly financialSettingsForm = this.createFinancialSettingsForm();
 
   readonly selectedModelStatus = computed(() => {
     const selectedModel = this.aiSettingsForm.controls.model.value;
@@ -50,6 +69,12 @@ export class SettingsPageComponent {
 
   constructor() {
     this.aiSettingsForm.valueChanges.subscribe(() => {
+      if (this.saveMessage()) {
+        this.saveMessage.set('');
+      }
+    });
+
+    this.financialSettingsForm.valueChanges.subscribe(() => {
       if (this.saveMessage()) {
         this.saveMessage.set('');
       }
@@ -87,25 +112,62 @@ export class SettingsPageComponent {
     });
   }
 
+  private createFinancialSettingsForm() {
+    const settings = this.configService.financialSettings();
+    return this.formBuilder.nonNullable.group({
+      baseCurrency: this.formBuilder.nonNullable.control<FinancialCurrency>(settings.baseCurrency),
+      taxRate: this.formBuilder.nonNullable.control(settings.taxRate, [
+        Validators.required,
+        Validators.min(0),
+        Validators.max(40),
+      ]),
+      currencyDisplay: this.formBuilder.nonNullable.control<'symbol' | 'code'>(
+        settings.currencyDisplay,
+      ),
+      activeProvider: this.formBuilder.nonNullable.control<PaymentProvider>(
+        settings.activeProvider,
+      ),
+      webhookSecret: this.formBuilder.nonNullable.control(settings.webhookSecret, [
+        Validators.required,
+        Validators.minLength(8),
+      ]),
+      testMode: this.formBuilder.nonNullable.control(settings.testMode),
+      autoInvoice: this.formBuilder.nonNullable.control(settings.autoInvoice),
+      churnPrevention: this.formBuilder.nonNullable.control(settings.churnPrevention),
+      tiers: this.formBuilder.array(
+        settings.tiers.map((tier) =>
+          this.formBuilder.nonNullable.group({
+            name: this.formBuilder.nonNullable.control<SubscriptionTierSettings['name']>(tier.name),
+            monthlyPrice: this.formBuilder.nonNullable.control(tier.monthlyPrice, [
+              Validators.required,
+              Validators.min(0),
+            ]),
+            annualDiscount: this.formBuilder.nonNullable.control(tier.annualDiscount, [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(90),
+            ]),
+            trialPeriodDays: this.formBuilder.nonNullable.control(tier.trialPeriodDays, [
+              Validators.required,
+              Validators.min(0),
+              Validators.max(60),
+            ]),
+          }),
+        ),
+      ),
+    });
+  }
+
+  get tierControls() {
+    return this.financialSettingsForm.controls.tiers.controls;
+  }
+
   updateCoachName(value: string): void {
     this.coachName.set(String(value ?? ''));
   }
 
   updateCoachBio(value: string): void {
     this.coachBio.set(String(value ?? ''));
-  }
-
-  updateMonthlyFee(value: number | string): void {
-    const normalized = Number(value);
-    this.monthlyFee.set(Number.isFinite(normalized) ? normalized : 0);
-  }
-
-  updateCurrency(value: Currency): void {
-    this.currency.set(value);
-  }
-
-  updateAutoRemind(value: boolean): void {
-    this.autoRemindAthletes.set(!!value);
   }
 
   getModelStatus(model: AiModelId): string {
@@ -115,6 +177,14 @@ export class SettingsPageComponent {
 
   toggleApiKeyVisibility(): void {
     this.showApiKey.update((value) => !value);
+  }
+
+  toggleWebhookSecretVisibility(): void {
+    this.showWebhookSecret.update((value) => !value);
+  }
+
+  setCurrencyDisplay(mode: 'symbol' | 'code'): void {
+    this.financialSettingsForm.controls.currencyDisplay.setValue(mode);
   }
 
   testConnection(): void {
@@ -141,15 +211,40 @@ export class SettingsPageComponent {
       });
   }
 
+  syncRates(): void {
+    const baseCurrency = this.financialSettingsForm.controls.baseCurrency.value;
+    this.syncState.set('syncing');
+    this.syncMessage.set('Syncing tax and conversion feeds...');
+
+    this.financialRatesService
+      .syncRates(baseCurrency)
+      .pipe(take(1))
+      .subscribe({
+        next: (result) => {
+          this.financialSettingsForm.controls.taxRate.setValue(result.taxRate);
+          this.syncState.set('success');
+          this.syncMessage.set(`Rates synced from ${result.source}.`);
+        },
+        error: () => {
+          this.syncState.set('error');
+          this.syncMessage.set('Rate sync failed. Please retry.');
+        },
+      });
+  }
+
   saveAll(): void {
-    if (this.aiSettingsForm.invalid) {
+    if (this.aiSettingsForm.invalid || this.financialSettingsForm.invalid) {
       this.aiSettingsForm.markAllAsTouched();
-      this.saveMessage.set('Please fix AI Engine validation errors before saving.');
+      this.financialSettingsForm.markAllAsTouched();
+      this.saveMessage.set('Please fix form validation errors before saving.');
       return;
     }
 
     const aiPayload: AiEngineSettings = this.aiSettingsForm.getRawValue();
+    const financialPayload: FinancialSettings = this.financialSettingsForm.getRawValue();
+
     this.configService.updateAiEngineSettings(aiPayload);
+    this.configService.updateFinancialSettings(financialPayload);
     this.saveMessage.set('All settings saved successfully.');
   }
 }

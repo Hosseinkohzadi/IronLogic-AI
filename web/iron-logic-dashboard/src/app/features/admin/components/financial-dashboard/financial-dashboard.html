@@ -1,11 +1,18 @@
 <div class="flex h-full min-h-0 flex-col gap-6 overflow-hidden">
   <header class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-    <p class="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--finance-600)]">Admin / Finance</p>
+    <p class="text-[11px] font-black uppercase tracking-[0.16em] text-[var(--finance-600)]">
+      Admin / Finance
+    </p>
     <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-900">Financial Dashboard</h1>
-    <p class="mt-1 text-sm text-slate-500">Revenue, subscriptions, and payment operations in one coaching-ready view.</p>
+    <p class="mt-1 text-sm text-slate-500">
+      Revenue, subscriptions, and payment operations in one coaching-ready view.
+    </p>
   </header>
 
-  <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4" aria-label="Financial summary">
+  <section
+    class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+    aria-label="Financial summary"
+  >
     <app-kpi-card
       themeColor="indigo"
       label="Total Revenue (Monthly)"
@@ -14,7 +21,8 @@
       context="vs previous month"
       mainIcon="banknote"
       [showInfoIcon]="true"
-      infoText="Total revenue collected from active subscriptions this calendar month.">
+      infoText="Total revenue collected from active subscriptions this calendar month."
+    >
     </app-kpi-card>
     <app-kpi-card
       themeColor="indigo"
@@ -22,7 +30,8 @@
       [value]="yearlyRevenueLabel()"
       trend=""
       context="Projected annualized"
-      mainIcon="trending-up">
+      mainIcon="trending-up"
+    >
     </app-kpi-card>
     <app-kpi-card
       themeColor="indigo"
@@ -30,7 +39,8 @@
       [value]="activeSubscriptionsLabel()"
       trend=""
       context="Paid accounts active"
-      mainIcon="users">
+      mainIcon="users"
+    >
     </app-kpi-card>
     <app-kpi-card
       themeColor="indigo"
@@ -38,7 +48,8 @@
       [value]="pendingLabel()"
       trend=""
       [context]="'Churn: ' + churnRate() + '%'"
-      mainIcon="activity">
+      mainIcon="activity"
+    >
     </app-kpi-card>
   </section>
 
@@ -46,17 +57,26 @@
     <article class="rounded-2xl border border-[var(--finance-200)] bg-white p-5 shadow-sm">
       <div class="mb-4 flex items-center justify-between gap-3">
         <div>
-          <h2 class="text-sm font-black uppercase tracking-[0.12em] text-slate-700">Revenue Growth</h2>
+          <h2 class="text-sm font-black uppercase tracking-[0.12em] text-slate-700">
+            Revenue Growth
+          </h2>
           <p class="text-[11px] text-slate-400">Smooth area chart for the last 6 months</p>
         </div>
-        <span class="inline-flex items-center gap-1 rounded-full bg-[var(--finance-100)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.10em] text-[var(--finance-700)]">
+        <span
+          class="inline-flex items-center gap-1 rounded-full bg-[var(--finance-100)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.10em] text-[var(--finance-700)]"
+        >
           <span class="h-1.5 w-1.5 rounded-full bg-[var(--finance-600)]"></span>
           Income Overview
         </span>
       </div>
 
       <div class="chart-shell rounded-xl border border-slate-100 bg-slate-50 p-3">
-        <svg viewBox="0 0 720 240" class="h-64 w-full" role="img" aria-label="Income chart for the last six months">
+        <svg
+          viewBox="0 0 720 240"
+          class="h-64 w-full"
+          role="img"
+          aria-label="Income chart for the last six months"
+        >
           <defs>
             <linearGradient id="financeAreaGradient" x1="0" y1="0" x2="0" y2="1">
               <stop offset="0%" stop-color="var(--finance-500)" stop-opacity="0.36"></stop>
@@ -75,7 +95,14 @@
           }
 
           <path [attr.d]="areaPath()" fill="url(#financeAreaGradient)"></path>
-          <path [attr.d]="chartPath()" fill="none" stroke="var(--finance-600)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path
+            [attr.d]="chartPath()"
+            fill="none"
+            stroke="var(--finance-600)"
+            stroke-width="3"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          ></path>
 
           @for (point of chartPoints(); track point.month) {
             <circle
@@ -100,13 +127,22 @@
     </article>
   </section>
 
-  <section class="min-h-0 flex-1 overflow-hidden rounded-2xl border border-[var(--finance-200)] bg-white p-5 shadow-sm" aria-label="Recent transactions">
+  <section
+    class="min-h-0 flex-1 overflow-hidden rounded-2xl border border-[var(--finance-200)] bg-white p-5 shadow-sm"
+    aria-label="Recent transactions"
+  >
     <div class="mb-4 flex shrink-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <h2 class="text-sm font-black uppercase tracking-[0.12em] text-slate-700">Recent Transactions</h2>
-        <p class="text-[11px] text-slate-400">Latest athlete payments and subscription billing activity</p>
+        <h2 class="text-sm font-black uppercase tracking-[0.12em] text-slate-700">
+          Recent Transactions
+        </h2>
+        <p class="text-[11px] text-slate-400">
+          Latest athlete payments and subscription billing activity
+        </p>
       </div>
-      <span class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-600">
+      <span
+        class="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-600"
+      >
         10 records
       </span>
     </div>
@@ -114,8 +150,8 @@
     <div class="min-h-0 flex-1 overflow-hidden">
       <app-grid
         class="h-full"
-        [columns]="transactionColumns"
-        [data]="paymentRows"
+        [columns]="transactionColumns()"
+        [data]="paymentRows()"
         [isLoading]="false"
         [showExport]="true"
         [showFilters]="true"

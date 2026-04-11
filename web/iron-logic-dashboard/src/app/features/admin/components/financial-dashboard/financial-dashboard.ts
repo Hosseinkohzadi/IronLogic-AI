@@ -1,9 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { LucideAngularModule } from 'lucide-angular';
 import { GridComponent } from '@shared/grid/grid';
 import { ColumnConfig } from '@shared/grid/models/column-config';
 import { KpiCardComponent } from '@shared/kpi-card/kpi-card.component';
+import { ConfigService } from '@core/services';
 
 type PaymentStatus = 'Paid' | 'Pending';
 type PlanType = 'Gold' | 'Silver';
@@ -39,6 +40,8 @@ interface PaymentGridRow {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FinancialDashboardComponent {
+  private readonly configService = inject(ConfigService);
+
   readonly revenueData: RevenuePoint[] = [
     { month: 'Nov', amount: 11200 },
     { month: 'Dec', amount: 12600 },
@@ -49,58 +52,150 @@ export class FinancialDashboardComponent {
   ];
 
   readonly payments: PaymentRecord[] = [
-    { id: 1, athleteName: 'Ali Rezaei', planType: 'Gold', amount: 220, date: '2026-04-08', status: 'Paid' },
-    { id: 2, athleteName: 'Niloofar M.', planType: 'Silver', amount: 160, date: '2026-04-07', status: 'Pending' },
-    { id: 3, athleteName: 'Kasra Ahmadi', planType: 'Gold', amount: 220, date: '2026-04-05', status: 'Paid' },
-    { id: 4, athleteName: 'Sara Jafari', planType: 'Silver', amount: 160, date: '2026-04-04', status: 'Paid' },
-    { id: 5, athleteName: 'Arman Fathi', planType: 'Gold', amount: 220, date: '2026-04-03', status: 'Paid' },
-    { id: 6, athleteName: 'Babak Sharifi', planType: 'Silver', amount: 160, date: '2026-04-02', status: 'Pending' },
-    { id: 7, athleteName: 'Dariush Kazemi', planType: 'Gold', amount: 220, date: '2026-03-31', status: 'Paid' },
-    { id: 8, athleteName: 'Parisa Vahidi', planType: 'Silver', amount: 160, date: '2026-03-30', status: 'Paid' },
-    { id: 9, athleteName: 'Matin Amini', planType: 'Gold', amount: 220, date: '2026-03-29', status: 'Pending' },
-    { id: 10, athleteName: 'Mehrdad Nouri', planType: 'Silver', amount: 160, date: '2026-03-28', status: 'Paid' },
+    {
+      id: 1,
+      athleteName: 'Ali Rezaei',
+      planType: 'Gold',
+      amount: 220,
+      date: '2026-04-08',
+      status: 'Paid',
+    },
+    {
+      id: 2,
+      athleteName: 'Niloofar M.',
+      planType: 'Silver',
+      amount: 160,
+      date: '2026-04-07',
+      status: 'Pending',
+    },
+    {
+      id: 3,
+      athleteName: 'Kasra Ahmadi',
+      planType: 'Gold',
+      amount: 220,
+      date: '2026-04-05',
+      status: 'Paid',
+    },
+    {
+      id: 4,
+      athleteName: 'Sara Jafari',
+      planType: 'Silver',
+      amount: 160,
+      date: '2026-04-04',
+      status: 'Paid',
+    },
+    {
+      id: 5,
+      athleteName: 'Arman Fathi',
+      planType: 'Gold',
+      amount: 220,
+      date: '2026-04-03',
+      status: 'Paid',
+    },
+    {
+      id: 6,
+      athleteName: 'Babak Sharifi',
+      planType: 'Silver',
+      amount: 160,
+      date: '2026-04-02',
+      status: 'Pending',
+    },
+    {
+      id: 7,
+      athleteName: 'Dariush Kazemi',
+      planType: 'Gold',
+      amount: 220,
+      date: '2026-03-31',
+      status: 'Paid',
+    },
+    {
+      id: 8,
+      athleteName: 'Parisa Vahidi',
+      planType: 'Silver',
+      amount: 160,
+      date: '2026-03-30',
+      status: 'Paid',
+    },
+    {
+      id: 9,
+      athleteName: 'Matin Amini',
+      planType: 'Gold',
+      amount: 220,
+      date: '2026-03-29',
+      status: 'Pending',
+    },
+    {
+      id: 10,
+      athleteName: 'Mehrdad Nouri',
+      planType: 'Silver',
+      amount: 160,
+      date: '2026-03-28',
+      status: 'Paid',
+    },
   ];
 
-  readonly transactionColumns: ColumnConfig[] = [
-    { field: 'athleteName', title: 'ATHLETE NAME', type: 'text', width: '240px', sortable: true, locked: true, filterType: 'text' },
-    {
-      field: 'planType',
-      title: 'PLAN TYPE',
-      type: 'badge',
-      width: '140px',
-      sortable: true,
-      filterType: 'select',
-      filterOptions: [
-        { label: 'Gold', value: 'Gold' },
-        { label: 'Silver', value: 'Silver' },
-      ],
-      badgeStyle: 'financePlan'
-    },
-    { field: 'amountLabel', title: 'AMOUNT', type: 'text', width: '140px', sortable: true, filterType: 'text' },
-    { field: 'date', title: 'DATE', type: 'date', width: '160px', sortable: true },
-    {
-      field: 'status',
-      title: 'STATUS',
-      type: 'badge',
-      width: '140px',
-      sortable: true,
-      filterType: 'select',
-      filterOptions: [
-        { label: 'Paid', value: 'Paid' },
-        { label: 'Pending', value: 'Pending' },
-      ],
-      badgeStyle: 'financeStatus'
-    },
-  ];
+  readonly financialSettings = computed(() => this.configService.financialSettings());
 
-  readonly paymentRows: PaymentGridRow[] = this.payments.map((payment) => ({
-    id: payment.id,
-    athleteName: payment.athleteName,
-    planType: payment.planType,
-    amountLabel: this.formatMoney(payment.amount),
-    date: payment.date,
-    status: payment.status,
-  }));
+  readonly transactionColumns = computed<ColumnConfig[]>(() => {
+    const currencyCode = this.financialSettings().baseCurrency;
+    return [
+      {
+        field: 'athleteName',
+        title: 'ATHLETE NAME',
+        type: 'text',
+        width: '240px',
+        sortable: true,
+        locked: true,
+        filterType: 'text',
+      },
+      {
+        field: 'planType',
+        title: 'PLAN TYPE',
+        type: 'badge',
+        width: '140px',
+        sortable: true,
+        filterType: 'select',
+        filterOptions: [
+          { label: 'Gold', value: 'Gold' },
+          { label: 'Silver', value: 'Silver' },
+        ],
+        badgeStyle: 'financePlan',
+      },
+      {
+        field: 'amountLabel',
+        title: `AMOUNT (${currencyCode})`,
+        type: 'text',
+        width: '170px',
+        sortable: true,
+        filterType: 'text',
+      },
+      { field: 'date', title: 'DATE', type: 'date', width: '160px', sortable: true },
+      {
+        field: 'status',
+        title: 'STATUS',
+        type: 'badge',
+        width: '140px',
+        sortable: true,
+        filterType: 'select',
+        filterOptions: [
+          { label: 'Paid', value: 'Paid' },
+          { label: 'Pending', value: 'Pending' },
+        ],
+        badgeStyle: 'financeStatus',
+      },
+    ];
+  });
+
+  readonly paymentRows = computed<PaymentGridRow[]>(() =>
+    this.payments.map((payment) => ({
+      id: payment.id,
+      athleteName: payment.athleteName,
+      planType: payment.planType,
+      amountLabel: this.formatMoney(payment.amount),
+      date: payment.date,
+      status: payment.status,
+    })),
+  );
 
   readonly monthlyRevenue = computed(() => {
     const latest = this.revenueData[this.revenueData.length - 1];
@@ -112,12 +207,12 @@ export class FinancialDashboardComponent {
     return sixMonthTotal * 2;
   });
 
-  readonly activeSubscriptions = computed(() =>
-    this.payments.filter((payment) => payment.status === 'Paid').length + 28
+  readonly activeSubscriptions = computed(
+    () => this.payments.filter((payment) => payment.status === 'Paid').length + 28,
   );
 
-  readonly pendingPayments = computed(() =>
-    this.payments.filter((payment) => payment.status === 'Pending').length
+  readonly pendingPayments = computed(
+    () => this.payments.filter((payment) => payment.status === 'Pending').length,
   );
 
   readonly churnRate = computed(() => 4.8);
@@ -174,9 +269,11 @@ export class FinancialDashboardComponent {
   });
 
   formatMoney(amount: number): string {
+    const financialSettings = this.financialSettings();
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: financialSettings.baseCurrency,
+      currencyDisplay: financialSettings.currencyDisplay,
       maximumFractionDigits: 0,
     }).format(amount);
   }

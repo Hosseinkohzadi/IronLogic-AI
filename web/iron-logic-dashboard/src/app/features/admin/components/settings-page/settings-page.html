@@ -1,4 +1,4 @@
-<div class="flex h-full min-h-0 flex-col overflow-hidden">
+<form class="flex h-full min-h-0 flex-col overflow-hidden" (submit)="$event.preventDefault()">
   <!-- ── Sticky top action bar ── -->
   <header
     class="flex shrink-0 flex-wrap items-center justify-between gap-3 rounded-2xl border border-[var(--ai-200)] bg-white px-5 py-4 shadow-sm"
@@ -156,76 +156,334 @@
           </div>
           <div class="mx-6 border-t border-slate-100"></div>
 
-          <div class="grid grid-cols-1 gap-5 p-6 lg:grid-cols-2">
-            <div
-              class="rounded-2xl border border-[var(--finance-200)] bg-[var(--finance-surface)] p-5"
-            >
-              <p
-                class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--finance-700)]"
+          <div class="space-y-5 p-6" [formGroup]="financialSettingsForm">
+            <div class="grid grid-cols-1 gap-5 xl:grid-cols-2">
+              <article
+                class="rounded-2xl border border-[var(--finance-200)] bg-[var(--finance-surface)] p-5"
               >
-                Business Rules
-              </p>
-
-              <label class="mt-4 block space-y-1.5">
-                <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
-                  >Monthly Subscription Fee</span
+                <p
+                  class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--finance-700)]"
                 >
-                <input
-                  type="number"
-                  min="0"
-                  [ngModel]="monthlyFee()"
-                  (ngModelChange)="updateMonthlyFee($event)"
-                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                />
-              </label>
+                  Currency &amp; Localization
+                </p>
 
-              <label class="mt-4 block space-y-1.5">
-                <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
-                  >Currency</span
-                >
-                <select
-                  [ngModel]="currency()"
-                  (ngModelChange)="updateCurrency($event)"
-                  class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100"
-                >
-                  <option value="USD">USD</option>
-                  <option value="IRT">IRT</option>
-                </select>
-              </label>
-            </div>
+                <label class="mt-4 block space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Base Currency</span
+                  >
+                  <select
+                    formControlName="baseCurrency"
+                    class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  >
+                    @for (currencyCode of currencyOptions; track currencyCode) {
+                      <option [value]="currencyCode">{{ currencyCode }}</option>
+                    }
+                  </select>
+                </label>
 
-            <div class="rounded-2xl border border-slate-200 bg-white p-5">
-              <p
-                class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--finance-700)]"
-              >
-                Automation
-              </p>
+                <label class="mt-4 block space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Tax Rate (%)</span
+                  >
+                  <input
+                    type="number"
+                    min="0"
+                    max="40"
+                    step="0.1"
+                    formControlName="taxRate"
+                    class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  />
+                </label>
 
-              <div
-                class="mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
-              >
-                <div>
-                  <p class="text-sm font-bold text-slate-800">Auto-remind athletes</p>
-                  <p class="text-xs text-slate-500">
-                    Send reminder notifications before renewal date.
+                <div class="mt-4 space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Currency Display</span
+                  >
+                  <div class="inline-flex rounded-xl border border-slate-200 bg-white p-1">
+                    <button
+                      type="button"
+                      (click)="setCurrencyDisplay('symbol')"
+                      class="rounded-lg px-3 py-1 text-xs font-bold transition"
+                      [class.bg-indigo-600]="
+                        financialSettingsForm.controls.currencyDisplay.value === 'symbol'
+                      "
+                      [class.text-white]="
+                        financialSettingsForm.controls.currencyDisplay.value === 'symbol'
+                      "
+                      [class.text-slate-600]="
+                        financialSettingsForm.controls.currencyDisplay.value !== 'symbol'
+                      "
+                    >
+                      Symbol ($)
+                    </button>
+                    <button
+                      type="button"
+                      (click)="setCurrencyDisplay('code')"
+                      class="rounded-lg px-3 py-1 text-xs font-bold transition"
+                      [class.bg-indigo-600]="
+                        financialSettingsForm.controls.currencyDisplay.value === 'code'
+                      "
+                      [class.text-white]="
+                        financialSettingsForm.controls.currencyDisplay.value === 'code'
+                      "
+                      [class.text-slate-600]="
+                        financialSettingsForm.controls.currencyDisplay.value !== 'code'
+                      "
+                    >
+                      Code (USD)
+                    </button>
+                  </div>
+                </div>
+
+                <div class="mt-4 flex items-center gap-3">
+                  <button
+                    type="button"
+                    (click)="syncRates()"
+                    [disabled]="syncState() === 'syncing'"
+                    class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-black uppercase tracking-[0.1em] text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-70"
+                  >
+                    <lucide-icon name="refresh-cw" class="h-4 w-4"></lucide-icon>
+                    {{ syncState() === 'syncing' ? 'Syncing...' : 'Sync Rates' }}
+                  </button>
+                  <p
+                    class="text-xs font-semibold"
+                    [class.text-emerald-700]="syncState() === 'success'"
+                    [class.text-rose-600]="syncState() === 'error'"
+                    [class.text-slate-500]="syncState() === 'idle' || syncState() === 'syncing'"
+                  >
+                    {{
+                      syncMessage() || 'Pull latest tax/conversion hints for this base currency.'
+                    }}
                   </p>
                 </div>
-                <button
-                  type="button"
-                  (click)="updateAutoRemind(!autoRemindAthletes())"
-                  [attr.aria-pressed]="autoRemindAthletes()"
-                  class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
-                  [class.indigo-toggle-on]="autoRemindAthletes()"
-                  [class.indigo-toggle-off]="!autoRemindAthletes()"
-                >
+              </article>
+
+              <article class="rounded-2xl border border-slate-200 bg-white p-5">
+                <div class="flex items-center justify-between">
+                  <p
+                    class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--finance-700)]"
+                  >
+                    Payment Gateway Integration
+                  </p>
                   <span
-                    class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
-                    [class.translate-x-6]="autoRemindAthletes()"
-                    [class.translate-x-1]="!autoRemindAthletes()"
-                  ></span>
-                </button>
-              </div>
+                    class="rounded-full bg-indigo-100 px-3 py-1 text-[10px] font-black uppercase tracking-[0.1em] text-indigo-700"
+                    >Financial Blue</span
+                  >
+                </div>
+
+                <label class="mt-4 block space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Active Provider</span
+                  >
+                  <select
+                    formControlName="activeProvider"
+                    class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  >
+                    @for (provider of providerOptions; track provider.value) {
+                      <option [value]="provider.value">{{ provider.label }}</option>
+                    }
+                  </select>
+                </label>
+
+                <label class="mt-4 block space-y-1.5">
+                  <span class="text-xs font-bold uppercase tracking-[0.1em] text-slate-500"
+                    >Webhook Secret</span
+                  >
+                  <div class="flex items-center gap-2">
+                    <input
+                      [type]="showWebhookSecret() ? 'text' : 'password'"
+                      formControlName="webhookSecret"
+                      class="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                      placeholder="whsec_..."
+                    />
+                    <button
+                      type="button"
+                      (click)="toggleWebhookSecretVisibility()"
+                      class="inline-flex rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                    >
+                      {{ showWebhookSecret() ? 'Hide' : 'Show' }}
+                    </button>
+                  </div>
+                </label>
+
+                <div
+                  class="mt-4 flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+                >
+                  <div>
+                    <p class="text-sm font-bold text-slate-800">Test Mode</p>
+                    <p class="text-xs text-slate-500">
+                      Switch between Sandbox and Production environments.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
+                    [class.indigo-toggle-on]="financialSettingsForm.controls.testMode.value"
+                    [class.indigo-toggle-off]="!financialSettingsForm.controls.testMode.value"
+                    [attr.aria-pressed]="financialSettingsForm.controls.testMode.value"
+                    (click)="
+                      financialSettingsForm.controls.testMode.setValue(
+                        !financialSettingsForm.controls.testMode.value
+                      )
+                    "
+                  >
+                    <span
+                      class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
+                      [class.translate-x-6]="financialSettingsForm.controls.testMode.value"
+                      [class.translate-x-1]="!financialSettingsForm.controls.testMode.value"
+                    ></span>
+                  </button>
+                </div>
+              </article>
             </div>
+
+            <article class="rounded-2xl border border-slate-200 bg-white p-5">
+              <p
+                class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--finance-700)]"
+              >
+                Subscription Management
+              </p>
+              <p class="mt-1 text-xs text-slate-500">
+                Edit your default plan economics for Basic, Pro, and Elite tiers.
+              </p>
+
+              <div class="mt-4 overflow-x-auto">
+                <table class="min-w-full text-left text-sm">
+                  <thead>
+                    <tr
+                      class="border-b border-slate-200 text-[10px] font-black uppercase tracking-[0.1em] text-slate-500"
+                    >
+                      <th class="px-2 py-2">Tier</th>
+                      <th class="px-2 py-2">Monthly Price</th>
+                      <th class="px-2 py-2">Annual Discount (%)</th>
+                      <th class="px-2 py-2">Trial Period (Days)</th>
+                    </tr>
+                  </thead>
+                  <tbody formArrayName="tiers">
+                    @for (tierForm of tierControls; track $index) {
+                      <tr
+                        [formGroupName]="$index"
+                        class="border-b border-slate-100 last:border-b-0"
+                      >
+                        <td class="px-2 py-2 font-bold text-slate-700">
+                          {{ tierForm.controls.name.value }}
+                        </td>
+                        <td class="px-2 py-2">
+                          <input
+                            type="number"
+                            min="0"
+                            formControlName="monthlyPrice"
+                            class="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                          />
+                        </td>
+                        <td class="px-2 py-2">
+                          <input
+                            type="number"
+                            min="0"
+                            max="90"
+                            formControlName="annualDiscount"
+                            class="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                          />
+                        </td>
+                        <td class="px-2 py-2">
+                          <input
+                            type="number"
+                            min="0"
+                            max="60"
+                            formControlName="trialPeriodDays"
+                            class="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                          />
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </article>
+
+            <article class="rounded-2xl border border-slate-200 bg-white p-5">
+              <p
+                class="text-[11px] font-black uppercase tracking-[0.13em] text-[var(--finance-700)]"
+              >
+                Automated Actions
+              </p>
+
+              <div class="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-2">
+                <div
+                  class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+                >
+                  <div>
+                    <p class="flex items-center gap-2 text-sm font-bold text-slate-800">
+                      Auto-Invoice
+                      <lucide-icon
+                        name="trending-up"
+                        class="h-4 w-4 text-indigo-500"
+                        title="Helps keep payment receipts consistent for accounting and athlete support."
+                      ></lucide-icon>
+                    </p>
+                    <p class="text-xs text-slate-500">
+                      Send PDF receipt to athletes automatically on payment.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
+                    [class.indigo-toggle-on]="financialSettingsForm.controls.autoInvoice.value"
+                    [class.indigo-toggle-off]="!financialSettingsForm.controls.autoInvoice.value"
+                    [attr.aria-pressed]="financialSettingsForm.controls.autoInvoice.value"
+                    (click)="
+                      financialSettingsForm.controls.autoInvoice.setValue(
+                        !financialSettingsForm.controls.autoInvoice.value
+                      )
+                    "
+                  >
+                    <span
+                      class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
+                      [class.translate-x-6]="financialSettingsForm.controls.autoInvoice.value"
+                      [class.translate-x-1]="!financialSettingsForm.controls.autoInvoice.value"
+                    ></span>
+                  </button>
+                </div>
+
+                <div
+                  class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+                >
+                  <div>
+                    <p class="flex items-center gap-2 text-sm font-bold text-slate-800">
+                      Churn Prevention
+                      <lucide-icon
+                        name="activity"
+                        class="h-4 w-4 text-indigo-500"
+                        title="Flags pending actions and helps reduce churn rate by alerting admins within 48 hours."
+                      ></lucide-icon>
+                    </p>
+                    <p class="text-xs text-slate-500">
+                      Notify admin if renewal is not completed within 48 hours of expiry.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    class="relative inline-flex h-7 w-12 items-center rounded-full transition-colors"
+                    [class.indigo-toggle-on]="financialSettingsForm.controls.churnPrevention.value"
+                    [class.indigo-toggle-off]="
+                      !financialSettingsForm.controls.churnPrevention.value
+                    "
+                    [attr.aria-pressed]="financialSettingsForm.controls.churnPrevention.value"
+                    (click)="
+                      financialSettingsForm.controls.churnPrevention.setValue(
+                        !financialSettingsForm.controls.churnPrevention.value
+                      )
+                    "
+                  >
+                    <span
+                      class="inline-block h-5 w-5 rounded-full bg-white transition-transform"
+                      [class.translate-x-6]="financialSettingsForm.controls.churnPrevention.value"
+                      [class.translate-x-1]="!financialSettingsForm.controls.churnPrevention.value"
+                    ></span>
+                  </button>
+                </div>
+              </div>
+            </article>
           </div>
         </section>
 
@@ -504,4 +762,4 @@
       </div>
     </div>
   </div>
-</div>
+</form>

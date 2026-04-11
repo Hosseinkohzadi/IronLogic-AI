@@ -8,11 +8,19 @@ import { ImportWorkoutComponent } from '@features/import-workout/import-workout'
 import { FaqComponent } from './pages/faq/faq';
 import { ContactComponent } from './pages/contact/contact';
 import { AdminComponent } from '@features/admin/MainAdminPage/admin.component';
+import {
+  athleteGuard,
+  publicOnlyGuard,
+  superAdminChildGuard,
+  superAdminGuard,
+} from '@core/guards/auth-role.guards';
 
 export const routes: Routes = [
   {
     path: 'admin',
     component: AdminComponent,
+    canActivate: [superAdminGuard],
+    canActivateChild: [superAdminChildGuard],
     data: { hideSidebar: false },
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -20,46 +28,79 @@ export const routes: Routes = [
         path: 'dashboard',
         loadComponent: () =>
           import('@features/admin/MainAdminPage/admin-dashboard-home.component').then(
-            (m) => m.AdminDashboardHomeComponent
-          )
+            (m) => m.AdminDashboardHomeComponent,
+          ),
       },
       {
         path: 'users',
-        loadComponent: () => import('@features/admin/components/user-management/user-management').then(m => m.UserManagementComponent)
+        loadComponent: () =>
+          import('@features/admin/components/user-management/user-management').then(
+            (m) => m.UserManagementComponent,
+          ),
       },
       {
         path: 'exercises',
-        loadComponent: () => import('@features/admin/components/exercise-management/exercise-management').then(m => m.ExerciseManagementComponent)
+        loadComponent: () =>
+          import('@features/admin/components/exercise-management/exercise-management').then(
+            (m) => m.ExerciseManagementComponent,
+          ),
       },
       {
         path: 'sessions',
-        loadComponent: () => import('@features/admin/components/workout-logs/workout-logs').then(m => m.WorkoutLogsComponent)
+        loadComponent: () =>
+          import('@features/admin/components/workout-logs/workout-logs').then(
+            (m) => m.WorkoutLogsComponent,
+          ),
       },
       {
         path: 'financial',
-        loadComponent: () => import('@features/admin/components/financial-dashboard/financial-dashboard').then(m => m.FinancialDashboardComponent)
+        loadComponent: () =>
+          import('@features/admin/components/financial-dashboard/financial-dashboard').then(
+            (m) => m.FinancialDashboardComponent,
+          ),
       },
       {
         path: 'equipment',
-        loadComponent: () => import('@features/admin/components/equipment-management/equipment-management.component').then(m => m.EquipmentManagementComponent)
+        loadComponent: () =>
+          import('@features/admin/components/equipment-management/equipment-management.component').then(
+            (m) => m.EquipmentManagementComponent,
+          ),
       },
       {
         path: 'muscles',
-        loadComponent: () => import('@features/admin/components/muscle-management/muscle-management.component').then(m => m.MuscleManagementComponent)
+        loadComponent: () =>
+          import('@features/admin/components/muscle-management/muscle-management.component').then(
+            (m) => m.MuscleManagementComponent,
+          ),
       },
       {
         path: 'settings',
-        loadComponent: () => import('@features/admin/components/settings-page/settings-page').then(m => m.SettingsPageComponent)
-      }
-    ]
+        loadComponent: () =>
+          import('@features/admin/components/settings-page/settings-page').then(
+            (m) => m.SettingsPageComponent,
+          ),
+      },
+    ],
+  },
+  {
+    path: 'athlete/portal',
+    canActivate: [athleteGuard],
+    data: { hideSidebar: true },
+    loadComponent: () =>
+      import('@features/athlete/athlete-portal').then((m) => m.AthletePortalComponent),
   },
   { path: '', component: LandingComponent, pathMatch: 'full', data: { hideSidebar: true } },
-  { path: 'login', component: LoginComponent, data: { hideSidebar: true } },
+  {
+    path: 'login',
+    component: LoginComponent,
+    canActivate: [publicOnlyGuard],
+    data: { hideSidebar: true },
+  },
   { path: 'register', component: RegisterComponent, data: { hideSidebar: true } },
   { path: 'forgot', component: ForgotComponent, data: { hideSidebar: true } },
   { path: 'dashboard', component: DashboardComponent, data: { hideSidebar: false } },
   { path: 'import', component: ImportWorkoutComponent, data: { hideSidebar: false } },
   { path: 'faq', component: FaqComponent, data: { hideSidebar: true } },
   { path: 'contact', component: ContactComponent, data: { hideSidebar: true } },
-  { path: '**', redirectTo: '' }
+  { path: '**', redirectTo: '' },
 ];

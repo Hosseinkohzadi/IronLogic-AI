@@ -25,6 +25,12 @@ public class AppDbContext : IdentityDbContext<User>
 
     public DbSet<Equipment> Equipments { get; set; }
 
+    public DbSet<SubscriptionPlan> SubscriptionPlans { get; set; }
+
+    public DbSet<UserSubscription> UserSubscriptions { get; set; }
+
+    public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (optionsBuilder.IsConfigured)
@@ -59,6 +65,80 @@ public class AppDbContext : IdentityDbContext<User>
                 .WithMany(u => u.DailyWeights)
                 .HasForeignKey(dw => dw.UserId)
                 .IsRequired();
+        });
+
+        // Exercise configuration with approval workflow
+        modelBuilder.Entity<IronLogic.Domain.Entities.Exercise>(entity =>
+        {
+            entity.HasOne(e => e.CreatorUser)
+                .WithMany()
+                .HasForeignKey(e => e.CreatorUserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.Property(e => e.Status)
+                .HasDefaultValue(Domain.Enums.ExerciseStatus.Private);
+
+            entity.Property(e => e.IsGlobal)
+                .HasDefaultValue(false);
+
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.CreatorUserId);
+        });
+
+        // SubscriptionPlan configuration with decimal precision
+        modelBuilder.Entity<SubscriptionPlan>(entity =>
+        {
+            entity.Property(sp => sp.Price)
+                .HasPrecision(18, 2);
+
+            entity.Property(sp => sp.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+        });
+
+        // UserSubscription configuration
+        modelBuilder.Entity<UserSubscription>(entity =>
+        {
+            entity.HasOne(us => us.User)
+                .WithMany(u => u.UserSubscriptions)
+                .HasForeignKey(us => us.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasOne(us => us.Plan)
+                .WithMany(sp => sp.UserSubscriptions)
+                .HasForeignKey(us => us.PlanId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasIndex(us => new { us.UserId, us.IsActive });
+        });
+
+        // PaymentTransaction configuration with decimal precision
+        modelBuilder.Entity<PaymentTransaction>(entity =>
+        {
+            entity.Property(pt => pt.Amount)
+                .HasPrecision(18, 2);
+
+            entity.HasOne(pt => pt.User)
+                .WithMany(u => u.PaymentTransactions)
+                .HasForeignKey(pt => pt.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(pt => pt.GatewayTransactionId)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            entity.Property(pt => pt.Status)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.HasIndex(pt => pt.GatewayTransactionId)
+                .IsUnique();
+
+            entity.HasIndex(pt => pt.UserId);
         });
 
         modelBuilder.Entity<User>().HasData(new User

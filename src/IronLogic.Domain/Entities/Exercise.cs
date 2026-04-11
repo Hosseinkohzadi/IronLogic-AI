@@ -82,4 +82,29 @@ public class Exercise : BaseEntity
     ///     Gets or sets the detailed instructions for performing the exercise.
     /// </summary>
     public string Instructions { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the URL of the exercise image hosted externally.
+    /// </summary>
+    public string? ImageUrl { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the identifier of the user who created this exercise.
+    /// </summary>
+    public string CreatorUserId { get; set; } = string.Empty;
+
+    /// <summary>
+    ///     Gets or sets the navigation property to the creator user.
+    /// </summary>
+    public User? CreatorUser { get; set; }
+
+    /// <summary>
+    ///     Gets or sets the approval status of the exercise.
+    /// </summary>
+    public ExerciseStatus Status { get; set; } = ExerciseStatus.Private;
+
+    /// <summary>
+    ///     Gets or sets whether this exercise is globally visible to all users (true only if approved by admin).
+    /// </summary>
+    public bool IsGlobal { get; set; }
 }

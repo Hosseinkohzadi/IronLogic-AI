@@ -7,3 +7,4 @@ export * from './config.service';
 export * from './ai-engine-connection.service';
 export * from './financial-rates.service';
 export * from './subscription.service';
+export * from './communication.service';

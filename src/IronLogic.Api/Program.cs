@@ -2,6 +2,8 @@
 using IronLogic.Api.Middleware;
 using IronLogic.Infrastructure;
 using IronLogic.Infrastructure.Data;
+using Hangfire;
+using Hangfire.MemoryStorage;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 using IronLogic.Domain.Entities;
@@ -55,7 +57,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowIronLogicDash", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins("http://localhost:4200", "https://localhost:5011")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
@@ -70,6 +72,8 @@ builder.Services.AddControllers()
     });
 
 builder.Services.AddMemoryCache();
+builder.Services.AddHangfire(configuration => configuration.UseMemoryStorage());
+builder.Services.AddHangfireServer();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApiDocument(config =>
 {
@@ -131,16 +135,21 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUi();
 }
 
-app.UseHttpsRedirection();
-
 app.UseRouting();
 
 app.UseCors("AllowIronLogicDash");
+
+app.UseHttpsRedirection();
 
 app.UseGlobalExceptionHandler();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseHangfireDashboard("/hangfire");
+
+var recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+EmailJobsBootstrapper.Register(recurringJobManager);
 
 app.MapControllers();
 

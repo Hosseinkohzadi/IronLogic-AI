@@ -33,6 +33,8 @@ public class AppDbContext : IdentityDbContext<User>
 
     public DbSet<UserProfile> UserProfiles { get; set; }
 
+    public DbSet<CommunicationHistory> CommunicationHistories { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (optionsBuilder.IsConfigured)
@@ -225,6 +227,31 @@ public class AppDbContext : IdentityDbContext<User>
 
             entity.HasIndex(up => up.UserId)
                 .IsUnique();
+        });
+
+        modelBuilder.Entity<CommunicationHistory>(entity =>
+        {
+            entity.Property(ch => ch.Subject)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(ch => ch.Body)
+                .IsRequired();
+
+            entity.Property(ch => ch.Status)
+                .HasConversion<string>();
+
+            entity.Property(ch => ch.Type)
+                .HasConversion<string>();
+
+            entity.HasOne(ch => ch.User)
+                .WithMany(u => u.CommunicationHistories)
+                .HasForeignKey(ch => ch.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(ch => ch.UserId);
+            entity.HasIndex(ch => ch.SentAt);
         });
 
         modelBuilder.Entity<User>().HasData(new User

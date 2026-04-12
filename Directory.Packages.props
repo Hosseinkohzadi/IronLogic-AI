@@ -17,6 +17,9 @@
     <PackageVersion Include="Microsoft.SemanticKernel" Version="1.74.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Core" Version="1.74.0" />
     <PackageVersion Include="Microsoft.SemanticKernel.Connectors.OpenAI" Version="1.74.0" />
+    <PackageVersion Include="SendGrid" Version="9.29.3" />
+    <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.17" />
+    <PackageVersion Include="Hangfire.MemoryStorage" Version="1.8.1" />
     <PackageVersion Include="NSwag.AspNetCore" Version="14.6.3" />
     <!-- EF / DB / CSV -->
     <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="10.0.5" />

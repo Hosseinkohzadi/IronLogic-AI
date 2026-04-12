@@ -54,6 +54,11 @@ public class User : IdentityUser
     public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
 
     /// <summary>
+    /// Gets or sets the collection of communication history records for this user.
+    /// </summary>
+    public ICollection<CommunicationHistory> CommunicationHistories { get; set; } = new List<CommunicationHistory>();
+
+    /// <summary>
     /// Gets or sets the user's profile details.
     /// </summary>
     public UserProfile? Profile { get; set; }

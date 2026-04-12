@@ -1,22 +1,24 @@
 @if (user(); as details) {
   <div class="h-full flex flex-col gap-4">
-    <header class="metric-card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+    <header
+      class="metric-card rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-sm backdrop-blur-xl"
+    >
       <div class="flex items-start justify-between gap-3">
         <div class="flex items-center gap-3 min-w-0">
           <div
-            class="h-14 w-14 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center"
+            class="h-14 w-14 rounded-full overflow-hidden bg-slate-800 border border-slate-700 shrink-0 flex items-center justify-center"
           >
             @if (details.profileImageUrl) {
               <img [src]="details.profileImageUrl" alt="" class="h-full w-full object-cover" />
             } @else {
-              <span class="text-lg font-bold text-slate-600">{{
+              <span class="text-lg font-bold text-slate-200">{{
                 details.name[0] | uppercase
               }}</span>
             }
           </div>
           <div class="min-w-0">
-            <h3 class="truncate text-lg font-black text-slate-900">{{ details.name }}</h3>
-            <p class="truncate text-xs text-slate-500">{{ details.email }}</p>
+            <h3 class="truncate text-lg font-black text-white">{{ details.name }}</h3>
+            <p class="truncate text-xs text-slate-400">{{ details.email }}</p>
           </div>
         </div>
 
@@ -24,98 +26,239 @@
           type="button"
           aria-label="Close row details"
           (click)="close.emit()"
-          class="h-9 w-9 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+          class="h-9 w-9 rounded-lg border border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
         >
           <lucide-icon name="x" class="mx-auto h-4 w-4"></lucide-icon>
         </button>
       </div>
+
+      <nav class="mt-4" aria-label="User drawer tabs">
+        <div class="grid grid-cols-3 gap-2 rounded-xl border border-slate-700/60 bg-slate-900/70 p-2">
+          <button
+            type="button"
+            (click)="setTab('profile')"
+            class="rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] transition-all"
+            [class.bg-indigo-600]="activeTab() === 'profile'"
+            [class.text-white]="activeTab() === 'profile'"
+            [class.text-slate-400]="activeTab() !== 'profile'"
+            [class.hover:text-white]="activeTab() !== 'profile'"
+            [class.hover:bg-slate-800]="activeTab() !== 'profile'"
+          >
+            Profile
+          </button>
+          <button
+            type="button"
+            (click)="setTab('billing')"
+            class="rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] transition-all"
+            [class.bg-indigo-600]="activeTab() === 'billing'"
+            [class.text-white]="activeTab() === 'billing'"
+            [class.text-slate-400]="activeTab() !== 'billing'"
+            [class.hover:text-white]="activeTab() !== 'billing'"
+            [class.hover:bg-slate-800]="activeTab() !== 'billing'"
+          >
+            Billing
+          </button>
+          <button
+            type="button"
+            (click)="setTab('emails')"
+            class="rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] transition-all"
+            [class.bg-indigo-600]="activeTab() === 'emails'"
+            [class.text-white]="activeTab() === 'emails'"
+            [class.text-slate-400]="activeTab() !== 'emails'"
+            [class.hover:text-white]="activeTab() !== 'emails'"
+            [class.hover:bg-slate-800]="activeTab() !== 'emails'"
+          >
+            Emails
+          </button>
+        </div>
+      </nav>
     </header>
 
     <div class="min-h-0 flex-1 overflow-y-auto space-y-4 pr-1">
-      <section class="metric-card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-        <h4 class="text-sm font-black text-slate-900 mb-3">Grid Row Data</h4>
-        <div class="space-y-2.5 text-sm">
-          <div class="flex items-center justify-between gap-3">
-            <span class="text-slate-500">ID</span>
-            <span class="text-slate-900 font-semibold">{{ details.id }}</span>
+      @if (activeTab() === 'profile') {
+        <section
+          class="metric-card rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-sm backdrop-blur-xl"
+        >
+          <h4 class="mb-3 text-sm font-black text-white">Grid Row Data</h4>
+          <div class="space-y-2.5 text-sm">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-400">ID</span>
+              <span class="font-semibold text-slate-100">{{ details.id }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-400">Name</span>
+              <span class="font-semibold text-slate-100">{{ details.name }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-400">Status</span>
+              <span class="font-semibold text-slate-100">{{ details.status }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-400">Tier</span>
+              <span class="font-semibold text-slate-100">{{ details.tier }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-400">Sessions</span>
+              <span class="font-semibold text-slate-100">{{ details.sessions }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-400">Weights</span>
+              <span class="font-semibold text-slate-100">{{ details.dailyWeights }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-400">Last Login</span>
+              <span class="font-semibold text-slate-100">{{
+                details.lastLogin | date: 'medium'
+              }}</span>
+            </div>
           </div>
-          <div class="flex items-center justify-between gap-3">
-            <span class="text-slate-500">Name</span>
-            <span class="text-slate-900 font-semibold">{{ details.name }}</span>
-          </div>
-          <div class="flex items-center justify-between gap-3">
-            <span class="text-slate-500">Status</span>
-            <span class="text-slate-900 font-semibold">{{ details.status }}</span>
-          </div>
-          <div class="flex items-center justify-between gap-3">
-            <span class="text-slate-500">Tier</span>
-            <span class="text-slate-900 font-semibold">{{ details.tier }}</span>
-          </div>
-          <div class="flex items-center justify-between gap-3">
-            <span class="text-slate-500">Sessions</span>
-            <span class="text-slate-900 font-semibold">{{ details.sessions }}</span>
-          </div>
-          <div class="flex items-center justify-between gap-3">
-            <span class="text-slate-500">Weights</span>
-            <span class="text-slate-900 font-semibold">{{ details.dailyWeights }}</span>
-          </div>
-          <div class="flex items-center justify-between gap-3">
-            <span class="text-slate-500">Last Login</span>
-            <span class="text-slate-900 font-semibold">{{
-              details.lastLogin | date: 'medium'
-            }}</span>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <section class="metric-card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-        <h4 class="text-sm font-black text-slate-900 mb-3">Account Risk & Lockout</h4>
-        <div class="space-y-2.5 text-sm">
-          <div class="flex items-center justify-between gap-3">
-            <span class="text-slate-500">Failed Login Attempts</span>
-            <span class="text-slate-900 font-semibold"
-              >{{ details.accessFailedCount ?? 0 }} / 5</span
-            >
+        <section
+          class="metric-card rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-sm backdrop-blur-xl"
+        >
+          <h4 class="mb-3 text-sm font-black text-white">Account Risk & Lockout</h4>
+          <div class="space-y-2.5 text-sm">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-400">Failed Login Attempts</span>
+              <span class="font-semibold text-slate-100"
+                >{{ details.accessFailedCount ?? 0 }} / 5</span
+              >
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-400">Lockout Status</span>
+              <span class="font-semibold text-slate-100">
+                {{ details.status === 'Banned' ? 'Locked Out' : 'Clear' }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-400">Lockout Ends</span>
+              <span class="font-semibold text-slate-100">
+                {{ details.lockoutEnd ? (details.lockoutEnd | date: 'medium') : '-' }}
+              </span>
+            </div>
           </div>
-          <div class="flex items-center justify-between gap-3">
-            <span class="text-slate-500">Lockout Status</span>
-            <span class="text-slate-900 font-semibold">
-              {{ details.status === 'Banned' ? 'Locked Out' : 'Clear' }}
-            </span>
-          </div>
-          <div class="flex items-center justify-between gap-3">
-            <span class="text-slate-500">Lockout Ends</span>
-            <span class="text-slate-900 font-semibold">
-              {{ details.lockoutEnd ? (details.lockoutEnd | date: 'medium') : '-' }}
-            </span>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      <section class="metric-card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-        <h4 class="text-sm font-black text-slate-900 mb-3">Linked Entities</h4>
-        <div class="space-y-2.5 text-sm">
-          <div class="flex items-center justify-between gap-3">
-            <span class="text-slate-500">Session Records</span>
-            <span class="text-slate-900 font-semibold">{{ details.sessions }}</span>
-          </div>
-          <div class="flex items-center justify-between gap-3">
-            <span class="text-slate-500">Daily Weight Entries</span>
-            <span class="text-slate-900 font-semibold">{{ details.dailyWeights }}</span>
-          </div>
-          <div class="flex items-center justify-between gap-3">
-            <span class="text-slate-500">User Profile</span>
-            <span class="text-slate-900 font-semibold">{{ details.id }}</span>
-          </div>
-        </div>
-      </section>
+        <app-user-form
+          [userId]="details.id"
+          [userPreview]="details"
+          (saved)="saved.emit($event); close.emit()"
+          (cancel)="close.emit()"
+        ></app-user-form>
+      }
 
-      <app-user-form
-        [userId]="details.id"
-        [userPreview]="details"
-        (saved)="saved.emit($event); close.emit()"
-        (cancel)="close.emit()"
-      ></app-user-form>
+      @if (activeTab() === 'billing') {
+        <section
+          class="metric-card rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-sm backdrop-blur-xl"
+        >
+          <h4 class="mb-3 text-sm font-black text-white">Billing Snapshot</h4>
+          <div class="space-y-2.5 text-sm">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-400">Current Tier</span>
+              <span class="font-semibold text-slate-100">{{ details.tier }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-400">Session Records</span>
+              <span class="font-semibold text-slate-100">{{ details.sessions }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-400">Weight Entries</span>
+              <span class="font-semibold text-slate-100">{{ details.dailyWeights }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-400">Linked User ID</span>
+              <span class="font-semibold text-slate-100">{{ details.id }}</span>
+            </div>
+          </div>
+        </section>
+      }
+
+      @if (activeTab() === 'emails') {
+        <section
+          class="metric-card rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-sm backdrop-blur-xl space-y-6"
+        >
+          <div>
+            <h4 class="text-sm font-black text-white">Emails / Communications</h4>
+            <p class="mt-1 text-xs text-slate-400">Compose and track manual user communications.</p>
+          </div>
+
+          <div class="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4">
+            <form [formGroup]="composeForm" (ngSubmit)="sendManualMessage()" class="space-y-3">
+              <label class="block space-y-1">
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Subject</span>
+                <input
+                  formControlName="subject"
+                  placeholder="Subject"
+                  class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white outline-none transition-all placeholder:text-slate-500 focus:border-indigo-500"
+                />
+              </label>
+
+              <label class="block space-y-1">
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Message</span>
+                <textarea
+                  formControlName="message"
+                  rows="5"
+                  placeholder="Write your message..."
+                  class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white outline-none transition-all placeholder:text-slate-500 focus:border-indigo-500"
+                ></textarea>
+              </label>
+
+              <div class="flex justify-end">
+                <button
+                  type="submit"
+                  [disabled]="isSendDisabled()"
+                  class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  @if (isSendingEmail()) {
+                    <lucide-icon name="refresh-cw" class="h-4 w-4 animate-spin"></lucide-icon>
+                  }
+                  Send Email
+                </button>
+              </div>
+            </form>
+          </div>
+
+          <div>
+            <h5 class="text-xs font-black uppercase tracking-[0.14em] text-slate-400">
+              History Timeline
+            </h5>
+
+            @if (isLoadingEmailHistory()) {
+              <div class="mt-3 flex items-center gap-2 text-sm text-slate-400">
+                <lucide-icon name="refresh-cw" class="h-4 w-4 animate-spin"></lucide-icon>
+                Loading history...
+              </div>
+            } @else if (emailHistory().length === 0) {
+              <p class="mt-3 text-sm text-slate-400">No emails found for this user yet.</p>
+            } @else {
+              <div class="mt-4 border-l border-slate-700 pl-4">
+                @for (item of emailHistory(); track trackHistoryItem($index, item)) {
+                  <article class="relative bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 mb-3">
+                    <span
+                      class="absolute -left-[1.15rem] top-5 h-2.5 w-2.5 rounded-full bg-indigo-500"
+                    ></span>
+                    <div class="flex items-start justify-between gap-3">
+                      <div>
+                        <p class="text-sm font-semibold text-white">{{ item.subject }}</p>
+                        <p class="mt-1 text-xs text-slate-400">
+                          {{ item.sentAt | date: 'MMM d, y, h:mm a' }}
+                        </p>
+                      </div>
+                      <span
+                        class="rounded-full border border-current/30 px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em]"
+                        [class]="emailStatusClass(item.status)"
+                      >
+                        {{ item.status === 'Sent' ? 'Sent' : 'Failed' }}
+                      </span>
+                    </div>
+                  </article>
+                }
+              </div>
+            }
+          </div>
+        </section>
+      }
     </div>
   </div>
 }

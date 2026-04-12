@@ -12,6 +12,7 @@ import { LucideAngularModule } from 'lucide-angular';
 import { finalize } from 'rxjs/operators';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NotificationService } from '@core/services/notification.service';
+import { AuthService } from '@core/services/auth.service';
 import { AthleteProfile, UserService } from '@core/services/user.service';
 
 @Component({
@@ -25,12 +26,18 @@ export class ProfileComponent implements OnInit {
   private readonly userService = inject(UserService);
   private readonly notificationService = inject(NotificationService);
   private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
 
   readonly isLoading = signal(false);
   readonly isSubmitting = signal(false);
   readonly userProfile = signal<AthleteProfile | null>(null);
+  readonly originalProfileFormValue = signal<(AthleteProfile & { aiSyncEnabled: boolean }) | null>(
+    null,
+  );
   readonly profileError = signal<string | null>(null);
   readonly isFormDirty = signal(false);
+  readonly isDeleteModalOpen = signal(false);
+  readonly isDeleting = signal(false);
 
   readonly profileForm = this.fb.nonNullable.group({
     id: [''],
@@ -149,7 +156,9 @@ export class ProfileComponent implements OnInit {
       .subscribe({
         next: (profile) => {
           this.userProfile.set(profile);
-          this.patchProfileForm(profile);
+          const formValue = this.buildProfileFormValue(profile);
+          this.originalProfileFormValue.set(formValue);
+          this.profileForm.reset(formValue);
           this.profileForm.markAsPristine();
           this.isFormDirty.set(false);
         },
@@ -180,7 +189,9 @@ export class ProfileComponent implements OnInit {
       .subscribe({
         next: (updatedProfile) => {
           this.userProfile.set(updatedProfile);
-          this.patchProfileForm(updatedProfile);
+          const formValue = this.buildProfileFormValue(updatedProfile);
+          this.originalProfileFormValue.set(formValue);
+          this.profileForm.reset(formValue);
           this.profileForm.markAsPristine();
           this.isFormDirty.set(false);
           this.notificationService.showSuccess('Profile updated successfully!');
@@ -192,13 +203,61 @@ export class ProfileComponent implements OnInit {
       });
   }
 
+  cancelChanges(): void {
+    const originalValue = this.originalProfileFormValue();
+    if (!originalValue) {
+      this.profileForm.reset();
+      this.profileForm.markAsPristine();
+      this.isFormDirty.set(false);
+      return;
+    }
+
+    this.profileForm.reset(originalValue);
+    this.profileForm.markAsPristine();
+    this.isFormDirty.set(false);
+  }
+
+  openDeleteModal(): void {
+    this.isDeleteModalOpen.set(true);
+  }
+
+  closeDeleteModal(): void {
+    this.isDeleteModalOpen.set(false);
+  }
+
+  confirmDeleteAccount(): void {
+    if (this.isDeleting()) {
+      return;
+    }
+
+    this.isDeleting.set(true);
+    this.profileError.set(null);
+
+    this.userService
+      .deleteMyProfile()
+      .pipe(finalize(() => this.isDeleting.set(false)))
+      .subscribe({
+        next: () => {
+          this.isDeleteModalOpen.set(false);
+          this.notificationService.showSuccess('Your account has been deleted.');
+          this.authService.logout();
+        },
+        error: () => {
+          this.profileError.set('Unable to delete account.');
+          this.notificationService.showError('Failed to delete account. Please try again.');
+        },
+      });
+  }
+
   openAvatarPicker(): void {
     // Placeholder for upload flow wiring (file picker or media service).
     this.notificationService.showSuccess('Avatar upload flow will open here.');
   }
 
-  private patchProfileForm(profile: AthleteProfile): void {
-    this.profileForm.patchValue({
+  private buildProfileFormValue(
+    profile: AthleteProfile,
+  ): AthleteProfile & { aiSyncEnabled: boolean } {
+    return {
       ...profile,
       currentWeight: profile.currentWeight ?? 0,
       height: profile.height ?? 0,
@@ -206,6 +265,7 @@ export class ProfileComponent implements OnInit {
       bio: profile.bio ?? '',
       activityLevel: profile.activityLevel ?? 'Moderately Active',
       language: profile.language ?? 'English',
-    });
+      aiSyncEnabled: this.profileForm.controls.aiSyncEnabled.value,
+    };
   }
 }

@@ -38,4 +38,8 @@ export class UserService {
   updateMyProfile(profile: AthleteProfile): Observable<AthleteProfile> {
     return this.http.put<AthleteProfile>(this.accountMeUrl, profile);
   }
+
+  deleteMyProfile(): Observable<void> {
+    return this.http.delete<void>(this.accountMeUrl);
+  }
 }

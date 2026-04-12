@@ -1,4 +1,6 @@
+using IronLogic.Application.DTOs.Communication;
 using IronLogic.Application.DTOs.User;
+using IronLogic.Application.Interfaces;
 using IronLogic.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -15,6 +17,7 @@ namespace IronLogic.Api.Controllers.Admin;
 [Produces("application/json")]
 public class UsersController(
     UserManager<User> userManager,
+    IEmailService emailService,
     ILogger<UsersController> logger) : ControllerBase
 {
     /// <summary>
@@ -186,5 +189,54 @@ public class UsersController(
             email = user.Email,
             userName = user.UserName
         });
+    }
+
+    /// <summary>
+    /// Sends a manual custom email message to a specific user.
+    /// </summary>
+    /// <param name="userId">The target user identifier.</param>
+    /// <param name="request">The email payload.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Success or error response.</returns>
+    [HttpPost("{userId}/send-email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+    public async Task<IActionResult> SendEmailToUser(
+        string userId,
+        [FromBody] SendEmailRequestDto request,
+        CancellationToken cancellationToken)
+    {
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(new { message = "Invalid email payload", errors = ModelState });
+        }
+
+        var user = await userManager.FindByIdAsync(userId);
+        if (user == null)
+        {
+            return NotFound(new { message = "User not found" });
+        }
+
+        try
+        {
+            await emailService.SendAndLogEmailAsync(
+                userId,
+                request.Subject,
+                request.Body,
+                isManual: true,
+                cancellationToken);
+
+            return Ok(new { message = "Email sent successfully" });
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogWarning(ex, "Manual email delivery failed for user {UserId}", userId);
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, new
+            {
+                message = "Email server is unavailable. Try again later."
+            });
+        }
     }
 }

@@ -25,7 +25,11 @@
       </div>
     } @else {
       <div class="flex items-center justify-center">
-        <div class="bg-slate-800 p-1 rounded-full inline-flex relative" role="group" aria-label="Billing cycle toggle">
+        <div
+          class="bg-slate-800 p-1 rounded-full inline-flex relative"
+          role="group"
+          aria-label="Billing cycle toggle"
+        >
           <button
             type="button"
             (click)="setBillingCycle('monthly')"
@@ -51,8 +55,10 @@
           >
             Yearly
           </button>
-          <span class="ml-2 self-center rounded-full bg-emerald-400/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-400">
-              20% Discount
+          <span
+            class="ml-2 self-center rounded-full bg-emerald-400/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-400"
+          >
+            20% Discount
           </span>
         </div>
       </div>
@@ -110,7 +116,10 @@
               <ul class="mt-8 space-y-3">
                 @for (feature of plan.features; track feature) {
                   <li class="flex items-start gap-2 text-sm">
-                    <lucide-icon name="check-circle" class="mt-0.5 h-4 w-4 text-indigo-400"></lucide-icon>
+                    <lucide-icon
+                      name="check-circle"
+                      class="mt-0.5 h-4 w-4 text-indigo-400"
+                    ></lucide-icon>
                     <span class="text-slate-300">{{ feature }}</span>
                   </li>
                 }

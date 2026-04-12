@@ -205,23 +205,79 @@
         </div>
       </article>
     </form>
-  </div>
 
-  @if (showSaveFab()) {
-    <div class="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
+    <div
+      class="sticky bottom-0 bg-slate-900/90 backdrop-blur-xl border-t border-slate-800 p-6 flex justify-end gap-4 mt-8 z-10"
+    >
+      <button
+        type="button"
+        (click)="cancelChanges()"
+        class="px-6 py-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 transition-all"
+      >
+        Cancel
+      </button>
       <button
         type="button"
         (click)="saveChanges()"
-        [disabled]="profileForm.invalid || isSubmitting()"
-        class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-2xl shadow-lg shadow-indigo-500/20 transition-all inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+        [disabled]="!profileForm.dirty || profileForm.invalid || isSubmitting()"
+        class="px-6 py-2 rounded-xl bg-indigo-600 text-white font-semibold shadow-lg shadow-indigo-500/20 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all inline-flex items-center gap-2"
       >
         @if (isSubmitting()) {
           <lucide-icon name="refresh-cw" class="h-4 w-4 animate-spin"></lucide-icon>
-        } @else {
-          <lucide-icon name="check-circle" class="h-4 w-4"></lucide-icon>
         }
-        Save Changes
+        <span>Save Changes</span>
       </button>
+    </div>
+
+    <article class="bg-red-500/5 border border-red-500/20 rounded-3xl p-8 mt-12">
+      <h2 class="text-red-400 font-bold text-xl">Danger Zone</h2>
+      <p class="text-slate-400 mt-2">
+        Once you delete your account, there is no going back. Please be certain.
+      </p>
+      <button
+        type="button"
+        (click)="openDeleteModal()"
+        class="bg-red-600 hover:bg-red-500 text-white px-6 py-2 rounded-xl mt-6 transition-all"
+      >
+        Delete Account
+      </button>
+    </article>
+  </div>
+
+  @if (isDeleteModalOpen()) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm"
+      (click)="closeDeleteModal()"
+    >
+      <div
+        class="w-full max-w-md rounded-2xl border border-slate-700 bg-slate-900 p-6 shadow-2xl"
+        (click)="$event.stopPropagation()"
+      >
+        <h3 class="text-xl font-bold text-white">Delete Account</h3>
+        <p class="mt-2 text-sm text-slate-300">
+          This action is permanent and cannot be undone. Are you sure you want to continue?
+        </p>
+        <div class="mt-6 flex justify-end gap-3">
+          <button
+            type="button"
+            (click)="closeDeleteModal()"
+            class="px-4 py-2 rounded-xl text-slate-300 hover:bg-slate-800 hover:text-white transition-all"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="confirmDeleteAccount()"
+            [disabled]="isDeleting()"
+            class="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 font-semibold text-white transition-all hover:bg-red-500 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            @if (isDeleting()) {
+              <lucide-icon name="refresh-cw" class="h-4 w-4 animate-spin"></lucide-icon>
+            }
+            <span>Delete Account</span>
+          </button>
+        </div>
+      </div>
     </div>
   }
 </section>

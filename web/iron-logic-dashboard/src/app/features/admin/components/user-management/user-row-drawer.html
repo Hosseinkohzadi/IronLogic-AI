@@ -1,0 +1,170 @@
+@if (user(); as details) {
+  <div class="h-full flex flex-col gap-4">
+    <header class="metric-card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+      <div class="flex items-start justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div
+            class="h-14 w-14 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center"
+          >
+            @if (details.profileImageUrl) {
+              <img [src]="details.profileImageUrl" alt="" class="h-full w-full object-cover" />
+            } @else {
+              <span class="text-lg font-bold text-slate-600">{{ details.name[0] | uppercase }}</span>
+            }
+          </div>
+          <div class="min-w-0">
+            <h3 class="truncate text-lg font-black text-slate-900">{{ details.name }}</h3>
+            <p class="truncate text-xs text-slate-500">{{ details.email }}</p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          aria-label="Close row details"
+          (click)="close.emit()"
+          class="h-9 w-9 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
+        >
+          <lucide-icon name="x" class="mx-auto h-4 w-4"></lucide-icon>
+        </button>
+      </div>
+    </header>
+
+    <div class="min-h-0 flex-1 overflow-y-auto space-y-4 pr-1">
+      <section class="metric-card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+        <h4 class="text-sm font-black text-slate-900 mb-3">Grid Row Data</h4>
+        <div class="space-y-2.5 text-sm">
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-slate-500">ID</span>
+            <span class="text-slate-900 font-semibold">{{ details.id }}</span>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-slate-500">Name</span>
+            <span class="text-slate-900 font-semibold">{{ details.name }}</span>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-slate-500">Status</span>
+            <span class="text-slate-900 font-semibold">{{ details.status }}</span>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-slate-500">Tier</span>
+            <span class="text-slate-900 font-semibold">{{ details.tier }}</span>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-slate-500">Sessions</span>
+            <span class="text-slate-900 font-semibold">{{ details.sessions }}</span>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-slate-500">Weights</span>
+            <span class="text-slate-900 font-semibold">{{ details.dailyWeights }}</span>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-slate-500">Last Login</span>
+            <span class="text-slate-900 font-semibold">{{ details.lastLogin | date: 'medium' }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="metric-card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+        <h4 class="text-sm font-black text-slate-900 mb-3">Account Risk & Lockout</h4>
+        <div class="space-y-2.5 text-sm">
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-slate-500">Failed Login Attempts</span>
+            <span class="text-slate-900 font-semibold">{{ details.accessFailedCount ?? 0 }} / 5</span>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-slate-500">Lockout Status</span>
+            <span class="text-slate-900 font-semibold">
+              {{ details.status === 'Banned' ? 'Locked Out' : 'Clear' }}
+            </span>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-slate-500">Lockout Ends</span>
+            <span class="text-slate-900 font-semibold">
+              {{ details.lockoutEnd ? (details.lockoutEnd | date: 'medium') : '-' }}
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section class="metric-card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+        <h4 class="text-sm font-black text-slate-900 mb-3">Linked Entities</h4>
+        <div class="space-y-2.5 text-sm">
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-slate-500">Session Records</span>
+            <span class="text-slate-900 font-semibold">{{ details.sessions }}</span>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-slate-500">Daily Weight Entries</span>
+            <span class="text-slate-900 font-semibold">{{ details.dailyWeights }}</span>
+          </div>
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-slate-500">User Profile</span>
+            <span class="text-slate-900 font-semibold">{{ details.id }}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="metric-card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
+        <h4 class="text-sm font-black text-slate-900 mb-3">Edit User</h4>
+
+        <div class="space-y-3">
+          <label class="block space-y-1">
+            <span class="text-slate-500 text-xs">Name</span>
+            <input
+              [ngModel]="editor().name"
+              (ngModelChange)="updateField('name', $event)"
+              class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+
+          <label class="block space-y-1">
+            <span class="text-slate-500 text-xs">Email</span>
+            <input
+              [ngModel]="editor().email"
+              (ngModelChange)="updateField('email', $event)"
+              class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+            />
+          </label>
+
+          <div class="grid grid-cols-2 gap-3">
+            <label class="block space-y-1">
+              <span class="text-slate-500 text-xs">Tier</span>
+              <select
+                [ngModel]="editor().tier"
+                (ngModelChange)="updateField('tier', $event)"
+                class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+              >
+                <option value="Basic">Basic</option>
+                <option value="Pro">Pro</option>
+                <option value="Elite">Elite</option>
+              </select>
+            </label>
+
+            <label class="block space-y-1">
+              <span class="text-slate-500 text-xs">Status</span>
+              <select
+                [ngModel]="editor().status"
+                (ngModelChange)="updateField('status', $event)"
+                class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
+              >
+                <option value="Active">Active</option>
+                <option value="Review">Review</option>
+                <option value="Banned">Banned</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="pt-2 flex justify-end">
+            <button
+              type="button"
+              (click)="onSave()"
+              class="rounded-xl px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 transition-colors"
+            >
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+}

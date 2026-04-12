@@ -175,50 +175,22 @@
   </div>
 
   <div
-    *ngIf="detailViewConfig.enabled && isDetailOpen"
-    class="fixed inset-0 z-[120] bg-slate-900/25 backdrop-blur-sm"
+    *ngIf="detailViewConfig.enabled && isDrawerOpen()"
+    class="fixed inset-0 z-[99] bg-slate-900/25 backdrop-blur-sm"
     (click)="closeDetailView()"
     aria-hidden="true"
   ></div>
 
   <section
     *ngIf="detailViewConfig.enabled"
-    class="fixed z-[130] detail-panel-shell"
-    [class.detail-right]="isRightDetail"
-    [class.detail-left]="isLeftDetail"
-    [class.detail-bottom]="isBottomDetail"
-    [class.detail-popup]="isPopupDetail"
-    [class.pointer-events-none]="!isDetailOpen"
-    [class.translate-x-full]="!isDetailOpen && isRightDetail"
-    [class.translate-x-0]="isDetailOpen && (isRightDetail || isLeftDetail)"
-    [class.-translate-x-full]="!isDetailOpen && isLeftDetail"
-    [class.translate-y-full]="!isDetailOpen && isBottomDetail"
-    [class.translate-y-0]="isDetailOpen && isBottomDetail"
-    [class.opacity-0]="!isDetailOpen && isPopupDetail"
-    [class.opacity-100]="isDetailOpen && isPopupDetail"
-    [class.scale-95]="!isDetailOpen && isPopupDetail"
-    [class.scale-100]="isDetailOpen && isPopupDetail"
-    [attr.aria-hidden]="!isDetailOpen"
+    class="fixed top-0 right-0 h-full w-[450px] bg-white/90 backdrop-blur-xl border-l border-slate-200 shadow-2xl z-[100] transform transition-transform duration-300"
+    [class.pointer-events-none]="!isDrawerOpen()"
+    [class.translate-x-full]="!isDrawerOpen()"
+    [class.translate-x-0]="isDrawerOpen()"
+    [attr.aria-hidden]="!isDrawerOpen()"
   >
-    <div
-      class="detail-panel h-full w-full bg-white/95 backdrop-blur-sm border border-slate-200 shadow-2xl overflow-hidden flex flex-col"
-      (click)="$event.stopPropagation()"
-    >
-      <header class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-        <h3 class="text-sm font-bold text-slate-800">Detail View</h3>
-        <button
-          type="button"
-          class="h-8 w-8 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
-          (click)="closeDetailView()"
-          aria-label="Close detail view"
-        >
-          <lucide-icon name="x" class="mx-auto h-4 w-4"></lucide-icon>
-        </button>
-      </header>
-
-      <div class="min-h-0 flex-1 overflow-auto p-4">
-        <ng-template #detailHost></ng-template>
-      </div>
+    <div class="min-h-0 h-full overflow-auto p-4" (click)="$event.stopPropagation()">
+      <ng-template #detailHost></ng-template>
     </div>
   </section>
 </div>

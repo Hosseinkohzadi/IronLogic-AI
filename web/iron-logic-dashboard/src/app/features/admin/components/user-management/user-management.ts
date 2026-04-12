@@ -1,13 +1,13 @@
-import { ChangeDetectionStrategy, Component, OnInit, signal, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { IronLogicApiService } from '@core/services/iron-logic-api.service';
 import { LucideAngularModule } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 
-import { GridComponent } from '@shared/grid/grid'; 
+import { DetailViewConfig, GridComponent } from '@shared/grid/grid';
 import { ColumnConfig } from '@shared/grid/models/column-config';
 import { KpiCardComponent } from '@shared/kpi-card/kpi-card.component';
+import { UserRowDrawerComponent } from './user-row-drawer';
 
 type UserGridStatus = 'Active' | 'Review' | 'Banned';
 type UserGridTier = 'Basic' | 'Pro' | 'Elite';
@@ -29,9 +29,8 @@ interface UserFormState {
 })
 export class UserManagementComponent implements OnInit {
   private apiService = inject(IronLogicApiService);
-  private router = inject(Router);
 
-  cards = [
+  readonly cards = [
     {
       label: 'PREMIUM SUBSCRIBERS',
       val: '842',
@@ -66,15 +65,19 @@ export class UserManagementComponent implements OnInit {
     }
   ];
 
-  users = signal<any[]>([]);
-  filteredUsers = signal<any[]>([]); 
-  searchTerm = signal('');
-  selectedUserId = signal<string | null>(null);
-  selectedUsers = signal<any[]>([]); 
-  isDrawerOpen = signal(false);
-  isUserFormOpen = signal(false);
-  isLoading = signal(true);
-  editingUserId = signal<string | null>(null);
+  readonly users = signal<any[]>([]);
+  readonly filteredUsers = signal<any[]>([]);
+  readonly searchTerm = signal('');
+  readonly selectedUsers = signal<any[]>([]);
+  readonly isUserFormOpen = signal(false);
+  readonly isLoading = signal(true);
+  readonly editingUserId = signal<string | null>(null);
+
+  readonly userDrawerConfig: DetailViewConfig = {
+    enabled: true,
+    position: 'right',
+    component: UserRowDrawerComponent,
+  };
 
   readonly userForm = signal<UserFormState>({
     fullName: '',
@@ -83,7 +86,7 @@ export class UserManagementComponent implements OnInit {
     status: 'Active'
   });
 
-  userColumns: ColumnConfig[] = [
+  readonly userColumns: ColumnConfig[] = [
     { field: 'selection', title: '', type: 'selection', width: '50px' },
     { field: 'name', title: 'NAME', type: 'profile', sortable: true, width: '250px', locked: true, filterType: 'text' },
     {
@@ -122,26 +125,6 @@ export class UserManagementComponent implements OnInit {
     { field: 'actions', title: 'ACTION', type: 'action', width: '80px' }
   ];
 
-  activeUser = computed(() => this.users().find(u => u.id === this.selectedUserId()));
-  
-  activeUserDetails = computed(() => {
-    const user = this.activeUser();
-    if (!user) return null;
-    return {
-      ...user,
-      dailyWeights: Math.floor(user.sessions * 0.6),
-      roles: user.tier === 'Elite' ? 'Athlete, Premium, Beta' : 'Athlete, Premium',
-      confirmed: 'Yes',
-      lastActive: 'Active recently',
-      accountCreated: 'Jan 2026',
-      supportPriority: user.status === 'Review' ? 'High' : 'Medium',
-      syncComplaints: user.status === 'Review' ? 2 : 1,
-      billingFriction: 'None',
-      retentionFlag: user.sessions < 50 ? 'At Risk' : 'Stable',
-      auditTrail: ['Apr 7 · Password reset requested', 'Apr 6 · Role verified by admin']
-    };
-  });
-
   ngOnInit() {
     this.loadData();
   }
@@ -149,7 +132,7 @@ export class UserManagementComponent implements OnInit {
   loadData() {
     this.isLoading.set(true);
     this.apiService.getUsers().subscribe({
-      next: (data: any[]) => { // <-- اینجا اصلاح شد
+      next: (data: any[]) => {
         if (data) {
           const avatarUrls = [
             'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=96&q=80',
@@ -226,7 +209,7 @@ export class UserManagementComponent implements OnInit {
         }
         this.isLoading.set(false);
       },
-      error: (err: any) => { // <-- اینجا اصلاح شد
+      error: (err: any) => {
         console.error('API Error:', err);
         this.isLoading.set(false);
       }
@@ -244,14 +227,7 @@ export class UserManagementComponent implements OnInit {
     this.filteredUsers.set(filtered);
   }
 
-  handleGridAction(event: { type: string, row: any }) {
-    if (event.type === 'row-click') {
-      this.selectedUserId.set(event.row.id);
-      this.isDrawerOpen.set(true);
-      document.body.style.overflow = 'hidden';
-      return;
-    }
-
+  handleGridAction(event: { type: string; row: any }) {
     if (event.type === 'edit') {
       this.openUserForm(event.row);
     }
@@ -284,9 +260,7 @@ export class UserManagementComponent implements OnInit {
   closeUserForm(): void {
     this.isUserFormOpen.set(false);
     this.editingUserId.set(null);
-    if (!this.isDrawerOpen()) {
-      document.body.style.overflow = 'auto';
-    }
+    document.body.style.overflow = 'auto';
   }
 
   updateUserFormField<K extends keyof UserFormState>(field: K, value: UserFormState[K]): void {
@@ -345,40 +319,21 @@ export class UserManagementComponent implements OnInit {
     this.closeUserForm();
   }
 
-  closeOverlays(): void {
-    if (this.isUserFormOpen()) {
-      this.closeUserForm();
+  onDrawerSave(event: { row: any; payload: any }): void {
+    const nextRow = (event.payload ?? event.row) as any;
+    const targetId = String(nextRow?.id ?? event.row?.id ?? '');
+
+    if (!targetId) {
+      return;
     }
 
-    if (this.isDrawerOpen()) {
-      this.closeDrawer();
-    }
+    this.users.update((current) =>
+      current.map((user) => (user.id === targetId ? { ...user, ...nextRow } : user)),
+    );
+    this.refreshGridData();
   }
 
-  closeDrawer() {
-    this.isDrawerOpen.set(false);
-    if (!this.isUserFormOpen()) {
-      document.body.style.overflow = 'auto';
-    }
-    setTimeout(() => { this.selectedUserId.set(null); }, 300);
-  }
-
-  navigateToEntity(entityType: 'sessions' | 'weights' | 'exercises') {
-    const currentId = this.selectedUserId();
-    if (!currentId) return;
-
-    this.closeDrawer();
-
-    const routeMap: Record<'sessions' | 'weights' | 'exercises', string[]> = {
-      sessions: ['/admin/sessions'],
-      weights: ['/admin/weights'],
-      exercises: ['/admin/exercises']
-    };
-
-    this.router.navigate(routeMap[entityType], { queryParams: { userId: currentId } });
-  }
-
-  MapsToEntity(entityType: 'sessions' | 'weights' | 'exercises') {
-    this.navigateToEntity(entityType);
+  refreshGridData(): void {
+    this.onSearch(this.searchTerm());
   }
 }

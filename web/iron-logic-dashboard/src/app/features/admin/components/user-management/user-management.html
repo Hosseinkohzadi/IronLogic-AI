@@ -1,5 +1,5 @@
 <div class="flex w-full flex-col gap-6 bg-slate-50 p-6">
-  <div [class.pointer-events-none]="isUserFormOpen() || isDrawerOpen()" class="flex flex-col gap-6">
+  <div [class.pointer-events-none]="isUserFormOpen()" class="flex flex-col gap-6">
     <section class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
@@ -92,6 +92,7 @@
           class="h-full w-full"
           [columns]="userColumns"
           [data]="filteredUsers()"
+          [detailViewConfig]="userDrawerConfig"
           [isLoading]="isLoading()"
           [searchTerm]="searchTerm()"
           [showExport]="true"
@@ -99,6 +100,8 @@
           [showSearch]="true"
           (search)="onSearch($event)"
           (refresh)="loadData()"
+          (refreshGrid)="refreshGridData()"
+          (onDetailSaved)="onDrawerSave($event)"
           (actionTriggered)="handleGridAction($event)"
           (selectionChanged)="selectedUsers.set($event)"
           [reorderable]="true"
@@ -108,9 +111,9 @@
     </div>
   </div>
 
-  @if (isDrawerOpen() || isUserFormOpen()) {
+  @if (isUserFormOpen()) {
     <div
-      (click)="closeOverlays()"
+      (click)="closeUserForm()"
       class="fixed inset-0 z-40 bg-slate-900/5 backdrop-blur-[2px] transition-opacity"
     ></div>
   }
@@ -224,237 +227,4 @@
     </section>
   }
 
-  @if (isDrawerOpen() && activeUserDetails()) {
-    <div class="fixed top-0 right-0 h-full w-full max-w-[420px] z-50 animate-in-drawer p-4">
-      <div
-        class="h-full bg-slate-50/95 backdrop-blur-2xl rounded-[2.5rem] border border-white shadow-2xl p-8 overflow-y-auto flex flex-col"
-      >
-        <div class="flex justify-between items-start mb-8 shrink-0">
-          <div class="flex items-center gap-4">
-            <div
-              class="w-16 h-16 rounded-full overflow-hidden bg-slate-100 border border-slate-200 shrink-0 flex items-center justify-center"
-            >
-              <img
-                *ngIf="activeUserDetails()?.profileImageUrl"
-                [src]="activeUserDetails()?.profileImageUrl"
-                alt=""
-                class="w-full h-full object-cover"
-              />
-              <span
-                *ngIf="!activeUserDetails()?.profileImageUrl"
-                class="text-[20px] font-black text-slate-600"
-                >{{ (activeUserDetails()?.name || '?')[0] | uppercase }}</span
-              >
-            </div>
-            <div>
-              <h2 class="text-2xl font-black text-slate-900 tracking-tight">
-                {{ activeUserDetails()?.name }}
-              </h2>
-              <p class="text-xs font-medium text-slate-500 mt-1">
-                {{ activeUserDetails()?.tier }} account overview and recent linked activity
-              </p>
-            </div>
-          </div>
-          <button
-            (click)="closeDrawer()"
-            class="p-2 hover:bg-slate-200/50 rounded-xl transition-all font-bold text-slate-600"
-          >
-            ✕
-          </button>
-        </div>
-
-        <div class="space-y-4 flex-1 pb-10">
-          <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
-            <h3 class="text-sm font-black text-slate-900 mb-3.5">Grid Row Data</h3>
-            <div class="space-y-3 text-xs font-medium text-slate-600">
-              <div class="flex justify-between items-center">
-                <span class="text-slate-400">ID</span>
-                <span class="font-bold text-slate-800">{{ activeUserDetails()?.id || '-' }}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-slate-400">Name</span>
-                <span class="font-bold text-slate-800">{{ activeUserDetails()?.name || '-' }}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-slate-400">Status</span>
-                <span class="font-bold text-slate-800">{{
-                  activeUserDetails()?.status || '-'
-                }}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-slate-400">Tier</span>
-                <span class="font-bold text-slate-800">{{ activeUserDetails()?.tier || '-' }}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-slate-400">Sessions</span>
-                <span class="font-bold text-slate-800">{{
-                  activeUserDetails()?.sessions ?? 0
-                }}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-slate-400">Weights</span>
-                <span class="font-bold text-slate-800">{{
-                  activeUserDetails()?.dailyWeights ?? 0
-                }}</span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-slate-400">Email</span>
-                <span class="font-bold text-slate-800">{{
-                  activeUserDetails()?.email || '-'
-                }}</span>
-              </div>
-              <div class="flex justify-between items-center pt-2 border-t border-slate-50">
-                <span class="text-slate-400">Last Login</span>
-                <span class="font-bold text-slate-800">{{
-                  activeUserDetails()?.lastLogin
-                    ? (activeUserDetails()?.lastLogin | date: 'medium')
-                    : '-'
-                }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
-            <h3 class="text-sm font-black text-slate-900 mb-3.5">Account Risk & Lockout</h3>
-            <div class="space-y-3 text-xs font-medium text-slate-600">
-              <div class="flex justify-between items-center">
-                <span class="text-slate-400">Failed Login Attempts</span>
-                <span
-                  [class]="
-                    activeUserDetails()?.accessFailedCount > 3
-                      ? 'text-red-500 font-bold'
-                      : 'text-slate-800'
-                  "
-                >
-                  {{ activeUserDetails()?.accessFailedCount }} / 5
-                </span>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-slate-400">Lockout Status</span>
-                <span
-                  *ngIf="activeUserDetails()?.status === 'Banned'"
-                  class="px-2 py-0.5 bg-red-50 text-red-600 rounded text-[10px] font-bold uppercase tracking-widest"
-                >
-                  Locked Out
-                </span>
-                <span
-                  *ngIf="activeUserDetails()?.status !== 'Banned'"
-                  class="text-emerald-500 font-bold"
-                >
-                  Clear
-                </span>
-              </div>
-              <div
-                *ngIf="activeUserDetails()?.lockoutEnd"
-                class="flex justify-between items-center pt-2 border-t border-slate-50"
-              >
-                <span class="text-slate-400">Lockout Ends At</span>
-                <span class="text-red-600 font-mono text-[10px]">{{
-                  activeUserDetails()?.lockoutEnd | date: 'medium'
-                }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
-            <h3 class="text-sm font-black text-slate-900 mb-3.5">Linked Entities</h3>
-            <div class="space-y-3">
-              <div class="flex justify-between items-center">
-                <span class="text-xs font-medium text-slate-600">Sessions</span>
-                <button
-                  (click)="navigateToEntity('sessions')"
-                  class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors"
-                >
-                  <lucide-icon name="eye" class="w-3.5 h-3.5"></lucide-icon>
-                  View
-                </button>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-xs font-medium text-slate-600">Daily Weights</span>
-                <button
-                  (click)="navigateToEntity('weights')"
-                  class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors"
-                >
-                  <lucide-icon name="trending-up" class="w-3.5 h-3.5"></lucide-icon>
-                  Trend
-                </button>
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-xs font-medium text-slate-600">Exercise Sessions</span>
-                <button
-                  (click)="navigateToEntity('exercises')"
-                  class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-100 hover:bg-slate-200 rounded-lg text-[11px] font-bold text-slate-700 transition-colors"
-                >
-                  <lucide-icon name="panel-left" class="w-3.5 h-3.5"></lucide-icon>
-                  Inspect
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
-            <h3 class="text-sm font-black text-slate-900 mb-3.5">Account Risk</h3>
-            <div class="space-y-2.5 text-xs font-medium text-slate-600">
-              <div>
-                Support priority:
-                <span class="font-bold text-slate-800">{{
-                  activeUserDetails()?.supportPriority || '-'
-                }}</span>
-              </div>
-              <div>
-                Sync complaints in last 30d:
-                <span class="font-bold text-slate-800">{{
-                  activeUserDetails()?.syncComplaints || '-'
-                }}</span>
-              </div>
-              <div>
-                Billing friction:
-                <span class="font-bold text-slate-800">{{
-                  activeUserDetails()?.billingFriction || '-'
-                }}</span>
-              </div>
-              <div>
-                Retention flag:
-                <span class="font-bold text-slate-800">{{
-                  activeUserDetails()?.retentionFlag || '-'
-                }}</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
-            <h3 class="text-sm font-black text-slate-900 mb-3.5">Audit Trail</h3>
-            @for (log of activeUserDetails()?.auditTrail || []; track log) {
-              <p class="text-xs font-medium text-slate-600">{{ log }}</p>
-            }
-          </div>
-
-          <div class="p-5 bg-white rounded-2xl shadow-sm border border-slate-100/50">
-            <h3 class="text-sm font-black text-slate-900 mb-3.5">Admin Actions</h3>
-            <div class="flex flex-wrap gap-2.5">
-              <button
-                (click)="activeUserDetails() && openUserForm(activeUserDetails())"
-                class="flex items-center gap-1.5 px-4 py-2 bg-black text-white rounded-lg text-[11px] font-bold hover:bg-slate-800 transition-colors"
-              >
-                <lucide-icon name="edit-3" class="w-3.5 h-3.5"></lucide-icon>
-                Edit
-              </button>
-              <button
-                class="flex items-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-800 rounded-lg text-[11px] font-bold hover:bg-slate-200 transition-colors"
-              >
-                <lucide-icon name="lock" class="w-3.5 h-3.5"></lucide-icon>
-                Suspend
-              </button>
-              <button
-                class="flex items-center gap-1.5 px-4 py-2 bg-slate-100 text-slate-800 rounded-lg text-[11px] font-bold hover:bg-slate-200 transition-colors"
-              >
-                <lucide-icon name="refresh-cw" class="w-3.5 h-3.5"></lucide-icon>
-                Reset
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  }
 </div>

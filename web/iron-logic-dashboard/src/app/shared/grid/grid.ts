@@ -12,6 +12,7 @@ import {
   OnDestroy,
   OnInit,
   Output,
+  signal,
   SimpleChanges,
   Type,
   ViewChild,
@@ -103,14 +104,17 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
   @Output() actionTriggered = new EventEmitter<{ type: string; row: any }>();
   @Output() selectionChanged = new EventEmitter<any[]>();
   @Output() refresh = new EventEmitter<void>();
+  @Output() refreshGrid = new EventEmitter<void>();
+  @Output() rowClick = new EventEmitter<any>();
   @Output() search = new EventEmitter<string>();
   @Output() saveChanges = new EventEmitter<any>();
   @Output() inlineSave = new EventEmitter<any>();
   @Output() onDetailSaved = new EventEmitter<{ row: any; payload: any }>();
 
   selectedDetailRow: any = null;
-  isDetailOpen = false;
+  readonly isDrawerOpen = signal(false);
   private detailSaveUnsubscribe?: () => void;
+  private detailCloseUnsubscribe?: () => void;
 
   constructor(
     public gridDataService: GridDataService,
@@ -405,11 +409,15 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
       this.openDetailView(event.row);
     }
 
+    if (event.type === 'row-click') {
+      this.rowClick.emit(event.row);
+    }
+
     this.actionTriggered.emit(event);
   }
 
   closeDetailView(): void {
-    this.isDetailOpen = false;
+    this.isDrawerOpen.set(false);
     this.selectedDetailRow = null;
     this.cleanupDetailSaveSubscription();
     this.detailHostRef?.clear();
@@ -438,7 +446,7 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     this.selectedDetailRow = row;
-    this.isDetailOpen = true;
+    this.isDrawerOpen.set(true);
     this.cleanupDetailSaveSubscription();
     this.detailHostRef.clear();
 
@@ -452,6 +460,7 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
     componentRef.setInput('data', row);
 
     this.bindDetailSaveOutput(componentRef.instance, row);
+    this.bindDetailCloseOutput(componentRef.instance);
     this.cdr.markForCheck();
   }
 
@@ -473,9 +482,28 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
 
       const subscription = output.subscribe((payload: any) => {
         this.onDetailSaved.emit({ row, payload });
+        this.refreshGrid.emit();
       });
 
       this.detailSaveUnsubscribe = () => subscription.unsubscribe();
+      return;
+    }
+  }
+
+  private bindDetailCloseOutput(instance: any): void {
+    const candidateOutputs = ['close', 'requestClose', 'drawerClose'];
+
+    for (const outputName of candidateOutputs) {
+      const output = instance?.[outputName];
+      if (!output || typeof output.subscribe !== 'function') {
+        continue;
+      }
+
+      const subscription = output.subscribe(() => {
+        this.closeDetailView();
+      });
+
+      this.detailCloseUnsubscribe = () => subscription.unsubscribe();
       return;
     }
   }
@@ -487,5 +515,10 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
 
     this.detailSaveUnsubscribe();
     this.detailSaveUnsubscribe = undefined;
+
+    if (this.detailCloseUnsubscribe) {
+      this.detailCloseUnsubscribe();
+      this.detailCloseUnsubscribe = undefined;
+    }
   }
 }

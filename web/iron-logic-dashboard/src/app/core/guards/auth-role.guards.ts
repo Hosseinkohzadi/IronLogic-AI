@@ -8,24 +8,24 @@ function getDefaultRouteForRole(role: ReturnType<AuthService['role']>): string {
   }
 
   if (role === 'ATHLETE') {
-    return '/athlete/portal';
+    return '/athlete/dashboard';
   }
 
-  return '/login';
+  return '/auth/login';
 }
 
-export const superAdminGuard: CanActivateFn = () => {
+export const authGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
-  if (auth.hasRole('SUPER_ADMIN')) {
+  if (auth.isAuthenticated()) {
     return true;
   }
 
-  return router.createUrlTree(['/login']);
+  return router.createUrlTree(['/auth/login']);
 };
 
-export const superAdminChildGuard: CanActivateChildFn = () => {
+export const adminGuard: CanActivateFn = () => {
   const auth = inject(AuthService);
   const router = inject(Router);
 
@@ -33,7 +33,26 @@ export const superAdminChildGuard: CanActivateChildFn = () => {
     return true;
   }
 
-  return router.createUrlTree(['/login']);
+  if (auth.isAuthenticated()) {
+    return router.createUrlTree([getDefaultRouteForRole(auth.role())]);
+  }
+
+  return router.createUrlTree(['/auth/login']);
+};
+
+export const adminChildGuard: CanActivateChildFn = () => {
+  const auth = inject(AuthService);
+  const router = inject(Router);
+
+  if (auth.hasRole('SUPER_ADMIN')) {
+    return true;
+  }
+
+  if (auth.isAuthenticated()) {
+    return router.createUrlTree([getDefaultRouteForRole(auth.role())]);
+  }
+
+  return router.createUrlTree(['/auth/login']);
 };
 
 export const athleteGuard: CanActivateFn = () => {
@@ -44,7 +63,11 @@ export const athleteGuard: CanActivateFn = () => {
     return true;
   }
 
-  return router.createUrlTree(['/login']);
+  if (auth.isAuthenticated()) {
+    return router.createUrlTree([getDefaultRouteForRole(auth.role())]);
+  }
+
+  return router.createUrlTree(['/auth/login']);
 };
 
 export const publicOnlyGuard: CanActivateFn = () => {
@@ -57,3 +80,6 @@ export const publicOnlyGuard: CanActivateFn = () => {
 
   return router.createUrlTree([getDefaultRouteForRole(auth.role())]);
 };
+
+export const superAdminGuard = adminGuard;
+export const superAdminChildGuard = adminChildGuard;

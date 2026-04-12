@@ -9,18 +9,19 @@ import { FaqComponent } from './pages/faq/faq';
 import { ContactComponent } from './pages/contact/contact';
 import { AdminComponent } from '@features/admin/MainAdminPage/admin.component';
 import {
+  adminChildGuard,
+  adminGuard,
+  authGuard,
   athleteGuard,
   publicOnlyGuard,
-  superAdminChildGuard,
-  superAdminGuard,
 } from '@core/guards/auth-role.guards';
 
 export const routes: Routes = [
   {
     path: 'admin',
     component: AdminComponent,
-    canActivate: [superAdminGuard],
-    canActivateChild: [superAdminChildGuard],
+    canActivate: [authGuard, adminGuard],
+    canActivateChild: [adminChildGuard],
     data: { hideSidebar: false },
     children: [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
@@ -83,8 +84,13 @@ export const routes: Routes = [
     ],
   },
   {
+    path: 'athlete/dashboard',
+    pathMatch: 'full',
+    redirectTo: 'athlete/portal',
+  },
+  {
     path: 'athlete/portal',
-    canActivate: [athleteGuard],
+    canActivate: [authGuard, athleteGuard],
     data: { hideSidebar: true },
     loadComponent: () =>
       import('@features/athlete/athlete-portal').then((m) => m.AthletePortalComponent),
@@ -92,6 +98,12 @@ export const routes: Routes = [
   { path: '', component: LandingComponent, pathMatch: 'full', data: { hideSidebar: true } },
   {
     path: 'login',
+    component: LoginComponent,
+    canActivate: [publicOnlyGuard],
+    data: { hideSidebar: true },
+  },
+  {
+    path: 'auth/login',
     component: LoginComponent,
     canActivate: [publicOnlyGuard],
     data: { hideSidebar: true },

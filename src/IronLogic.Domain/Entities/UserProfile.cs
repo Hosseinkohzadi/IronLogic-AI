@@ -28,22 +28,27 @@ public class UserProfile : BaseEntity
     public DateTime? DateOfBirth { get; set; }
 
     /// <summary>
+    /// Gets or sets the user's gender.
+    /// </summary>
+    public Gender Gender { get; set; } = Gender.Unknown;
+
+    /// <summary>
     /// Gets or sets the user's height in centimeters.
     /// </summary>
     public decimal? Height { get; set; }
 
     /// <summary>
-    /// Gets or sets the user's weight in kilograms.
+    /// Gets or sets the user's current weight in kilograms.
     /// </summary>
-    public decimal? Weight { get; set; }
+    public decimal? CurrentWeight { get; set; }
 
     /// <summary>
-    /// Gets or sets the profile picture URL.
+    /// Gets or sets the user's target weight in kilograms.
     /// </summary>
-    public string? ProfilePictureUrl { get; set; }
+    public decimal? TargetWeight { get; set; }
 
     /// <summary>
-    /// Gets or sets the user's fitness goal.
+    /// Gets or sets the user's activity level.
     /// </summary>
-    public FitnessGoal FitnessGoal { get; set; } = FitnessGoal.None;
+    public ActivityLevel ActivityLevel { get; set; } = ActivityLevel.None;
 }

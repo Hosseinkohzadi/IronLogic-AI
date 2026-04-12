@@ -1,0 +1,227 @@
+<section class="min-h-screen bg-slate-950 px-4 py-6 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-[1280px] space-y-6">
+    <header
+      class="rounded-3xl border border-slate-800 bg-gradient-to-r from-indigo-600/20 to-slate-900 p-6"
+    >
+      <div class="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+        <div class="relative">
+          <div class="h-28 w-28 overflow-hidden rounded-full bg-indigo-500">
+            @if (profileForm.controls.profilePictureUrl.value) {
+              <img
+                [src]="profileForm.controls.profilePictureUrl.value"
+                alt="Athlete avatar"
+                class="h-full w-full object-cover"
+              />
+            } @else {
+              <div
+                class="flex h-full w-full items-center justify-center text-3xl font-black text-white"
+              >
+                {{ avatarInitials() }}
+              </div>
+            }
+          </div>
+          <button
+            type="button"
+            (click)="openAvatarPicker()"
+            class="absolute bottom-0 right-0 rounded-full border border-slate-700 bg-slate-900/80 px-2.5 py-1 text-[10px] font-semibold text-slate-300 hover:text-white"
+          >
+            Change Photo
+          </button>
+        </div>
+
+        <div>
+          <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-400">
+            Athlete Profile
+          </p>
+          <h1 class="mt-1 text-3xl font-black text-white">{{ fullName() }}</h1>
+          <p class="mt-1 text-sm text-slate-300">Manage your account and fitness preferences</p>
+        </div>
+      </div>
+    </header>
+
+    @if (profileError()) {
+      <div
+        class="rounded-xl border border-rose-700/40 bg-rose-500/10 px-4 py-3 text-sm font-semibold text-rose-300"
+      >
+        {{ profileError() }}
+      </div>
+    }
+
+    <form [formGroup]="profileForm" class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <article class="rounded-3xl bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-6">
+        <div class="flex items-center gap-2">
+          <lucide-icon name="user" class="h-5 w-5 text-indigo-300"></lucide-icon>
+          <h2 class="text-lg font-black text-white">Account Information</h2>
+        </div>
+
+        <div class="mt-4 space-y-4">
+          <label class="block space-y-1">
+            <span class="text-slate-400 text-sm font-medium">First Name</span>
+            <input
+              formControlName="firstName"
+              placeholder="First name"
+              class="bg-slate-800/50 border border-slate-700 text-white rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-600 w-full"
+            />
+          </label>
+
+          <label class="block space-y-1">
+            <span class="text-slate-400 text-sm font-medium">Last Name</span>
+            <input
+              formControlName="lastName"
+              placeholder="Last name"
+              class="bg-slate-800/50 border border-slate-700 text-white rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-600 w-full"
+            />
+          </label>
+
+          <label class="block space-y-1">
+            <span class="text-slate-400 text-sm font-medium">Email</span>
+            <input
+              formControlName="email"
+              type="email"
+              readonly
+              placeholder="Email"
+              class="bg-slate-800/50 border border-slate-700 text-white rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-600 w-full"
+            />
+          </label>
+
+          <label class="block space-y-1">
+            <span class="text-slate-400 text-sm font-medium">Phone Number</span>
+            <input
+              formControlName="phoneNumber"
+              placeholder="+12345678901"
+              class="bg-slate-800/50 border border-slate-700 text-white rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-600 w-full"
+            />
+          </label>
+        </div>
+      </article>
+
+      <article class="rounded-3xl bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-6">
+        <div class="flex items-center gap-2">
+          <lucide-icon name="activity" class="h-5 w-5 text-indigo-300"></lucide-icon>
+          <h2 class="text-lg font-black text-white">Biometrics</h2>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <label class="block space-y-1">
+            <span class="text-slate-400 text-sm font-medium">Current Weight (kg)</span>
+            <input
+              formControlName="currentWeight"
+              type="number"
+              placeholder="0"
+              class="bg-slate-800/50 border border-slate-700 text-white rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-600 w-full"
+            />
+          </label>
+
+          <label class="block space-y-1">
+            <span class="text-slate-400 text-sm font-medium">Height (cm)</span>
+            <input
+              formControlName="height"
+              type="number"
+              placeholder="0"
+              class="bg-slate-800/50 border border-slate-700 text-white rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-600 w-full"
+            />
+          </label>
+
+          <label class="block space-y-1 sm:col-span-2">
+            <span class="text-slate-400 text-sm font-medium">Target Weight (kg)</span>
+            <input
+              formControlName="targetWeight"
+              type="number"
+              placeholder="0"
+              class="bg-slate-800/50 border border-slate-700 text-white rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-600 w-full"
+            />
+          </label>
+        </div>
+
+        <div
+          class="mt-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 px-4 py-3 transition-all duration-300"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <lucide-icon [name]="bmiStatus().icon" class="h-4 w-4 text-indigo-300"></lucide-icon>
+              <span class="text-xs font-black uppercase tracking-[0.14em] text-indigo-200"
+                >BMI</span
+              >
+            </div>
+            <span
+              class="rounded-full border px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.12em]"
+              [class]="bmiStatus().badgeClass"
+            >
+              {{ bmiStatus().label }}
+            </span>
+          </div>
+          <p class="mt-2 text-2xl font-black text-white transition-all duration-300">
+            {{ bmi() ?? '--' }}
+          </p>
+        </div>
+
+        <div class="mt-6 flex items-center gap-2">
+          <lucide-icon name="target" class="h-5 w-5 text-indigo-300"></lucide-icon>
+          <h2 class="text-lg font-black text-white">Fitness Goals</h2>
+        </div>
+
+        <div class="mt-4 space-y-4">
+          <label class="block space-y-1">
+            <span class="text-slate-400 text-sm font-medium">Activity Level</span>
+            <select
+              formControlName="activityLevel"
+              class="bg-slate-800/50 border border-slate-700 text-white rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-600 w-full"
+            >
+              <option value="Sedentary">Sedentary</option>
+              <option value="Lightly Active">Lightly Active</option>
+              <option value="Moderately Active">Moderately Active</option>
+              <option value="Very Active">Very Active</option>
+            </select>
+          </label>
+
+          <label class="block space-y-1">
+            <span class="text-slate-400 text-sm font-medium">Bio</span>
+            <textarea
+              formControlName="bio"
+              rows="4"
+              placeholder="Share your training goals and current focus"
+              class="bg-slate-800/50 border border-slate-700 text-white rounded-xl px-4 py-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all placeholder:text-slate-600 w-full"
+            ></textarea>
+          </label>
+
+          <label
+            class="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-800/40 px-4 py-3"
+          >
+            <span class="text-slate-300 text-sm font-medium">Sync with AI Engine</span>
+            <input
+              type="checkbox"
+              formControlName="aiSyncEnabled"
+              class="h-5 w-5 rounded accent-indigo-500"
+            />
+          </label>
+
+          @if (profileForm.controls.aiSyncEnabled.value) {
+            <div
+              class="rounded-xl bg-indigo-500/10 px-4 py-3 text-sm text-indigo-300 border border-indigo-500/20"
+            >
+              Your biometric data is being used to calibrate AI workout intensity.
+            </div>
+          }
+        </div>
+      </article>
+    </form>
+  </div>
+
+  @if (showSaveFab()) {
+    <div class="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
+      <button
+        type="button"
+        (click)="saveChanges()"
+        [disabled]="profileForm.invalid || isSubmitting()"
+        class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-2xl shadow-lg shadow-indigo-500/20 transition-all inline-flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        @if (isSubmitting()) {
+          <lucide-icon name="refresh-cw" class="h-4 w-4 animate-spin"></lucide-icon>
+        } @else {
+          <lucide-icon name="check-circle" class="h-4 w-4"></lucide-icon>
+        }
+        Save Changes
+      </button>
+    </div>
+  }
+</section>

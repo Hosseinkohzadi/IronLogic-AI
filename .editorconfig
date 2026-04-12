@@ -1,0 +1,54 @@
+# تایید اینکه این فایل تنظیمات نهایی است
+root = true
+
+[*]
+indent_style = space
+indent_size = 4
+insert_final_newline = true
+trim_trailing_whitespace = true
+charset = utf-8
+
+[*.{cs,csx}]
+# قوانین کلی سی‌شارپ
+dotnet_analyzer_diagnostic.category-Style.severity = suggestion
+dotnet_analyzer_diagnostic.category-CodeQuality.severity = warning
+
+# استفاده از Var (اگر نوع داده مشخص است)
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+
+# مدیریت Usingها (مرتب‌سازی و حذف اضافه‌ها)
+dotnet_separate_import_directive_groups = true
+dotnet_sort_system_directives_first = true
+csharp_using_directive_placement = outside_namespace:suggestion
+
+# ویژگی‌های مدرن C# 12/13
+csharp_style_primary_constructor_parameters_visibility = true:suggestion
+csharp_style_prefer_primary_constructors = true:suggestion
+
+# قوانین مربوط به براکت‌ها (New Line)
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+
+# فضاگذاری (Spacing)
+csharp_space_after_cast = false
+csharp_space_after_keywords_in_control_flow_statements = true
+csharp_space_between_method_call_parameter_list_parentheses = false
+
+# نام‌گذاری (Naming Conventions)
+# این بخش کمک می‌کند تا فیلدها همیشه با _ شروع شوند
+dotnet_naming_rule.private_members_with_underscore.symbols = private_fields
+dotnet_naming_rule.private_members_with_underscore.style = prefix_underscore
+dotnet_naming_symbol.private_fields.applicable_kinds = field
+dotnet_naming_symbol.private_fields.applicable_accessibilities = private
+dotnet_naming_style.prefix_underscore.capitalization = camel_case
+dotnet_naming_style.prefix_underscore.required_prefix = _
+
+[*.{json,yml}]
+indent_size = 2
+
+[*.{html,ts,css,scss}]
+# تنظیمات برای بخش فرانت‌ند (Angular)
+indent_size = 2

@@ -360,7 +360,9 @@ export class UserManagementComponent implements OnInit {
   }
 
   onDrawerSave(event: { row: any; payload: any }): void {
-    const nextRow = this.mapApplicationUserToGridRow((event.payload ?? event.row) as ApplicationUser);
+    const nextRow = this.mapApplicationUserToGridRow(
+      (event.payload ?? event.row) as ApplicationUser,
+    );
     const targetId = String(nextRow?.id ?? event.row?.id ?? '');
 
     if (!targetId) {

@@ -29,10 +29,10 @@ export class PlanSelectionComponent {
 
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
-  readonly billingCycle = signal<'monthly' | 'yearly'>('monthly');
+  readonly billingCycle = signal<'monthly' | 'yearly'>('yearly');
   readonly selectedPlanId = signal<string | null>(null);
 
-  readonly plans = this.subscriptionService.availablePlans;
+  readonly plans = signal<SubscriptionPlan[]>([]);
   readonly isAdmin = computed(() => this.authService.role() === 'SUPER_ADMIN');
 
   private readonly allFeatureLabels = [
@@ -125,6 +125,7 @@ export class PlanSelectionComponent {
       )
       .subscribe({
         next: (plans) => {
+          this.plans.set(plans);
           if (plans.length > 0) {
             const defaultPlan =
               plans.find((plan) => plan.name.toLowerCase().includes('pro')) ?? plans[0];
@@ -133,6 +134,7 @@ export class PlanSelectionComponent {
           }
         },
         error: () => {
+          this.plans.set([]);
           this.errorMessage.set('Unable to load subscription plans right now. Please retry.');
         },
       });

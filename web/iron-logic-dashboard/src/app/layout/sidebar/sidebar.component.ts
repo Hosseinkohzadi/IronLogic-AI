@@ -48,6 +48,7 @@ export class SidebarComponent implements OnInit {
 
   readonly userNavItems: NavItem[] = [
     { label: 'Athlete Portal', route: '/athlete/portal', icon: 'layout-dashboard' },
+    { label: 'Profile', route: '/athlete/profile', icon: 'user' },
     { label: 'Upgrade to Pro', route: '/athlete/subscription', icon: 'credit-card' },
   ];
 

@@ -40,7 +40,7 @@ public class AppDbContext : IdentityDbContext<User>
 
         var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ironlogic.db");
         optionsBuilder.UseSqlite($"Data Source={dbPath}")
-            .ConfigureWarnings(warnings => 
+            .ConfigureWarnings(warnings =>
                 warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
     }
 
@@ -202,16 +202,19 @@ public class AppDbContext : IdentityDbContext<User>
             entity.Property(up => up.Bio)
                 .HasMaxLength(1000);
 
+            entity.Property(up => up.Gender)
+                .HasConversion<string>();
+
             entity.Property(up => up.Height)
                 .HasPrecision(5, 2);
 
-            entity.Property(up => up.Weight)
+            entity.Property(up => up.CurrentWeight)
                 .HasPrecision(5, 2);
 
-            entity.Property(up => up.ProfilePictureUrl)
-                .HasMaxLength(2048);
+            entity.Property(up => up.TargetWeight)
+                .HasPrecision(5, 2);
 
-            entity.Property(up => up.FitnessGoal)
+            entity.Property(up => up.ActivityLevel)
                 .HasConversion<string>();
 
             entity.HasOne(up => up.User)

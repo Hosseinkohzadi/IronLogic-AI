@@ -1,0 +1,203 @@
+<section class="space-y-8 p-4 sm:p-6 lg:p-8">
+  <header class="space-y-2">
+    <p class="text-[11px] font-black uppercase tracking-[0.22em] text-indigo-400">Admin Panel</p>
+    <h1 class="text-3xl font-black tracking-tight text-slate-100">Billing Management</h1>
+    <p class="text-sm text-slate-400">
+      Unified billing operations with transaction visibility, plan edits, and delete controls.
+    </p>
+  </header>
+
+  @if (notification()) {
+    <div
+      class="flex items-center gap-3 rounded-2xl border px-5 py-4 text-sm font-semibold shadow-sm"
+      [class.border-emerald-500/30]="notification()!.type === 'success'"
+      [class.bg-emerald-500/15]="notification()!.type === 'success'"
+      [class.text-emerald-200]="notification()!.type === 'success'"
+      [class.border-rose-500/30]="notification()!.type === 'error'"
+      [class.bg-rose-500/15]="notification()!.type === 'error'"
+      [class.text-rose-200]="notification()!.type === 'error'"
+    >
+      <lucide-icon
+        [name]="notification()!.type === 'success' ? 'check-circle' : 'alert-triangle'"
+        class="h-5 w-5 flex-shrink-0"
+      ></lucide-icon>
+      {{ notification()!.text }}
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div
+      class="flex items-center gap-3 rounded-2xl border border-rose-500/30 bg-rose-500/15 px-5 py-4 text-sm font-semibold text-rose-200 shadow-sm"
+    >
+      <lucide-icon name="alert-triangle" class="h-5 w-5 flex-shrink-0"></lucide-icon>
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <section class="space-y-3">
+    <h2 class="text-lg font-black tracking-tight text-slate-100">Financial Overview</h2>
+    <div class="grid gap-4 sm:grid-cols-3">
+      <div class="rounded-2xl border border-slate-800/70 bg-slate-900/40 p-1 backdrop-blur-xl">
+        <app-metric-card
+          title="TOTAL REVENUE"
+          [value]="getRevenueValue()"
+          unit="$"
+          [trend]="9"
+          iconClasses="bg-indigo-100 text-indigo-600"
+          [iconTemplate]="revenueIcon"
+          [footerTemplate]="revenueFooter"
+        ></app-metric-card>
+      </div>
+
+      <div class="rounded-2xl border border-slate-800/70 bg-slate-900/40 p-1 backdrop-blur-xl">
+        <app-metric-card
+          title="ACTIVE SUBS"
+          [value]="adminStats().activeSubs.toString()"
+          [trend]="4"
+          iconClasses="bg-emerald-100 text-emerald-600"
+          [iconTemplate]="activeIcon"
+          [footerTemplate]="activeFooter"
+        ></app-metric-card>
+      </div>
+
+      <div class="rounded-2xl border border-slate-800/70 bg-slate-900/40 p-1 backdrop-blur-xl">
+        <app-metric-card
+          title="FAILED PAYMENTS"
+          [value]="adminStats().failedPayments.toString()"
+          [trend]="-2"
+          iconClasses="bg-rose-100 text-rose-600"
+          [iconTemplate]="failedIcon"
+          [footerTemplate]="failedFooter"
+        ></app-metric-card>
+      </div>
+    </div>
+  </section>
+
+  <section
+    class="space-y-4 rounded-2xl border border-slate-800/70 bg-slate-900/40 p-4 shadow-sm backdrop-blur-xl"
+  >
+    <div class="flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-black tracking-tight text-slate-100">Billing Records</h2>
+        <p class="mt-0.5 text-xs text-slate-400">
+          Columns: userEmail, planName, amount, status, transactionDate, actions.
+        </p>
+      </div>
+    </div>
+
+    <app-grid
+      [columns]="billingColumns"
+      [data]="billingRecords()"
+      [isLoading]="isLoading()"
+      [showSearch]="true"
+      [showFilters]="true"
+      [showExport]="true"
+      [pagerPosition]="'bottom'"
+      (refresh)="reloadData()"
+      (actionTriggered)="handleGridAction($event)"
+    ></app-grid>
+  </section>
+
+  <!-- Edit Plan Modal -->
+  @if (isModalOpen()) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <article
+        class="max-w-md w-full rounded-3xl border border-slate-800 bg-slate-950/95 p-6 shadow-2xl backdrop-blur-xl"
+      >
+        <div class="mb-5 flex items-center justify-between">
+          <h3 class="text-xl font-black text-slate-100">
+            {{ isEditMode() ? 'Edit Billing Plan' : 'New Plan' }}
+          </h3>
+          <button
+            type="button"
+            (click)="closeModal()"
+            class="rounded-lg p-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+          >
+            <lucide-icon name="x" class="h-5 w-5"></lucide-icon>
+          </button>
+        </div>
+
+        <form [formGroup]="editForm" (ngSubmit)="savePlan()" class="space-y-4">
+          <div class="space-y-1">
+            <label class="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400"
+              >Plan Name</label
+            >
+            <input
+              type="text"
+              formControlName="name"
+              placeholder="e.g., Pro"
+              class="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-2.5 text-sm font-semibold text-slate-100 placeholder-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400"
+                >Amount</label
+              >
+              <input
+                type="number"
+                formControlName="amount"
+                placeholder="49"
+                class="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-2.5 text-sm font-semibold text-slate-100 placeholder-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              />
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400"
+                >Currency</label
+              >
+              <input
+                type="text"
+                formControlName="currency"
+                placeholder="USD"
+                class="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-4 py-2.5 text-sm font-semibold uppercase text-slate-100 placeholder-slate-500 outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20"
+              />
+            </div>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button
+              type="button"
+              (click)="closeModal()"
+              class="flex-1 rounded-xl border border-slate-700 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-slate-300 transition hover:bg-slate-800"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              class="flex-1 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-black uppercase tracking-[0.14em] text-white transition hover:bg-indigo-500"
+            >
+              {{ isEditMode() ? 'Update' : 'Create' }}
+            </button>
+          </div>
+        </form>
+      </article>
+    </div>
+  }
+
+  <ng-template #revenueIcon>
+    <lucide-icon name="trending-up" class="h-5 w-5"></lucide-icon>
+  </ng-template>
+  <ng-template #activeIcon>
+    <lucide-icon name="users" class="h-5 w-5"></lucide-icon>
+  </ng-template>
+  <ng-template #pendingIcon>
+    <lucide-icon name="clock" class="h-5 w-5"></lucide-icon>
+  </ng-template>
+  <ng-template #failedIcon>
+    <lucide-icon name="x-circle" class="h-5 w-5"></lucide-icon>
+  </ng-template>
+
+  <ng-template #revenueFooter>
+    <p class="text-xs font-semibold text-emerald-600">Gross captured amount</p>
+  </ng-template>
+  <ng-template #activeFooter>
+    <p class="text-xs font-semibold text-slate-500">Subscriptions currently active</p>
+  </ng-template>
+  <ng-template #pendingFooter>
+    <p class="text-xs font-semibold text-amber-600">Awaiting payment confirmation</p>
+  </ng-template>
+  <ng-template #failedFooter>
+    <p class="text-xs font-semibold text-rose-600">Transactions requiring intervention</p>
+  </ng-template>
+</section>

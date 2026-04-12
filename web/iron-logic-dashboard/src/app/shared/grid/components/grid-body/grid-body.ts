@@ -102,6 +102,14 @@ export class GridBodyComponent implements OnDestroy {
       return value === 'Paid' ? 'badge-finance-status-paid' : 'badge-finance-status-pending';
     }
 
+    if (col.badgeStyle === 'billingStatus') {
+      return value === 'Paid'
+        ? 'bg-emerald-100 text-emerald-700'
+        : value === 'Pending'
+          ? 'bg-amber-100 text-amber-700'
+          : 'bg-rose-100 text-rose-700';
+    }
+
     if (col.badgeStyle === 'verified') {
       return 'badge-verified';
     }

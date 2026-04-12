@@ -1,15 +1,21 @@
 import {
   ChangeDetectorRef,
   Component,
+  EnvironmentInjector,
   ElementRef,
   EventEmitter,
   HostListener,
+  Injector,
+  InjectionToken,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
   Output,
   SimpleChanges,
+  Type,
   ViewChild,
+  ViewContainerRef,
   input,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -32,6 +38,14 @@ interface GridEditSettings {
   allowEditing: boolean;
 }
 
+export interface DetailViewConfig {
+  enabled: boolean;
+  position: 'right' | 'left' | 'bottom' | 'popup';
+  component: Type<any>;
+}
+
+export const GRID_DETAIL_ROW = new InjectionToken<any>('GRID_DETAIL_ROW');
+
 @Component({
   selector: 'app-grid',
   standalone: true,
@@ -49,7 +63,7 @@ interface GridEditSettings {
   styleUrls: ['./grid.css'],
   providers: [GridDataService],
 })
-export class GridComponent implements OnInit, OnChanges {
+export class GridComponent implements OnInit, OnChanges, OnDestroy {
   @Input() columns: ColumnConfig[] = [];
   @Input() set data(value: any[]) {
     this.gridDataService.setData(value);
@@ -63,11 +77,16 @@ export class GridComponent implements OnInit, OnChanges {
     return this._searchTerm;
   }
   @Input() editSettings: GridEditSettings = { mode: 'None', allowEditing: false };
+  @Input() detailViewConfig: DetailViewConfig = {
+    enabled: false,
+    position: 'right',
+    component: null as unknown as Type<any>,
+  };
 
-  // --- پرچم‌های کنترلی جدید ---
-  @Input() showExport: boolean = true; // نمایش دکمه‌های اکسل/PDF
-  @Input() showFilters: boolean = false; // نمایش فیلترهای زیر هدر
-  @Input() showSearch: boolean = true; // نمایش نوار جستجوی بالا
+  // New control flags
+  @Input() showExport: boolean = true; // Show Excel/PDF export buttons
+  @Input() showFilters: boolean = false; // Show filters below header
+  @Input() showSearch: boolean = true; // Show search bar at top
   @Input() pagerPosition: 'top' | 'bottom' | 'both' = 'bottom';
   @Input() resizableRows: boolean = true;
   reorderable = input<boolean>(false);
@@ -87,13 +106,22 @@ export class GridComponent implements OnInit, OnChanges {
   @Output() search = new EventEmitter<string>();
   @Output() saveChanges = new EventEmitter<any>();
   @Output() inlineSave = new EventEmitter<any>();
+  @Output() onDetailSaved = new EventEmitter<{ row: any; payload: any }>();
+
+  selectedDetailRow: any = null;
+  isDetailOpen = false;
+  private detailSaveUnsubscribe?: () => void;
 
   constructor(
     public gridDataService: GridDataService,
     private exportService: GridExportService,
     private cdr: ChangeDetectorRef,
     private elementRef: ElementRef<HTMLElement>,
+    private environmentInjector: EnvironmentInjector,
   ) {}
+
+  @ViewChild('detailHost', { read: ViewContainerRef })
+  private detailHostRef?: ViewContainerRef;
 
   get pagedData$() {
     return this.gridDataService.pagedData$;
@@ -122,6 +150,14 @@ export class GridComponent implements OnInit, OnChanges {
     if (changes['columns']) {
       this.captureInitialColumnWidths();
     }
+
+    if (changes['detailViewConfig'] && !this.detailViewConfig?.enabled) {
+      this.closeDetailView();
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.cleanupDetailSaveSubscription();
   }
 
   export(type: 'excel' | 'pdf') {
@@ -219,7 +255,6 @@ export class GridComponent implements OnInit, OnChanges {
         this.cdr.markForCheck();
       }
     }
-
   }
 
   private captureInitialColumnWidths(): void {
@@ -363,5 +398,94 @@ export class GridComponent implements OnInit, OnChanges {
     this.search.emit('');
     this.refresh.emit();
     this.cdr.markForCheck();
+  }
+
+  handleGridAction(event: { type: string; row: any }): void {
+    if (event.type === 'row-click' && this.detailViewConfig?.enabled) {
+      this.openDetailView(event.row);
+    }
+
+    this.actionTriggered.emit(event);
+  }
+
+  closeDetailView(): void {
+    this.isDetailOpen = false;
+    this.selectedDetailRow = null;
+    this.cleanupDetailSaveSubscription();
+    this.detailHostRef?.clear();
+    this.cdr.markForCheck();
+  }
+
+  get isRightDetail(): boolean {
+    return this.detailViewConfig?.position === 'right';
+  }
+
+  get isLeftDetail(): boolean {
+    return this.detailViewConfig?.position === 'left';
+  }
+
+  get isBottomDetail(): boolean {
+    return this.detailViewConfig?.position === 'bottom';
+  }
+
+  get isPopupDetail(): boolean {
+    return this.detailViewConfig?.position === 'popup';
+  }
+
+  private openDetailView(row: any): void {
+    if (!this.detailViewConfig?.component || !this.detailHostRef) {
+      return;
+    }
+
+    this.selectedDetailRow = row;
+    this.isDetailOpen = true;
+    this.cleanupDetailSaveSubscription();
+    this.detailHostRef.clear();
+
+    const componentRef = this.detailHostRef.createComponent(this.detailViewConfig.component, {
+      environmentInjector: this.environmentInjector,
+      injector: this.createDetailInjector(row),
+    });
+
+    componentRef.setInput('record', row);
+    componentRef.setInput('row', row);
+    componentRef.setInput('data', row);
+
+    this.bindDetailSaveOutput(componentRef.instance, row);
+    this.cdr.markForCheck();
+  }
+
+  private createDetailInjector(row: any): Injector {
+    return Injector.create({
+      parent: this.environmentInjector,
+      providers: [{ provide: GRID_DETAIL_ROW, useValue: row }],
+    });
+  }
+
+  private bindDetailSaveOutput(instance: any, row: any): void {
+    const candidateOutputs = ['onDetailSaved', 'detailSaved', 'saved', 'save'];
+
+    for (const outputName of candidateOutputs) {
+      const output = instance?.[outputName];
+      if (!output || typeof output.subscribe !== 'function') {
+        continue;
+      }
+
+      const subscription = output.subscribe((payload: any) => {
+        this.onDetailSaved.emit({ row, payload });
+      });
+
+      this.detailSaveUnsubscribe = () => subscription.unsubscribe();
+      return;
+    }
+  }
+
+  private cleanupDetailSaveSubscription(): void {
+    if (!this.detailSaveUnsubscribe) {
+      return;
+    }
+
+    this.detailSaveUnsubscribe();
+    this.detailSaveUnsubscribe = undefined;
   }
 }

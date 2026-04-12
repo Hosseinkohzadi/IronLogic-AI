@@ -13,6 +13,7 @@ import {
   adminGuard,
   authGuard,
   athleteGuard,
+  RoleGuard,
   publicOnlyGuard,
 } from '@core/guards/auth-role.guards';
 
@@ -81,7 +82,45 @@ export const routes: Routes = [
             (m) => m.SettingsPageComponent,
           ),
       },
+      {
+        path: 'billing',
+        loadComponent: () =>
+          import('./features/admin/components/billing-stats/billing-stats').then(
+            (m) => m.BillingStatsComponent,
+          ),
+      },
+      {
+        path: 'subscription',
+        loadComponent: () =>
+          import('./features/admin/components/subscription-management/subscription-management').then(
+            (m) => m.SubscriptionManagementComponent,
+          ),
+      },
     ],
+  },
+  {
+    path: 'athlete/subscription',
+    canActivate: [authGuard, athleteGuard],
+    data: { hideSidebar: false },
+    loadComponent: () =>
+      import('./features/subscription/plan-selection').then((m) => m.PlanSelectionComponent),
+  },
+  {
+    path: 'athlete/subscription/checkout',
+    canActivate: [authGuard, RoleGuard],
+    data: { hideSidebar: false, requiredRole: 'ATHLETE' },
+    loadComponent: () =>
+      import('@features/subscription/subscription').then((m) => m.SubscriptionComponent),
+  },
+  {
+    path: 'subscription',
+    pathMatch: 'full',
+    redirectTo: 'athlete/subscription',
+  },
+  {
+    path: 'subscription/checkout',
+    pathMatch: 'full',
+    redirectTo: 'athlete/subscription/checkout',
   },
   {
     path: 'athlete/dashboard',
@@ -91,7 +130,7 @@ export const routes: Routes = [
   {
     path: 'athlete/portal',
     canActivate: [authGuard, athleteGuard],
-    data: { hideSidebar: true },
+    data: { hideSidebar: false },
     loadComponent: () =>
       import('@features/athlete/athlete-portal').then((m) => m.AthletePortalComponent),
   },

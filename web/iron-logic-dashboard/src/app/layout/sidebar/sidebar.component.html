@@ -1,5 +1,5 @@
 <aside
-  class="flex-none bg-white border-r border-slate-100 flex flex-col z-10 h-screen sticky top-0 overflow-hidden transition-[width] duration-300 ease-out"
+  class="flex-none border-r border-white/50 bg-white/70 backdrop-blur-xl flex flex-col z-10 h-screen sticky top-0 overflow-hidden transition-[width] duration-300 ease-out shadow-[0_12px_40px_rgba(15,23,42,0.08)]"
   [class.w-20]="isCollapsed()"
   [class.w-72]="!isCollapsed()"
 >
@@ -19,8 +19,8 @@
     } @else {
       <div>
         <h1 class="text-2xl font-black tracking-tighter text-slate-950">IronLogic AI</h1>
-        <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400 mt-1">
-          Admin Console
+        <p class="mt-1 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+          {{ isAdmin() ? 'Admin Console' : 'Athlete Portal' }}
         </p>
       </div>
     }
@@ -46,7 +46,7 @@
     }
 
     <nav class="space-y-1">
-      @for (item of navItems; track item.label) {
+      @for (item of navItems(); track item.label) {
         <a
           [routerLink]="item.route"
           routerLinkActive="bg-black text-white shadow-xl shadow-black/20 active-link"
@@ -79,7 +79,7 @@
     <button
       type="button"
       (click)="onLogout()"
-      class="group flex w-full items-center rounded-xl py-3 text-sm font-bold text-slate-600 transition-all duration-200 hover:bg-red-50 hover:text-red-600"
+      class="group flex w-full items-center rounded-xl py-3 text-sm font-bold text-slate-600 transition-all duration-200 hover:bg-red-50 hover:text-red-500"
       [class.gap-3]="!isCollapsed()"
       [class.justify-center]="isCollapsed()"
       [class.px-3]="isCollapsed()"

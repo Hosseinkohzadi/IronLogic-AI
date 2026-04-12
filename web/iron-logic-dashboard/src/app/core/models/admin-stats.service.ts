@@ -9,22 +9,22 @@ export class AdminStatsService {
   private http = inject(HttpClient);
   private baseUrl = `${environment.apiUrl}/admin`;
 
-  // Signals برای مدیریت وضعیت کلان ادمین
+  // Signals for managing admin-level state
   stats = signal<UserAdminStats | null>(null);
 
-  // دریافت آمار داشبورد (کارت‌های بالایی)
+  // Retrieve dashboard stats (top KPI cards)
   getDashboardStats(): Observable<UserAdminStats> {
     return this.http.get<UserAdminStats>(`${this.baseUrl}/stats`).pipe(
       tap(data => this.stats.set(data))
     );
   }
 
-  // دریافت جزئیات کامل یک کاربر برای دراور (Drawer)
+  // Retrieve full user details for drawer (Drawer)
   getUserDetails(userId: string): Observable<UserDetail> {
     return this.http.get<UserDetail>(`${this.baseUrl}/users/${userId}`);
   }
 
-  // اکشن‌های مدیریتی سریع
+  // Quick admin actions
   handleAction(userId: string, action: 'reset' | 'suspend' | 'verify'): Observable<void> {
     return this.http.post<void>(`${this.baseUrl}/users/${userId}/action`, { action });
   }

@@ -1,40 +1,36 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { NavigationEnd, Router, ActivatedRoute, RouterOutlet } from '@angular/router';
-import { SidebarComponent } from './layout/sidebar/sidebar.component';
-import { FooterComponent } from '@features/footer/footer'; // 🚀 حتماً چک کن مسیر درست باشد
+import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
+import { SidebarComponent } from './layout/sidebar/sidebar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, SidebarComponent, FooterComponent], // 🚀 اضافه شد
+  imports: [CommonModule, RouterOutlet, SidebarComponent],
   templateUrl: './app.html',
 })
-export class AppComponent implements OnInit { // کلاس اصلی که آنگولار دنبالش می‌گردد
+export class AppComponent implements OnInit {
   showSidebar = true;
 
-  private router = inject(Router);
-  private activatedRoute = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly activatedRoute = inject(ActivatedRoute);
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.updateSidebar();
 
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe(() => {
+    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
       this.updateSidebar();
     });
   }
 
-  private updateSidebar() {
-    let child = this.activatedRoute.firstChild;
+  private updateSidebar(): void {
+    let route = this.activatedRoute;
 
-    if (child) {
-      const hide = child.snapshot.data['hideSidebar'];
-      this.showSidebar = hide !== true;
-    } else {
-      this.showSidebar = this.activatedRoute.snapshot.data['hideSidebar'] !== true;
+    while (route.firstChild) {
+      route = route.firstChild;
     }
+
+    this.showSidebar = route.snapshot.data['hideSidebar'] !== true;
   }
 }

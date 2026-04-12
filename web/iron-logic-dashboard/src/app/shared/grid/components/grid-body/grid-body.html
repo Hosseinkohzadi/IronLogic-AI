@@ -231,6 +231,14 @@
         </div>
       </ng-container>
 
+      <ng-container *ngIf="col.type === 'currency'">
+        <div class="flex items-center text-slate-600">
+          <span class="text-[12px] font-semibold text-slate-700">
+            {{ row[col.field] | currency: row['currency'] || 'USD' : 'symbol' : '1.0-2' }}
+          </span>
+        </div>
+      </ng-container>
+
       <ng-container *ngIf="col.type === 'action' || col.field === 'actions'">
         <div class="flex items-center gap-1">
           <button

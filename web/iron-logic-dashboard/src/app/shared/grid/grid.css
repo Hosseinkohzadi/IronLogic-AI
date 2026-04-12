@@ -81,4 +81,60 @@ app-grid-footer {
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
 }
 
+.detail-panel-shell {
+  transition: transform 280ms ease, opacity 280ms ease;
+  will-change: transform, opacity;
+}
+
+.detail-right {
+  top: 0;
+  right: 0;
+  height: 100dvh;
+  width: min(40vw, 640px);
+  min-width: 360px;
+}
+
+.detail-left {
+  top: 0;
+  left: 0;
+  height: 100dvh;
+  width: min(40vw, 640px);
+  min-width: 360px;
+}
+
+.detail-bottom {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: min(42vh, 460px);
+}
+
+.detail-popup {
+  top: 50%;
+  left: 50%;
+  width: min(90vw, 720px);
+  max-height: 85dvh;
+  transform: translate(-50%, -50%);
+}
+
+.detail-popup.scale-95 {
+  transform: translate(-50%, -50%) scale(0.95);
+}
+
+.detail-popup.scale-100 {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+@media (max-width: 1024px) {
+  .detail-right,
+  .detail-left {
+    width: 100vw;
+    min-width: 0;
+  }
+
+  .detail-bottom {
+    height: 58vh;
+  }
+}
+
 

@@ -6,3 +6,4 @@ export * from './dashboard-filter.service';
 export * from './config.service';
 export * from './ai-engine-connection.service';
 export * from './financial-rates.service';
+export * from './subscription.service';

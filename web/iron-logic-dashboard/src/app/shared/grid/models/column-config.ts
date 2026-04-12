@@ -8,7 +8,15 @@ export type GridFilterMode = 'contains' | 'equals' | 'exact' | 'compare' | 'rang
 export type GridNumberOperator = 'eq' | 'gt' | 'gte' | 'lt' | 'lte';
 
 /** Grid date comparison operators */
-export type GridDateOperator = 'equals' | 'notEqual' | 'after' | 'afterEqual' | 'before' | 'beforeEqual' | 'isNull' | 'isNotNull';
+export type GridDateOperator =
+  | 'equals'
+  | 'notEqual'
+  | 'after'
+  | 'afterEqual'
+  | 'before'
+  | 'beforeEqual'
+  | 'isNull'
+  | 'isNotNull';
 
 /** Grid text comparison operators */
 export type GridTextOperator = 'contains' | 'notContains' | 'startsWith' | 'endsWith' | 'equals';
@@ -70,9 +78,37 @@ export interface ColumnConfig {
   /** Column width (CSS value) */
   width?: string;
   /** Cell renderer type (text, profile, image, badge, tier, email, calendar, action, selection, etc.) */
-  type?: 'text' | 'flag' | 'action' | 'number' | 'date' | 'calendar' | 'badge' | 'image' | 'rate' | 'selection' | 'profile' | 'tier' | 'email' | 'progress' | 'boolean' | 'link' | 'currency' | 'tags';
+  type?:
+    | 'text'
+    | 'flag'
+    | 'action'
+    | 'number'
+    | 'date'
+    | 'calendar'
+    | 'badge'
+    | 'image'
+    | 'rate'
+    | 'selection'
+    | 'profile'
+    | 'tier'
+    | 'email'
+    | 'progress'
+    | 'boolean'
+    | 'link'
+    | 'currency'
+    | 'tags';
   /** Optional visual style preset for badge cells */
-  badgeStyle?: 'default' | 'mechanics' | 'aiTag' | 'financePlan' | 'financeStatus' | 'verified' | 'userTier' | 'userStatus' | 'difficulty';
+  badgeStyle?:
+    | 'default'
+    | 'mechanics'
+    | 'aiTag'
+    | 'financePlan'
+    | 'financeStatus'
+    | 'verified'
+    | 'userTier'
+    | 'userStatus'
+    | 'difficulty'
+    | 'billingStatus';
   /** Optional icon name for action button cells */
   actionIcon?: string;
   /** Optional event type emitted by action button cells */

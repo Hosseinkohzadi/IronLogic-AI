@@ -9,9 +9,9 @@ import autoTable from 'jspdf-autotable';
 export class GridExportService {
 
   /**
-   * خروجی اکسل (Excel)
-   * @param data داده‌های فیلتر شده گرید
-   * @param fileName نام فایل خروجی
+   * Export to Excel
+   * @param data Filtered grid data
+   * @param fileName Output file name
    */
   exportToExcel(data: any[], fileName: string = 'iron_logic_export') {
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -22,9 +22,9 @@ export class GridExportService {
   }
 
   /**
-   * خروجی CSV
-   * @param data داده‌های فیلتر شده گرید
-   * @param fileName نام فایل خروجی
+   * Export to CSV
+   * @param data Filtered grid data
+   * @param fileName Output file name
    */
   exportToCsv(data: any[], fileName: string = 'iron_logic_export') {
     const worksheet = XLSX.utils.json_to_sheet(data);
@@ -45,17 +45,17 @@ export class GridExportService {
   }
 
   /**
-   * خروجی PDF با پشتیبانی از فونت فارسی
-   * @param data داده‌های فیلتر شده
-   * @param columnTitles عناوین ستون‌ها (فارسی)
-   * @param columnFields نام فیلدها در دیتا
-   * @param fileName نام فایل
+   * Export to PDF with Persian font support
+   * @param data Filtered data
+   * @param columnTitles Column titles (can be Persian)
+   * @param columnFields Field names in data
+   * @param fileName File name
    */
   exportToPdf(data: any[], columnTitles: string[], columnFields: string[], fileName: string = 'iron_logic_export') {
     const doc = new jsPDF('p', 'mm', 'a4');
 
-    // ثبت فونت فارسی (در اینجا باید رشته Base64 فونت را جایگزین کنید)
-    // این متد اجازه می‌دهد حروف فارسی به درستی نمایش داده شوند
+    // Register Persian font (replace Base64 string here)
+    // This method allows Persian characters to display correctly
     this.registerPersianFont(doc);
 
     const rows = data.map(item => columnFields.map(field => item[field] || ''));
@@ -65,21 +65,21 @@ export class GridExportService {
       body: rows,
       theme: 'grid',
       styles: {
-        font: 'Vazir', // نام فونت ثبت شده
+        font: 'Vazir', // Registered font name
         fontSize: 9,
         cellPadding: 3,
         valign: 'middle',
-        halign: 'right', // راست‌چین برای محتوا
+        halign: 'right', // Right-align for content
       },
       headStyles: {
         fillColor: [99, 102, 241],
         textColor: 255,
         fontStyle: 'bold',
-        halign: 'center' // مرکز‌چین برای هدر
+        halign: 'center' // Center-align for header
       },
-      // تنظیم جهت متن به راست‌چین (RTL)
+      // Set text direction to right-to-left (RTL)
       didDrawCell: (data) => {
-        // تنظیمات اضافی برای بهبود نمایش RTL در صورت نیاز
+        // Additional settings for RTL display if needed
       }
     });
 
@@ -87,11 +87,11 @@ export class GridExportService {
   }
 
   /**
-   * ثبت فونت فارسی در jsPDF
-   * نکته: شما باید رشته Base64 فونت خود را در قسمت 'YOUR_BASE64_STRING_HERE' قرار دهید
+   * Register Persian font in jsPDF
+   * Note: Replace 'YOUR_BASE64_STRING_HERE' with your font's Base64 string
    */
   private registerPersianFont(doc: jsPDF) {
-    // برای مثال فونت Vazir
+    // Example: Vazir font
     const vazirBase64 = 'YOUR_BASE64_STRING_HERE';
 
     if (vazirBase64 !== 'YOUR_BASE64_STRING_HERE') {

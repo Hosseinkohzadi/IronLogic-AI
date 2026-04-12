@@ -1,4 +1,5 @@
 ﻿using IronLogic.Api;
+using IronLogic.Api.Middleware;
 using IronLogic.Infrastructure;
 using IronLogic.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -75,6 +76,18 @@ builder.Services.AddOpenApiDocument(config =>
     config.DocumentName = "IronLogic API";
     config.Title = "IronLogic AI API";
     config.Version = "v1";
+    
+    // Add JWT Authentication to Swagger
+    config.AddSecurity("Bearer", new NSwag.OpenApiSecurityScheme
+    {
+        Type = NSwag.OpenApiSecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = NSwag.OpenApiSecurityApiKeyLocation.Header,
+        Description = "Please enter a valid JWT token in the format: Bearer {token}"
+    });
+
+    config.OperationProcessors.Add(new NSwag.Generation.Processors.Security.AspNetCoreOperationSecurityScopeProcessor("Bearer"));
 });
 
 builder.Services
@@ -123,6 +136,8 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseCors("AllowIronLogicDash");
+
+app.UseGlobalExceptionHandler();
 
 app.UseAuthentication();
 app.UseAuthorization();

@@ -74,6 +74,7 @@ public static class DependencyInjection
         services.AddScoped<IWorkoutService, WorkoutService>();
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IExerciseService, ExerciseService>();
+        services.AddScoped<ISubscriptionService, SubscriptionService>();
 
         services.AddSingleton<IWorkoutParserService, WorkoutParserService>();
 

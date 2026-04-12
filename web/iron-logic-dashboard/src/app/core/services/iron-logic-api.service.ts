@@ -12,12 +12,12 @@ import {UserRow} from '@core/models';
 export class IronLogicApiService {
   private http = inject(HttpClient);
 
-  // آدرس‌های پایه بر اساس فایل OpenAPI
+  // Base URLs from OpenAPI specification
   private readonly baseUrl = environment.apiUrl;
   private adminUrl = `${this.baseUrl}/admin/exercises`;
   private statsUrl = `${this.baseUrl}/Workouts/stats`;
 
-  // مدیریت وضعیت (State Management)
+  // State Management
   exercises = signal<Exercise[]>([]);
   isLoading = signal<boolean>(false);
   private statsCache$: Observable<WorkoutStats> | undefined;
@@ -41,9 +41,9 @@ export class IronLogicApiService {
 
     return this.http.get<{ totalCount: number, items: Exercise[] }>(this.adminUrl, {params}).pipe(
       tap(response => {
-        // ذخیره لیست حرکات صفحه فعلی
+        // Store exercises for current page
         this.exercises.set(response.items);
-        // ذخیره تعداد کل حرکات دیتابیس
+        // Store total count from database
         this.totalExercises.set(response.totalCount);
         this.isLoading.set(false);
       })
@@ -115,7 +115,7 @@ getUsers(): Observable<UserRow[]> {
       tier: 'Elite', 
       sessions: 96,
       weights: 78,
-      // لاگین در تاریخ دیروز - ساعت 22:45 شب
+      // Last login yesterday at 10:45 PM
       lastSeen: '2026-04-08T22:45:00Z'
     },
     { 
@@ -123,7 +123,7 @@ getUsers(): Observable<UserRow[]> {
       name: 'Sara Bennett', 
       userName: 'sara_b',
       email: 'sara@example.com', 
-      profileImageUrl: '', // بدون عکس برای تست حروف اول اسم (Initials)
+      profileImageUrl: '', // No image - test initials display
       emailConfirmed: false,
       phoneNumberConfirmed: false,
       twoFactorEnabled: false,
@@ -133,7 +133,7 @@ getUsers(): Observable<UserRow[]> {
       tier: 'Basic', 
       sessions: 41,
       weights: 22,
-      // لاگین هفته گذشته
+      // Last login last week
       lastSeen: '2026-04-02T14:20:00Z'
     },
     { 

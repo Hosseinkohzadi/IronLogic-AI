@@ -28,7 +28,7 @@ export class CalendarComponent {
     this._workoutData.set(data || []);
   }
 
-  // 🚀 خروجی جدید برای ارسال تاریخ به داشبورد اصلی
+  // Output event to send selected date to main dashboard
   @Output() dayClicked = new EventEmitter<Date>();
 
   public monthName = computed(() => {
@@ -46,13 +46,13 @@ export class CalendarComponent {
     const daysArray = [];
     const today = new Date();
 
-    // روزهای ماه قبل
+    // Days from previous month
     for (let i = 0; i < firstDayIndex; i++) {
       const prevMonthDate = new Date(year, month, 0 - (firstDayIndex - i - 1));
       daysArray.push({ date: prevMonthDate, hasWorkout: false, isAdjacentMonth: true, isToday: false });
     }
 
-    // روزهای ماه جاری
+    // Days from current month
     for (let i = 1; i <= totalDaysInMonth; i++) {
       const currentDay = new Date(year, month, i);
       const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
@@ -82,7 +82,7 @@ export class CalendarComponent {
     this.currentDate.set(new Date(d.getFullYear(), d.getMonth() + 1, 1));
   }
 
-  // 🚀 متد جدید: وقتی روی یک روز کلیک شد، تاریخ را به بیرون ارسال کن
+  // New method: When a day is clicked, emit the date to parent component
   onDayClick(date: Date) {
     this.dayClicked.emit(date);
   }

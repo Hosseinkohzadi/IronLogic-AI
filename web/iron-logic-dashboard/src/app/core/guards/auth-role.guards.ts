@@ -107,3 +107,21 @@ export const RoleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
 
 export const superAdminGuard = adminGuard;
 export const superAdminChildGuard = adminChildGuard;
+
+/**
+ * Guard for /auth/verify-email — only accessible immediately after registration.
+ * RegisterComponent must store the email in sessionStorage under the key below.
+ */
+const PENDING_EMAIL_KEY = 'ironlogic.pending.email';
+
+export const pendingEmailGuard: CanActivateFn = () => {
+  const router = inject(Router);
+  const hasPendingEmail =
+    typeof sessionStorage !== 'undefined' && !!sessionStorage.getItem(PENDING_EMAIL_KEY);
+
+  if (hasPendingEmail) {
+    return true;
+  }
+
+  return router.createUrlTree(['/register']);
+};

@@ -2,6 +2,7 @@ using IronLogic.Application.DTOs.Communication;
 using IronLogic.Application.DTOs.User;
 using IronLogic.Application.Interfaces;
 using IronLogic.Domain.Entities;
+
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -83,8 +84,8 @@ public class UsersController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> UpdateUser(
-        string id, 
-        [FromBody] UpdateUserDto updateDto, 
+        string id,
+        [FromBody] UpdateUserDto updateDto,
         CancellationToken cancellationToken)
     {
         if (!ModelState.IsValid)
@@ -109,13 +110,13 @@ public class UsersController(
             if (!setEmailResult.Succeeded)
             {
                 logger.LogWarning(
-                    "Failed to update email for user {UserId}: {Errors}", 
-                    id, 
+                    "Failed to update email for user {UserId}: {Errors}",
+                    id,
                     string.Join(", ", setEmailResult.Errors.Select(e => e.Description)));
-                return BadRequest(new 
-                { 
-                    message = "Failed to update email", 
-                    errors = setEmailResult.Errors.Select(e => e.Description).ToList() 
+                return BadRequest(new
+                {
+                    message = "Failed to update email",
+                    errors = setEmailResult.Errors.Select(e => e.Description).ToList()
                 });
             }
 
@@ -124,8 +125,8 @@ public class UsersController(
             if (!setUserNameResult.Succeeded)
             {
                 logger.LogWarning(
-                    "Failed to update username for user {UserId}: {Errors}", 
-                    id, 
+                    "Failed to update username for user {UserId}: {Errors}",
+                    id,
                     string.Join(", ", setUserNameResult.Errors.Select(e => e.Description)));
             }
         }
@@ -144,13 +145,13 @@ public class UsersController(
                 if (!removeResult.Succeeded)
                 {
                     logger.LogWarning(
-                        "Failed to remove roles from user {UserId}: {Errors}", 
-                        id, 
+                        "Failed to remove roles from user {UserId}: {Errors}",
+                        id,
                         string.Join(", ", removeResult.Errors.Select(e => e.Description)));
-                    return BadRequest(new 
-                    { 
-                        message = "Failed to update roles", 
-                        errors = removeResult.Errors.Select(e => e.Description).ToList() 
+                    return BadRequest(new
+                    {
+                        message = "Failed to update roles",
+                        errors = removeResult.Errors.Select(e => e.Description).ToList()
                     });
                 }
             }
@@ -162,28 +163,28 @@ public class UsersController(
                 if (!addResult.Succeeded)
                 {
                     logger.LogWarning(
-                        "Failed to add roles to user {UserId}: {Errors}", 
-                        id, 
+                        "Failed to add roles to user {UserId}: {Errors}",
+                        id,
                         string.Join(", ", addResult.Errors.Select(e => e.Description)));
-                    return BadRequest(new 
-                    { 
-                        message = "Failed to update roles", 
-                        errors = addResult.Errors.Select(e => e.Description).ToList() 
+                    return BadRequest(new
+                    {
+                        message = "Failed to update roles",
+                        errors = addResult.Errors.Select(e => e.Description).ToList()
                     });
                 }
             }
 
             logger.LogInformation(
                 "Updated roles for user {UserId}: Removed [{RemovedRoles}], Added [{AddedRoles}]",
-                id, 
-                string.Join(", ", rolesToRemove), 
+                id,
+                string.Join(", ", rolesToRemove),
                 string.Join(", ", rolesToAdd));
         }
 
         logger.LogInformation("Successfully updated user: {UserId}", id);
 
-        return Ok(new 
-        { 
+        return Ok(new
+        {
             message = "User updated successfully",
             userId = user.Id,
             email = user.Email,

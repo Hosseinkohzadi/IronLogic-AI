@@ -69,7 +69,12 @@ export class RegisterComponent {
             return;
           }
 
-          this.successMessage.set('Registration successful. Redirecting to login...');
+          // Store email so VerifyEmailComponent and the pendingEmailGuard can access it.
+          sessionStorage.setItem('ironlogic.pending.email', formValue.email);
+
+          this.successMessage.set(
+            'Registration successful. Check your email for a verification code.',
+          );
           this.registerForm.reset({
             fullName: '',
             email: '',
@@ -77,7 +82,7 @@ export class RegisterComponent {
             confirmPassword: '',
           });
           setTimeout(() => {
-            void this.router.navigateByUrl('/auth/login');
+            void this.router.navigateByUrl('/auth/verify-email');
           }, 900);
         },
         error: (error: unknown) => {

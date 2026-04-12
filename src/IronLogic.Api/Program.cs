@@ -22,7 +22,7 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
     options.Password.RequireLowercase = false;
-    
+
     // Allow sign-in with email
     options.User.RequireUniqueEmail = true;
     options.SignIn.RequireConfirmedEmail = false;
@@ -80,7 +80,7 @@ builder.Services.AddOpenApiDocument(config =>
     config.DocumentName = "IronLogic API";
     config.Title = "IronLogic AI API";
     config.Version = "v1";
-    
+
     // Add JWT Authentication to Swagger
     config.AddSecurity("Bearer", new NSwag.OpenApiSecurityScheme
     {
@@ -120,7 +120,7 @@ if (app.Environment.IsDevelopment())
 
             // Step 2, 3 & 4: Ensure roles exist, seed admin user and exercises
             await ExerciseSeederService.SeedAsync(dbContext, userManager, roleManager, loggerFactory);
-            
+
             logger.LogInformation("Database seeding completed successfully");
         }
         catch (Exception ex)

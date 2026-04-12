@@ -35,6 +35,8 @@ public class AppDbContext : IdentityDbContext<User>
 
     public DbSet<CommunicationHistory> CommunicationHistories { get; set; }
 
+    public DbSet<UserOtp> UserOtps { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (optionsBuilder.IsConfigured)
@@ -252,6 +254,25 @@ public class AppDbContext : IdentityDbContext<User>
 
             entity.HasIndex(ch => ch.UserId);
             entity.HasIndex(ch => ch.SentAt);
+        });
+
+        modelBuilder.Entity<UserOtp>(entity =>
+        {
+            entity.Property(o => o.Code)
+                .IsRequired()
+                .HasMaxLength(6);
+
+            entity.Property(o => o.Token)
+                .IsRequired();
+
+            entity.HasOne(o => o.User)
+                .WithMany(u => u.Otps)
+                .HasForeignKey(o => o.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(o => o.UserId);
+            entity.HasIndex(o => new { o.UserId, o.Code });
         });
 
         modelBuilder.Entity<User>().HasData(new User

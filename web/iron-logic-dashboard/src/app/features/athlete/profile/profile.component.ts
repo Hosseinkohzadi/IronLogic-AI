@@ -15,6 +15,14 @@ import { NotificationService } from '@core/services/notification.service';
 import { AuthService } from '@core/services/auth.service';
 import { AthleteProfile, UserService } from '@core/services/user.service';
 
+/** Form-reset-safe snapshot: nullable numeric fields are coerced to number. */
+type ProfileFormSnapshot = Omit<AthleteProfile, 'currentWeight' | 'height' | 'targetWeight'> & {
+  currentWeight: number;
+  height: number;
+  targetWeight: number;
+  aiSyncEnabled: boolean;
+};
+
 @Component({
   selector: 'app-profile',
   standalone: true,
@@ -31,9 +39,7 @@ export class ProfileComponent implements OnInit {
   readonly isLoading = signal(false);
   readonly isSubmitting = signal(false);
   readonly userProfile = signal<AthleteProfile | null>(null);
-  readonly originalProfileFormValue = signal<(AthleteProfile & { aiSyncEnabled: boolean }) | null>(
-    null,
-  );
+  readonly originalProfileFormValue = signal<ProfileFormSnapshot | null>(null);
   readonly profileError = signal<string | null>(null);
   readonly isFormDirty = signal(false);
   readonly isDeleteModalOpen = signal(false);
@@ -254,9 +260,7 @@ export class ProfileComponent implements OnInit {
     this.notificationService.showSuccess('Avatar upload flow will open here.');
   }
 
-  private buildProfileFormValue(
-    profile: AthleteProfile,
-  ): AthleteProfile & { aiSyncEnabled: boolean } {
+  private buildProfileFormValue(profile: AthleteProfile): ProfileFormSnapshot {
     return {
       ...profile,
       currentWeight: profile.currentWeight ?? 0,

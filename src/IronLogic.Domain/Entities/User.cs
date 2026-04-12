@@ -62,4 +62,9 @@ public class User : IdentityUser
     /// Gets or sets the user's profile details.
     /// </summary>
     public UserProfile? Profile { get; set; }
+
+    /// <summary>
+    /// Gets or sets the collection of one-time passwords issued to this user for email verification.
+    /// </summary>
+    public ICollection<UserOtp> Otps { get; set; } = new List<UserOtp>();
 }

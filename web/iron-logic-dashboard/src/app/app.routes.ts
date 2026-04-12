@@ -15,6 +15,7 @@ import {
   athleteGuard,
   RoleGuard,
   publicOnlyGuard,
+  pendingEmailGuard,
 } from '@core/guards/auth-role.guards';
 import { athleteRoutes } from '@features/athlete/athlete.routes';
 
@@ -143,6 +144,13 @@ export const routes: Routes = [
     data: { hideSidebar: true },
   },
   { path: 'register', component: RegisterComponent, data: { hideSidebar: true } },
+  {
+    path: 'auth/verify-email',
+    canActivate: [pendingEmailGuard],
+    data: { hideSidebar: true },
+    loadComponent: () =>
+      import('@features/verify-email/verify-email').then((m) => m.VerifyEmailComponent),
+  },
   { path: 'forgot', component: ForgotComponent, data: { hideSidebar: true } },
   { path: 'dashboard', component: DashboardComponent, data: { hideSidebar: false } },
   { path: 'import', component: ImportWorkoutComponent, data: { hideSidebar: false } },

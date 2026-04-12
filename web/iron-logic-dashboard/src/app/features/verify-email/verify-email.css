@@ -1,0 +1,28 @@
+.otp-box::-webkit-outer-spin-button,
+.otp-box::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.otp-box[type='number'] {
+  appearance: textfield;
+}
+
+/* Verified ring pulse animation */
+.verified-ring {
+  animation: ring-pulse 1s ease-in-out forwards;
+}
+
+@keyframes ring-pulse {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}

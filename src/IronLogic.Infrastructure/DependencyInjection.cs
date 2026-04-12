@@ -82,6 +82,7 @@ public static class DependencyInjection
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IEmailAutomationService, EmailAutomationService>();
+        services.AddScoped<IOtpService, OtpService>();
 
         services.AddSingleton<IWorkoutParserService, WorkoutParserService>();
 

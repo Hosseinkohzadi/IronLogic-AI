@@ -1,0 +1,38 @@
+<section
+  class="fixed top-5 right-5 z-[999] flex w-[340px] max-w-[calc(100vw-2rem)] flex-col gap-3 pointer-events-none"
+>
+  @for (toast of notificationService.toasts(); track toast.id) {
+    <article
+      class="pointer-events-auto rounded-2xl border px-4 py-3 shadow-xl backdrop-blur-md toast-enter"
+      [class.border-emerald-300/70]="toast.type === 'success'"
+      [class.bg-emerald-50/80]="toast.type === 'success'"
+      [class.text-emerald-900]="toast.type === 'success'"
+      [class.border-rose-300/70]="toast.type === 'error'"
+      [class.bg-rose-50/80]="toast.type === 'error'"
+      [class.text-rose-900]="toast.type === 'error'"
+    >
+      <div class="flex items-start gap-2.5">
+        <lucide-icon
+          [name]="toast.type === 'success' ? 'check-circle' : 'alert-triangle'"
+          class="mt-0.5 h-5 w-5 shrink-0"
+        ></lucide-icon>
+
+        <div class="min-w-0 flex-1">
+          <p class="text-xs font-black uppercase tracking-[0.14em] text-slate-500">
+            {{ toast.type === 'success' ? 'Success' : 'Error' }}
+          </p>
+          <p class="mt-0.5 text-sm font-semibold leading-5">{{ toast.message }}</p>
+        </div>
+
+        <button
+          type="button"
+          (click)="notificationService.remove(toast.id)"
+          class="rounded-md p-1 text-slate-500 hover:bg-white/60 hover:text-slate-700 transition-colors"
+          aria-label="Dismiss notification"
+        >
+          <lucide-icon name="x" class="h-4 w-4"></lucide-icon>
+        </button>
+      </div>
+    </article>
+  }
+</section>

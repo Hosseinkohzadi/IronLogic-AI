@@ -3,11 +3,12 @@ import { ActivatedRoute, NavigationEnd, Router, RouterOutlet } from '@angular/ro
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { SidebarComponent } from './layout/sidebar/sidebar.component';
+import { ToastComponent } from '@shared/components/toast/toast.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, RouterOutlet, SidebarComponent],
+  imports: [CommonModule, RouterOutlet, SidebarComponent, ToastComponent],
   templateUrl: './app.html',
 })
 export class App implements OnInit {

@@ -1,36 +1,59 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, computed, signal } from '@angular/core';
 
-export interface NotificationMessage {
+export interface Toast {
+  id: string;
   type: 'success' | 'error';
-  text: string;
+  message: string;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class NotificationService {
-  private readonly currentMessage = signal<NotificationMessage | null>(null);
+  readonly toasts = signal<Toast[]>([]);
+  readonly message = computed(() => {
+    const first = this.toasts()[0];
+    if (!first) {
+      return null;
+    }
 
-  readonly message = this.currentMessage.asReadonly();
+    return { type: first.type, text: first.message };
+  });
 
-  success(text: string): void {
-    this.show({ type: 'success', text });
+  showSuccess(message: string): void {
+    this.show('success', message);
   }
 
+  showError(message: string): void {
+    this.show('error', message);
+  }
+
+  remove(id: string): void {
+    this.toasts.update((items) => items.filter((toast) => toast.id !== id));
+  }
+
+  // Backward-compatible API for existing callers.
+  success(text: string): void {
+    this.showSuccess(text);
+  }
+
+  // Backward-compatible API for existing callers.
   error(text: string): void {
-    this.show({ type: 'error', text });
+    this.showError(text);
   }
 
   clear(): void {
-    this.currentMessage.set(null);
+    this.toasts.set([]);
   }
 
-  private show(message: NotificationMessage): void {
-    this.currentMessage.set(message);
+  private show(type: Toast['type'], message: string): void {
+    const id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+    const toast: Toast = { id, type, message };
+
+    this.toasts.update((items) => [...items, toast]);
+
     setTimeout(() => {
-      if (this.currentMessage()?.text === message.text) {
-        this.currentMessage.set(null);
-      }
-    }, 3500);
+      this.remove(id);
+    }, 3000);
   }
 }

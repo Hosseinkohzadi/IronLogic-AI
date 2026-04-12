@@ -1,5 +1,17 @@
 export type UserStatus = 'Active' | 'Review' | 'Suspended';
 
+export interface ApplicationUser {
+  id: string;
+  userName: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  phoneNumber: string;
+  profilePictureUrl: string;
+  roles: string[];
+  isActive: boolean;
+}
+
 export interface UserRow {
   id: string;
   userName: string;

@@ -31,6 +31,8 @@ public class AppDbContext : IdentityDbContext<User>
 
     public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
+    public DbSet<UserProfile> UserProfiles { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (optionsBuilder.IsConfigured)
@@ -193,6 +195,33 @@ public class AppDbContext : IdentityDbContext<User>
                 .HasDefaultValue("US");
 
             entity.HasIndex(u => u.CountryCode);
+        });
+
+        modelBuilder.Entity<UserProfile>(entity =>
+        {
+            entity.Property(up => up.Bio)
+                .HasMaxLength(1000);
+
+            entity.Property(up => up.Height)
+                .HasPrecision(5, 2);
+
+            entity.Property(up => up.Weight)
+                .HasPrecision(5, 2);
+
+            entity.Property(up => up.ProfilePictureUrl)
+                .HasMaxLength(2048);
+
+            entity.Property(up => up.FitnessGoal)
+                .HasConversion<string>();
+
+            entity.HasOne(up => up.User)
+                .WithOne(u => u.Profile)
+                .HasForeignKey<UserProfile>(up => up.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(up => up.UserId)
+                .IsUnique();
         });
 
         modelBuilder.Entity<User>().HasData(new User

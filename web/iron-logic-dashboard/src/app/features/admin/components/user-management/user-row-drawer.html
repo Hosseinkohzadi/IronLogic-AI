@@ -9,7 +9,9 @@
             @if (details.profileImageUrl) {
               <img [src]="details.profileImageUrl" alt="" class="h-full w-full object-cover" />
             } @else {
-              <span class="text-lg font-bold text-slate-600">{{ details.name[0] | uppercase }}</span>
+              <span class="text-lg font-bold text-slate-600">{{
+                details.name[0] | uppercase
+              }}</span>
             }
           </div>
           <div class="min-w-0">
@@ -59,7 +61,9 @@
           </div>
           <div class="flex items-center justify-between gap-3">
             <span class="text-slate-500">Last Login</span>
-            <span class="text-slate-900 font-semibold">{{ details.lastLogin | date: 'medium' }}</span>
+            <span class="text-slate-900 font-semibold">{{
+              details.lastLogin | date: 'medium'
+            }}</span>
           </div>
         </div>
       </section>
@@ -69,7 +73,9 @@
         <div class="space-y-2.5 text-sm">
           <div class="flex items-center justify-between gap-3">
             <span class="text-slate-500">Failed Login Attempts</span>
-            <span class="text-slate-900 font-semibold">{{ details.accessFailedCount ?? 0 }} / 5</span>
+            <span class="text-slate-900 font-semibold"
+              >{{ details.accessFailedCount ?? 0 }} / 5</span
+            >
           </div>
           <div class="flex items-center justify-between gap-3">
             <span class="text-slate-500">Lockout Status</span>
@@ -104,67 +110,12 @@
         </div>
       </section>
 
-      <section class="metric-card bg-white p-6 rounded-2xl border border-slate-100 shadow-sm">
-        <h4 class="text-sm font-black text-slate-900 mb-3">Edit User</h4>
-
-        <div class="space-y-3">
-          <label class="block space-y-1">
-            <span class="text-slate-500 text-xs">Name</span>
-            <input
-              [ngModel]="editor().name"
-              (ngModelChange)="updateField('name', $event)"
-              class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
-            />
-          </label>
-
-          <label class="block space-y-1">
-            <span class="text-slate-500 text-xs">Email</span>
-            <input
-              [ngModel]="editor().email"
-              (ngModelChange)="updateField('email', $event)"
-              class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
-            />
-          </label>
-
-          <div class="grid grid-cols-2 gap-3">
-            <label class="block space-y-1">
-              <span class="text-slate-500 text-xs">Tier</span>
-              <select
-                [ngModel]="editor().tier"
-                (ngModelChange)="updateField('tier', $event)"
-                class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
-              >
-                <option value="Basic">Basic</option>
-                <option value="Pro">Pro</option>
-                <option value="Elite">Elite</option>
-              </select>
-            </label>
-
-            <label class="block space-y-1">
-              <span class="text-slate-500 text-xs">Status</span>
-              <select
-                [ngModel]="editor().status"
-                (ngModelChange)="updateField('status', $event)"
-                class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900"
-              >
-                <option value="Active">Active</option>
-                <option value="Review">Review</option>
-                <option value="Banned">Banned</option>
-              </select>
-            </label>
-          </div>
-
-          <div class="pt-2 flex justify-end">
-            <button
-              type="button"
-              (click)="onSave()"
-              class="rounded-xl px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 transition-colors"
-            >
-              Save Changes
-            </button>
-          </div>
-        </div>
-      </section>
+      <app-user-form
+        [userId]="details.id"
+        [userPreview]="details"
+        (saved)="saved.emit($event); close.emit()"
+        (cancel)="close.emit()"
+      ></app-user-form>
     </div>
   </div>
 }

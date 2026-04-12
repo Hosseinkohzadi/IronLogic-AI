@@ -8,6 +8,7 @@ import { DetailViewConfig, GridComponent } from '@shared/grid/grid';
 import { ColumnConfig } from '@shared/grid/models/column-config';
 import { KpiCardComponent } from '@shared/kpi-card/kpi-card.component';
 import { UserRowDrawerComponent } from './user-row-drawer';
+import { ApplicationUser } from '@core/models';
 
 type UserGridStatus = 'Active' | 'Review' | 'Banned';
 type UserGridTier = 'Basic' | 'Pro' | 'Elite';
@@ -25,7 +26,7 @@ interface UserFormState {
   imports: [CommonModule, LucideAngularModule, FormsModule, GridComponent, KpiCardComponent],
   templateUrl: './user-management.html',
   styleUrl: './user-management.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserManagementComponent implements OnInit {
   private apiService = inject(IronLogicApiService);
@@ -37,7 +38,7 @@ export class UserManagementComponent implements OnInit {
       trend: '+12.5%',
       context: 'pro & elite tiers',
       icon: 'star',
-      info: 'Users on paid Pro/Elite plans. This tracks monetization quality and recurring revenue strength. A positive trend means premium conversion is improving.'
+      info: 'Users on paid Pro/Elite plans. This tracks monetization quality and recurring revenue strength. A positive trend means premium conversion is improving.',
     },
     {
       label: 'WEEKLY ACTIVE (WAU)',
@@ -45,7 +46,7 @@ export class UserManagementComponent implements OnInit {
       trend: '+5.2%',
       context: 'logged a workout',
       icon: 'activity',
-      info: 'Unique users active in the last 7 days. This indicates engagement health, not just signups. A positive trend means more users are returning weekly.'
+      info: 'Unique users active in the last 7 days. This indicates engagement health, not just signups. A positive trend means more users are returning weekly.',
     },
     {
       label: 'TOTAL SESSIONS',
@@ -53,7 +54,7 @@ export class UserManagementComponent implements OnInit {
       trend: '+18.2%',
       context: 'platform volume',
       icon: 'zap',
-      info: 'Total workout sessions completed in the period. This reflects platform usage volume and habit intensity. A positive trend means stronger activity throughput.'
+      info: 'Total workout sessions completed in the period. This reflects platform usage volume and habit intensity. A positive trend means stronger activity throughput.',
     },
     {
       label: 'CHURN RISK',
@@ -61,8 +62,8 @@ export class UserManagementComponent implements OnInit {
       trend: '-3.4%',
       context: 'inactive > 14 days',
       icon: 'alert-triangle',
-      info: 'Users likely to churn due to inactivity beyond 14 days. Lower is better for retention. A negative trend here is good because fewer users are at risk.'
-    }
+      info: 'Users likely to churn due to inactivity beyond 14 days. Lower is better for retention. A negative trend here is good because fewer users are at risk.',
+    },
   ];
 
   readonly users = signal<any[]>([]);
@@ -83,12 +84,20 @@ export class UserManagementComponent implements OnInit {
     fullName: '',
     email: '',
     tier: 'Basic',
-    status: 'Active'
+    status: 'Active',
   });
 
   readonly userColumns: ColumnConfig[] = [
     { field: 'selection', title: '', type: 'selection', width: '50px' },
-    { field: 'name', title: 'NAME', type: 'profile', sortable: true, width: '250px', locked: true, filterType: 'text' },
+    {
+      field: 'name',
+      title: 'NAME',
+      type: 'profile',
+      sortable: true,
+      width: '250px',
+      locked: true,
+      filterType: 'text',
+    },
     {
       field: 'status',
       title: 'STATUS',
@@ -101,8 +110,8 @@ export class UserManagementComponent implements OnInit {
       filterOptions: [
         { label: 'Active', value: 'Active' },
         { label: 'Review', value: 'Review' },
-        { label: 'Banned', value: 'Banned' }
-      ]
+        { label: 'Banned', value: 'Banned' },
+      ],
     },
     {
       field: 'tier',
@@ -116,13 +125,44 @@ export class UserManagementComponent implements OnInit {
         { label: 'Elite', value: 'Elite' },
         { label: 'Pro', value: 'Pro' },
         { label: 'Basic', value: 'Basic' },
-      ]
+      ],
     },
-    { field: 'sessions', title: 'SESSIONS', type: 'number', sortable: true, width: '100px', filterType: 'number', filterMode: 'compare' },
-    { field: 'dailyWeights', title: 'WEIGHTS', type: 'number', sortable: true, width: '100px', filterType: 'number', filterMode: 'compare' },
-    { field: 'email', title: 'EMAIL', type: 'email', sortable: true, width: '220px', filterType: 'text' },
-    { field: 'lastLogin', title: 'LAST LOGIN', type: 'calendar', sortable: true, width: '140px', filterType: 'date', filterMode: 'exact' },
-    { field: 'actions', title: 'ACTION', type: 'action', width: '80px' }
+    {
+      field: 'sessions',
+      title: 'SESSIONS',
+      type: 'number',
+      sortable: true,
+      width: '100px',
+      filterType: 'number',
+      filterMode: 'compare',
+    },
+    {
+      field: 'dailyWeights',
+      title: 'WEIGHTS',
+      type: 'number',
+      sortable: true,
+      width: '100px',
+      filterType: 'number',
+      filterMode: 'compare',
+    },
+    {
+      field: 'email',
+      title: 'EMAIL',
+      type: 'email',
+      sortable: true,
+      width: '220px',
+      filterType: 'text',
+    },
+    {
+      field: 'lastLogin',
+      title: 'LAST LOGIN',
+      type: 'calendar',
+      sortable: true,
+      width: '140px',
+      filterType: 'date',
+      filterMode: 'exact',
+    },
+    { field: 'actions', title: 'ACTION', type: 'action', width: '80px' },
   ];
 
   ngOnInit() {
@@ -139,7 +179,7 @@ export class UserManagementComponent implements OnInit {
             'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=96&q=80',
             'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=96&q=80',
             'https://images.unsplash.com/photo-1502685176499-5d707b212601?auto=format&fit=crop&w=96&q=80',
-            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=96&q=80'
+            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=96&q=80',
           ];
 
           const enrichedData = data.map((u: any, index: number) => {
@@ -150,12 +190,11 @@ export class UserManagementComponent implements OnInit {
               calculatedStatus = 'Review';
             }
 
-            const calculatedTier: UserGridTier = u.tier === 'Elite' || u.tier === 'Pro' || u.tier === 'Basic'
-              ? u.tier
-              : 'Basic';
+            const calculatedTier: UserGridTier =
+              u.tier === 'Elite' || u.tier === 'Pro' || u.tier === 'Basic' ? u.tier : 'Basic';
 
             const mockDate = new Date();
-            mockDate.setDate(mockDate.getDate() - (index * 2)); 
+            mockDate.setDate(mockDate.getDate() - index * 2);
 
             return {
               ...u,
@@ -163,7 +202,7 @@ export class UserManagementComponent implements OnInit {
               tier: calculatedTier,
               profileImageUrl: avatarUrls[index % avatarUrls.length],
               dailyWeights: Math.floor(u.sessions * 0.6),
-              lastLogin: mockDate.toISOString() 
+              lastLogin: mockDate.toISOString(),
             };
           });
 
@@ -199,7 +238,7 @@ export class UserManagementComponent implements OnInit {
                   dailyWeights: Math.floor(nextSessions * 0.6),
                   lastLogin: loginDate.toISOString(),
                   profileImageUrl: source.profileImageUrl,
-                  isSelected: false
+                  isSelected: false,
                 };
               })
             : [];
@@ -212,17 +251,18 @@ export class UserManagementComponent implements OnInit {
       error: (err: any) => {
         console.error('API Error:', err);
         this.isLoading.set(false);
-      }
+      },
     });
   }
 
   onSearch(term: string) {
     this.searchTerm.set(term);
     const lower = term.toLowerCase();
-    const filtered = this.users().filter(u =>
-      u.name.toLowerCase().includes(lower) ||
-      u.email.toLowerCase().includes(lower) ||
-      u.id.toLowerCase().includes(lower)
+    const filtered = this.users().filter(
+      (u) =>
+        u.name.toLowerCase().includes(lower) ||
+        u.email.toLowerCase().includes(lower) ||
+        u.id.toLowerCase().includes(lower),
     );
     this.filteredUsers.set(filtered);
   }
@@ -239,7 +279,7 @@ export class UserManagementComponent implements OnInit {
       fullName: '',
       email: '',
       tier: 'Basic',
-      status: 'Active'
+      status: 'Active',
     });
     this.isUserFormOpen.set(true);
     document.body.style.overflow = 'hidden';
@@ -251,7 +291,7 @@ export class UserManagementComponent implements OnInit {
       fullName: String(row.name ?? ''),
       email: String(row.email ?? ''),
       tier: (row.tier ?? 'Basic') as UserGridTier,
-      status: (row.status === 'Review' ? 'Review' : 'Active')
+      status: row.status === 'Review' ? 'Review' : 'Active',
     });
     this.isUserFormOpen.set(true);
     document.body.style.overflow = 'hidden';
@@ -288,8 +328,8 @@ export class UserManagementComponent implements OnInit {
                 tier: form.tier,
                 status: form.status,
               }
-            : user
-        )
+            : user,
+        ),
       );
     } else {
       const createdAt = new Date().toISOString();
@@ -320,7 +360,7 @@ export class UserManagementComponent implements OnInit {
   }
 
   onDrawerSave(event: { row: any; payload: any }): void {
-    const nextRow = (event.payload ?? event.row) as any;
+    const nextRow = this.mapApplicationUserToGridRow((event.payload ?? event.row) as ApplicationUser);
     const targetId = String(nextRow?.id ?? event.row?.id ?? '');
 
     if (!targetId) {
@@ -335,5 +375,16 @@ export class UserManagementComponent implements OnInit {
 
   refreshGridData(): void {
     this.onSearch(this.searchTerm());
+  }
+
+  private mapApplicationUserToGridRow(user: ApplicationUser): any {
+    const fullName = `${user.firstName ?? ''} ${user.lastName ?? ''}`.trim();
+
+    return {
+      ...user,
+      name: fullName || user.userName,
+      profileImageUrl: user.profilePictureUrl,
+      status: user.isActive ? 'Active' : 'Banned',
+    };
   }
 }

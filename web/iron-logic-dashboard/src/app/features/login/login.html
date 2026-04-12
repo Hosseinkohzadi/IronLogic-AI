@@ -43,7 +43,13 @@
         </h2>
         <p class="text-slate-500 mb-10">Login to manage your workout stats and coach AI advice.</p>
 
-        <form class="flex flex-col gap-6" (submit)="$event.preventDefault(); loginWithForm()">
+        <form class="flex flex-col gap-6" [formGroup]="loginForm" (ngSubmit)="loginWithForm()">
+          @if (errorMessage()) {
+            <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+              {{ errorMessage() }}
+            </div>
+          }
+
           <div class="relative">
             <span
               class="absolute inset-y-0 left-0 pl-4 flex items-center text-slate-400"
@@ -60,6 +66,7 @@
             </span>
             <input
               type="text"
+              formControlName="email"
               placeholder="Username or Email"
               class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all text-sm"
             />
@@ -81,6 +88,7 @@
             </span>
             <input
               type="password"
+              formControlName="password"
               placeholder="Password"
               class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all text-sm"
             />
@@ -97,9 +105,17 @@
 
           <button
             type="submit"
-            class="w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl text-sm font-black uppercase tracking-widest shadow-lg shadow-indigo-600/30 transition-all active:scale-95"
+            [disabled]="isLoading()"
+            class="w-full rounded-2xl py-4 text-sm font-black uppercase tracking-widest text-white transition-all"
+            [class.bg-indigo-600]="!isLoading()"
+            [class.hover:bg-indigo-700]="!isLoading()"
+            [class.shadow-lg]="!isLoading()"
+            [class.shadow-indigo-600/30]="!isLoading()"
+            [class.active:scale-95]="!isLoading()"
+            [class.bg-slate-400]="isLoading()"
+            [class.cursor-not-allowed]="isLoading()"
           >
-            Log In
+            {{ isLoading() ? 'Signing In...' : 'Log In' }}
           </button>
         </form>
 

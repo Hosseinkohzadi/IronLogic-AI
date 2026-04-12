@@ -7,4 +7,5 @@ namespace IronLogic.Application.DTOs.Auth;
 /// <param name="UserId">Unique identifier for the authenticated user</param>
 /// <param name="Email">User's email address</param>
 /// <param name="UserName">User's username</param>
-public record AuthResponseDto(string Token, Guid UserId, string Email, string? UserName);
+/// <param name="Role">User's role (e.g., Admin, User)</param>
+public record AuthResponseDto(string Token, Guid UserId, string Email, string? UserName, string Role);

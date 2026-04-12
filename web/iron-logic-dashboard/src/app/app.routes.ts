@@ -96,6 +96,12 @@ export const routes: Routes = [
     canActivate: [publicOnlyGuard],
     data: { hideSidebar: true },
   },
+  {
+    path: 'auth/login',
+    component: LoginComponent,
+    canActivate: [publicOnlyGuard],
+    data: { hideSidebar: true },
+  },
   { path: 'register', component: RegisterComponent, data: { hideSidebar: true } },
   { path: 'forgot', component: ForgotComponent, data: { hideSidebar: true } },
   { path: 'dashboard', component: DashboardComponent, data: { hideSidebar: false } },

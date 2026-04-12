@@ -1,14 +1,17 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { inject, Injectable, computed, signal } from '@angular/core';
+import { Router } from '@angular/router';
 
 export type UserRole = 'SUPER_ADMIN' | 'ATHLETE';
 
 const ROLE_STORAGE_KEY = 'ironlogic.auth.role';
 const USER_ID_STORAGE_KEY = 'ironlogic.auth.userId';
+const TOKEN_STORAGE_KEY = 'ironlogic.auth.token';
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
+  private readonly router = inject(Router);
   private readonly roleState = signal<UserRole | null>(this.readRoleFromStorage());
   private readonly currentUserIdState = signal<string | null>(this.readUserIdFromStorage());
 
@@ -29,6 +32,8 @@ export class AuthService {
     this.currentUserIdState.set(null);
     localStorage.removeItem(ROLE_STORAGE_KEY);
     localStorage.removeItem(USER_ID_STORAGE_KEY);
+    localStorage.removeItem(TOKEN_STORAGE_KEY);
+    void this.router.navigateByUrl('/auth/login');
   }
 
   hasRole(role: UserRole): boolean {

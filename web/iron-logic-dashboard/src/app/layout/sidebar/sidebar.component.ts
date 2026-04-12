@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
+import { AuthService } from '@core/services/auth.service';
 
 interface NavItem {
   label: string;
@@ -19,6 +20,7 @@ interface NavItem {
 })
 export class SidebarComponent implements OnInit {
   private readonly sidebarStorageKey = 'ironlogic.admin.sidebar.collapsed';
+  private readonly authService = inject(AuthService);
 
   readonly isCollapsed = signal(true);
 
@@ -48,5 +50,9 @@ export class SidebarComponent implements OnInit {
       localStorage.setItem(this.sidebarStorageKey, String(next));
       return next;
     });
+  }
+
+  onLogout(): void {
+    this.authService.logout();
   }
 }

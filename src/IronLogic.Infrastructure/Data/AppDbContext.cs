@@ -46,9 +46,6 @@ public class AppDbContext : IdentityDbContext<User>
     {
         base.OnModelCreating(modelBuilder);
 
-        var defaultUserId = "00000000-0000-0000-0000-000000000001";
-        var hasher = new PasswordHasher<User>();
-
         modelBuilder.Entity<ExerciseSession>()
             .HasIndex(es => new { es.ExerciseId, es.Weight })
             .HasDatabaseName("IX_Exercise_Weight");
@@ -193,19 +190,6 @@ public class AppDbContext : IdentityDbContext<User>
                 .HasDefaultValue("US");
 
             entity.HasIndex(u => u.CountryCode);
-        });
-
-        modelBuilder.Entity<User>().HasData(new User
-        {
-            Id = defaultUserId,
-            Email = "kohzadi90@gmail.com",
-            UserName = "kohzadi90@gmail.com",
-            NormalizedUserName = "KOHZADI90@GMAIL.COM",
-            NormalizedEmail = "KOHZADI90@GMAIL.COM",
-            EmailConfirmed = true,
-            PasswordHash = "AQAAAAIAAYagAAAAEA7IkppTOn/SpmrmnXTCMdPLqEonDkuYkMjRDc6IXd+rrZ5BbdPP0st7JtFTBjPOig==",
-            SecurityStamp = "a1b2c3d4-e5f6-7890-1234-567890abcdef",
-            ConcurrencyStamp = "fedcba98-7654-3210-fedc-ba9876543210",
         });
     }
 

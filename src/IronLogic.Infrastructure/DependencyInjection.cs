@@ -2,8 +2,10 @@
 using IronLogic.Application.Services;
 using IronLogic.Domain.Interfaces;
 using IronLogic.Infrastructure.Repositories;
+using IronLogic.Infrastructure.Options;
 using IronLogic.Infrastructure.Services;
 using IronLogic.Infrastructure.Services.Parsing;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -27,7 +29,7 @@ public static class DependencyInjection
     {
         services.AddPersistence(configuration, environment)
             .AddRepositories()
-            .AddDomainServices()
+            .AddDomainServices(configuration)
             .AddExternalProviders();
 
         return services;
@@ -68,13 +70,18 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddDomainServices(this IServiceCollection services)
+    private static IServiceCollection AddDomainServices(this IServiceCollection services, IConfiguration configuration)
     {
+        services.Configure<EmailOptions>(configuration.GetSection("Email"));
+
         services.AddScoped<IWorkoutImportService, WorkoutImportService>();
         services.AddScoped<IWorkoutService, WorkoutService>();
         services.AddScoped<IAdminService, AdminService>();
         services.AddScoped<IExerciseService, ExerciseService>();
         services.AddScoped<ISubscriptionService, SubscriptionService>();
+        services.AddScoped<IProfileService, ProfileService>();
+        services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IEmailAutomationService, EmailAutomationService>();
 
         services.AddSingleton<IWorkoutParserService, WorkoutParserService>();
 
@@ -87,7 +94,7 @@ public static class DependencyInjection
         services.AddScoped<IExerciseCacheService, ExerciseCacheService>();
         services.AddScoped<IPersonalRecordService, PersonalRecordService>();
         services.AddScoped<IWorkoutPersistenceService, WorkoutPersistenceService>();
-        
+
         return services;
     }
 }

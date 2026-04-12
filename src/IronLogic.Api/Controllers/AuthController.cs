@@ -1,8 +1,12 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+
+using Hangfire;
 using IronLogic.Application.DTOs.Auth;
+using IronLogic.Application.Interfaces;
 using IronLogic.Domain.Entities;
+
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -18,6 +22,7 @@ public class AuthController(
     UserManager<User> userManager,
     SignInManager<User> signInManager,
     RoleManager<IdentityRole> roleManager,
+    IBackgroundJobClient backgroundJobClient,
     IConfiguration configuration,
     ILogger<AuthController> logger)
     : ControllerBase
@@ -50,6 +55,9 @@ public class AuthController(
         {
             logger.LogWarning("Failed to assign User role to {Email}", registerDto.Email);
         }
+
+        backgroundJobClient.Enqueue<IEmailAutomationService>(
+            service => service.SendWelcomeEmailAsync(user.Id, CancellationToken.None));
 
         // Generate token with role claim
         var token = await GenerateJwtTokenAsync(user);
@@ -136,6 +144,7 @@ public class AuthController(
         var claims = new List<Claim>
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
             new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };

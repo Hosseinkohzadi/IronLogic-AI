@@ -60,7 +60,8 @@ export class SubscriptionService {
   readonly selectedPlan = signal<SubscriptionPlan | null>(null);
 
   getPlans(): Observable<SubscriptionPlan[]> {
-    return this.http.get<SubscriptionPlan[]>(`${this.baseUrl}/Subscription/plans`).pipe(
+    return this.http.get<Array<Record<string, unknown>>>(`${this.baseUrl}/Subscription/plans`).pipe(
+      map((plans) => plans.map((plan, index) => this.normalizePlan(plan, index))),
       tap((plans) => {
         this.availablePlans.set(plans);
         if (!this.selectedPlan() && plans.length > 0) {
@@ -170,5 +171,30 @@ export class SubscriptionService {
           return throwError(() => error);
         }),
       );
+  }
+
+  private normalizePlan(plan: Record<string, unknown>, index: number): SubscriptionPlan {
+    const monthlyPrice = this.toNumber(plan['monthlyPrice'] ?? plan['price']);
+    const yearlyPrice = this.toNumber(plan['yearlyPrice'] ?? plan['annualPrice']);
+    const features = Array.isArray(plan['features'])
+      ? plan['features'].filter((feature): feature is string => typeof feature === 'string')
+      : [];
+
+    return {
+      id: String(plan['id'] ?? `plan-${index + 1}`),
+      name: String(plan['name'] ?? `Plan ${index + 1}`),
+      price: this.toNumber(plan['price']),
+      currency: String(plan['currency'] ?? 'USD'),
+      monthlyPrice,
+      yearlyPrice,
+      taxRate: this.toNumber(plan['taxRate']),
+      features,
+      recommended: Boolean(plan['recommended']),
+    };
+  }
+
+  private toNumber(value: unknown): number {
+    const parsed = Number(value ?? 0);
+    return Number.isFinite(parsed) ? parsed : 0;
   }
 }

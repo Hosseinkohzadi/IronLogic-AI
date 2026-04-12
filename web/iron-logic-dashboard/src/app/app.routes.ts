@@ -16,6 +16,7 @@ import {
   RoleGuard,
   publicOnlyGuard,
 } from '@core/guards/auth-role.guards';
+import { athleteRoutes } from '@features/athlete/athlete.routes';
 
 export const routes: Routes = [
   {
@@ -127,13 +128,7 @@ export const routes: Routes = [
     pathMatch: 'full',
     redirectTo: 'athlete/portal',
   },
-  {
-    path: 'athlete/portal',
-    canActivate: [authGuard, athleteGuard],
-    data: { hideSidebar: false },
-    loadComponent: () =>
-      import('@features/athlete/athlete-portal').then((m) => m.AthletePortalComponent),
-  },
+  ...athleteRoutes,
   { path: '', component: LandingComponent, pathMatch: 'full', data: { hideSidebar: true } },
   {
     path: 'login',

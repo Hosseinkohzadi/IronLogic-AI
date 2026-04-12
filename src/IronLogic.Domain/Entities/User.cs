@@ -1,4 +1,5 @@
 using IronLogic.Domain.Enums;
+
 using Microsoft.AspNetCore.Identity;
 
 namespace IronLogic.Domain.Entities;
@@ -51,4 +52,14 @@ public class User : IdentityUser
     /// Gets or sets the collection of payment transactions belonging to this user.
     /// </summary>
     public ICollection<PaymentTransaction> PaymentTransactions { get; set; } = new List<PaymentTransaction>();
+
+    /// <summary>
+    /// Gets or sets the collection of communication history records for this user.
+    /// </summary>
+    public ICollection<CommunicationHistory> CommunicationHistories { get; set; } = new List<CommunicationHistory>();
+
+    /// <summary>
+    /// Gets or sets the user's profile details.
+    /// </summary>
+    public UserProfile? Profile { get; set; }
 }

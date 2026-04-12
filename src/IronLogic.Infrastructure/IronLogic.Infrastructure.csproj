@@ -16,6 +16,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.SemanticKernel" />
+    <PackageReference Include="SendGrid" />
   </ItemGroup>
 
   <ItemGroup>

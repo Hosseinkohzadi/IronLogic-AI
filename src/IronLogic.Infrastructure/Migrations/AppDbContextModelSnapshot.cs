@@ -17,6 +17,51 @@ namespace IronLogic.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.5");
 
+            modelBuilder.Entity("IronLogic.Domain.Entities.CommunicationHistory", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Body")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("DateModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Subject")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SentAt");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CommunicationHistories");
+                });
+
             modelBuilder.Entity("IronLogic.Domain.Entities.DailyWeight", b =>
                 {
                     b.Property<Guid>("Id")
@@ -499,6 +544,57 @@ namespace IronLogic.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("IronLogic.Domain.Entities.UserProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ActivityLevel")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Bio")
+                        .HasMaxLength(1000)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("CurrentWeight")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("DateModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DateOfBirth")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Gender")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("Height")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<decimal?>("TargetWeight")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UserProfiles");
+                });
+
             modelBuilder.Entity("IronLogic.Domain.Entities.UserSubscription", b =>
                 {
                     b.Property<Guid>("Id")
@@ -679,6 +775,17 @@ namespace IronLogic.Infrastructure.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("IronLogic.Domain.Entities.CommunicationHistory", b =>
+                {
+                    b.HasOne("IronLogic.Domain.Entities.User", "User")
+                        .WithMany("CommunicationHistories")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("IronLogic.Domain.Entities.DailyWeight", b =>
                 {
                     b.HasOne("IronLogic.Domain.Entities.User", "User")
@@ -759,6 +866,17 @@ namespace IronLogic.Infrastructure.Migrations
                     b.HasOne("IronLogic.Domain.Entities.User", "User")
                         .WithMany("Sessions")
                         .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("IronLogic.Domain.Entities.UserProfile", b =>
+                {
+                    b.HasOne("IronLogic.Domain.Entities.User", "User")
+                        .WithOne("Profile")
+                        .HasForeignKey("IronLogic.Domain.Entities.UserProfile", "UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -854,9 +972,13 @@ namespace IronLogic.Infrastructure.Migrations
 
             modelBuilder.Entity("IronLogic.Domain.Entities.User", b =>
                 {
+                    b.Navigation("CommunicationHistories");
+
                     b.Navigation("DailyWeights");
 
                     b.Navigation("PaymentTransactions");
+
+                    b.Navigation("Profile");
 
                     b.Navigation("Sessions");
 

@@ -4,8 +4,9 @@ import {
   provideZonelessChangeDetection,
 } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { routes } from './app.routes';
+import { authInterceptor } from '@core/interceptors/auth.interceptor';
 
 import {
   Activity,
@@ -49,8 +50,10 @@ import {
   Trash2,
   TrendingUp,
   Upload,
+  User,
   Users,
   UserPlus,
+  Target,
   Zap,
   Weight,
   Wrench,
@@ -66,7 +69,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZonelessChangeDetection(),
     provideRouter(routes),
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([authInterceptor])),
     importProvidersFrom(
       LucideAngularModule.pick({
         Activity,
@@ -113,8 +116,10 @@ export const appConfig: ApplicationConfig = {
         Trash2,
         TrendingUp,
         Upload,
+        User,
         Users,
         UserPlus,
+        Target,
         Weight,
         Wrench,
         X,

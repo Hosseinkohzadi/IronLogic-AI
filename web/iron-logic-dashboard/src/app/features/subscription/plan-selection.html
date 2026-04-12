@@ -26,17 +26,19 @@
     } @else {
       <div class="flex items-center justify-center">
         <div
-          class="inline-flex rounded-2xl border border-white/20 bg-white/10 p-1 shadow-lg backdrop-blur-xl"
+          class="bg-slate-800 p-1 rounded-full inline-flex relative"
           role="group"
           aria-label="Billing cycle toggle"
         >
           <button
             type="button"
             (click)="setBillingCycle('monthly')"
-            class="rounded-xl px-5 py-2 text-xs font-black uppercase tracking-[0.16em] transition"
-            [class.bg-white]="billingCycle() === 'monthly'"
-            [class.text-slate-900]="billingCycle() === 'monthly'"
-            [class.text-slate-200]="billingCycle() !== 'monthly'"
+            class="rounded-full px-5 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all"
+            [class.bg-indigo-600]="billingCycle() === 'monthly'"
+            [class.text-white]="billingCycle() === 'monthly'"
+            [class.shadow-md]="billingCycle() === 'monthly'"
+            [class.text-slate-400]="billingCycle() !== 'monthly'"
+            [class.hover:text-white]="billingCycle() !== 'monthly'"
           >
             Monthly
           </button>
@@ -44,18 +46,20 @@
           <button
             type="button"
             (click)="setBillingCycle('yearly')"
-            class="relative rounded-xl px-5 py-2 text-xs font-black uppercase tracking-[0.16em] transition"
-            [class.bg-white]="billingCycle() === 'yearly'"
-            [class.text-slate-900]="billingCycle() === 'yearly'"
-            [class.text-slate-200]="billingCycle() !== 'yearly'"
+            class="rounded-full px-5 py-2 text-xs font-black uppercase tracking-[0.16em] transition-all"
+            [class.bg-indigo-600]="billingCycle() === 'yearly'"
+            [class.text-white]="billingCycle() === 'yearly'"
+            [class.shadow-md]="billingCycle() === 'yearly'"
+            [class.text-slate-400]="billingCycle() !== 'yearly'"
+            [class.hover:text-white]="billingCycle() !== 'yearly'"
           >
             Yearly
-            <span
-              class="ml-2 rounded-full bg-emerald-400 px-2 py-0.5 text-[10px] font-black uppercase tracking-[0.16em] text-slate-900"
-            >
-              20% Discount
-            </span>
           </button>
+          <span
+            class="ml-2 self-center rounded-full bg-emerald-400/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-emerald-400"
+          >
+            20% Discount
+          </span>
         </div>
       </div>
 
@@ -69,45 +73,36 @@
 
       @if (isLoading()) {
         <div
-          class="rounded-3xl border border-white/10 bg-white/5 p-8 text-center text-sm font-semibold text-slate-300 backdrop-blur-xl"
+          class="rounded-3xl border border-slate-800 bg-slate-900/40 p-8 text-center text-sm font-semibold text-slate-300 backdrop-blur-xl"
         >
           Loading plans...
         </div>
       } @else {
-        <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        <div class="grid grid-cols-1 gap-8 xl:grid-cols-3">
           @for (plan of plans(); track plan.id) {
             <article
-              class="relative rounded-3xl border p-6 backdrop-blur-2xl transition-all duration-300 hover:-translate-y-0.5"
-              [class.border-amber-300/70]="plan.name.toLowerCase().includes('pro')"
-              [class.bg-white/10]="!plan.name.toLowerCase().includes('pro')"
-              [class.border-white/15]="!plan.name.toLowerCase().includes('pro')"
-              [class.bg-amber-300/10]="plan.name.toLowerCase().includes('pro')"
+              class="bg-slate-900/40 backdrop-blur-xl border border-slate-800 rounded-3xl p-8 flex flex-col relative transition-all hover:border-slate-700"
+              [class.border-indigo-500/50]="plan.name.toLowerCase().includes('pro')"
               [class.shadow-2xl]="plan.name.toLowerCase().includes('pro')"
-              [class.hover:border-indigo-300/80]="!plan.name.toLowerCase().includes('pro')"
-              [class.hover:shadow-xl]="!plan.name.toLowerCase().includes('pro')"
+              [class.shadow-indigo-500/10]="plan.name.toLowerCase().includes('pro')"
             >
               @if (plan.name.toLowerCase().includes('pro')) {
                 <span
-                  class="absolute -top-3 left-6 rounded-full bg-amber-300 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-slate-900"
+                  class="absolute -top-3 left-6 rounded-full bg-indigo-500 px-3 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-white"
                 >
                   Recommended
                 </span>
-                <span
-                  class="absolute right-5 top-5 rounded-full border border-amber-200/40 bg-amber-300/20 px-2 py-1 text-[10px] font-black uppercase tracking-[0.16em] text-amber-100"
-                >
-                  Most Popular
-                </span>
               }
 
-              <p class="text-[11px] font-black uppercase tracking-[0.2em] text-slate-300">
+              <p class="text-2xl font-bold text-white">
                 {{ plan.name }}
               </p>
 
               <div class="mt-4 flex items-end gap-2">
-                <p class="text-4xl font-black tracking-tight transition-all duration-300">
+                <p class="text-5xl font-extrabold text-white mt-4 leading-none">
                   {{ displayPrice(plan) | currency: 'USD' : 'symbol' : '1.0-0' }}
                 </p>
-                <p class="pb-1 text-xs font-bold uppercase tracking-[0.14em] text-slate-400">
+                <p class="text-slate-400 text-lg pb-1">
                   {{ billingCycle() === 'monthly' ? '/month' : '/year' }}
                 </p>
               </div>
@@ -118,20 +113,14 @@
                 </p>
               }
 
-              <ul class="mt-6 space-y-3">
-                @for (feature of featureRowsFor(plan.id); track feature.label) {
+              <ul class="mt-8 space-y-3">
+                @for (feature of plan.features; track feature) {
                   <li class="flex items-start gap-2 text-sm">
                     <lucide-icon
-                      [name]="feature.included ? 'check-circle' : 'x-circle'"
-                      class="mt-0.5 h-4 w-4"
-                      [class.text-emerald-300]="feature.included"
-                      [class.text-rose-300]="!feature.included"
+                      name="check-circle"
+                      class="mt-0.5 h-4 w-4 text-indigo-400"
                     ></lucide-icon>
-                    <span
-                      [class.text-slate-100]="feature.included"
-                      [class.text-slate-400]="!feature.included"
-                      >{{ feature.label }}</span
-                    >
+                    <span class="text-slate-300">{{ feature }}</span>
                   </li>
                 }
               </ul>
@@ -139,13 +128,13 @@
               <button
                 type="button"
                 (click)="selectPlan(plan.id)"
-                class="mt-7 w-full rounded-xl px-4 py-3 text-xs font-black uppercase tracking-[0.18em] transition-all"
-                [class.bg-indigo-500]="!plan.name.toLowerCase().includes('pro')"
-                [class.text-white]="!plan.name.toLowerCase().includes('pro')"
-                [class.hover:bg-indigo-400]="!plan.name.toLowerCase().includes('pro')"
-                [class.bg-amber-300]="plan.name.toLowerCase().includes('pro')"
-                [class.text-slate-900]="plan.name.toLowerCase().includes('pro')"
-                [class.hover:bg-amber-200]="plan.name.toLowerCase().includes('pro')"
+                class="mt-8 w-full rounded-xl px-4 py-3 text-xs font-black uppercase tracking-[0.18em] transition-all"
+                [class.bg-slate-800]="!plan.name.toLowerCase().includes('pro')"
+                [class.text-white]="true"
+                [class.hover:bg-slate-700]="!plan.name.toLowerCase().includes('pro')"
+                [class.bg-indigo-600]="plan.name.toLowerCase().includes('pro')"
+                [class.hover:bg-indigo-500]="plan.name.toLowerCase().includes('pro')"
+                [class.hover:shadow-indigo-500/25]="plan.name.toLowerCase().includes('pro')"
               >
                 Continue with {{ plan.name }}
               </button>

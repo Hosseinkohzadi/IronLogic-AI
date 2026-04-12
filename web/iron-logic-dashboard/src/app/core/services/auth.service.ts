@@ -170,14 +170,19 @@ export class AuthService {
     }
 
     const response = payload as Record<string, unknown>;
-    const token = this.readString(response, ['token', 'accessToken', 'jwt', 'access_token']);
-    const userObject = this.readUserObject(response);
+    const dataWrapper = this.readObject(response, ['data', 'Data']);
+    const token =
+      this.readString(response, ['token', 'accessToken', 'jwt', 'access_token']) ??
+      this.readString(dataWrapper, ['token', 'accessToken', 'jwt', 'access_token']);
+    const userObject = this.readUserObject(dataWrapper ?? response);
     const tokenClaims = token ? this.decodeJwtPayload(token) : null;
 
     const roleRaw =
       this.readString(response, ['role', 'Role']) ??
+      this.readString(dataWrapper, ['role', 'Role']) ??
       this.readString(userObject, ['role', 'Role']) ??
       this.readFirstStringArrayValue(response, ['roles', 'Roles']) ??
+      this.readFirstStringArrayValue(dataWrapper, ['roles', 'Roles']) ??
       this.readFirstStringArrayValue(userObject, ['roles', 'Roles']) ??
       this.readString(tokenClaims, [
         'role',
@@ -192,6 +197,7 @@ export class AuthService {
 
     const userId =
       this.readString(response, ['userId', 'id', 'Id']) ??
+      this.readString(dataWrapper, ['userId', 'id', 'Id']) ??
       this.readString(userObject, ['id', 'Id', 'userId', 'UserId']) ??
       this.readString(tokenClaims, [
         'sub',
@@ -220,12 +226,12 @@ export class AuthService {
       return null;
     }
 
-    const normalized = roleRaw.trim().toUpperCase();
-    if (normalized === 'SUPER_ADMIN' || normalized === 'ADMIN') {
+    const normalized = roleRaw.trim().toUpperCase().replace(/[\s-]/g, '_');
+    if (normalized === 'SUPER_ADMIN' || normalized === 'SUPERADMIN' || normalized === 'ADMIN') {
       return 'SUPER_ADMIN';
     }
 
-    if (normalized === 'ATHLETE' || normalized === 'USER') {
+    if (normalized === 'ATHLETE' || normalized === 'USER' || normalized === 'MEMBER') {
       return 'ATHLETE';
     }
 
@@ -239,6 +245,24 @@ export class AuthService {
     }
 
     return source;
+  }
+
+  private readObject(
+    source: Record<string, unknown> | null,
+    keys: string[],
+  ): Record<string, unknown> | null {
+    if (!source) {
+      return null;
+    }
+
+    for (const key of keys) {
+      const value = source[key];
+      if (typeof value === 'object' && value !== null) {
+        return value as Record<string, unknown>;
+      }
+    }
+
+    return null;
   }
 
   private readString(source: Record<string, unknown> | null, keys: string[]): string | null {

@@ -31,6 +31,10 @@ public class AppDbContext : IdentityDbContext<User>
 
     public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
+    public DbSet<UserProfile> UserProfiles { get; set; }
+
+    public DbSet<CommunicationHistory> CommunicationHistories { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (optionsBuilder.IsConfigured)
@@ -38,7 +42,7 @@ public class AppDbContext : IdentityDbContext<User>
 
         var dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ironlogic.db");
         optionsBuilder.UseSqlite($"Data Source={dbPath}")
-            .ConfigureWarnings(warnings => 
+            .ConfigureWarnings(warnings =>
                 warnings.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
     }
 
@@ -193,6 +197,61 @@ public class AppDbContext : IdentityDbContext<User>
                 .HasDefaultValue("US");
 
             entity.HasIndex(u => u.CountryCode);
+        });
+
+        modelBuilder.Entity<UserProfile>(entity =>
+        {
+            entity.Property(up => up.Bio)
+                .HasMaxLength(1000);
+
+            entity.Property(up => up.Gender)
+                .HasConversion<string>();
+
+            entity.Property(up => up.Height)
+                .HasPrecision(5, 2);
+
+            entity.Property(up => up.CurrentWeight)
+                .HasPrecision(5, 2);
+
+            entity.Property(up => up.TargetWeight)
+                .HasPrecision(5, 2);
+
+            entity.Property(up => up.ActivityLevel)
+                .HasConversion<string>();
+
+            entity.HasOne(up => up.User)
+                .WithOne(u => u.Profile)
+                .HasForeignKey<UserProfile>(up => up.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(up => up.UserId)
+                .IsUnique();
+        });
+
+        modelBuilder.Entity<CommunicationHistory>(entity =>
+        {
+            entity.Property(ch => ch.Subject)
+                .HasMaxLength(200)
+                .IsRequired();
+
+            entity.Property(ch => ch.Body)
+                .IsRequired();
+
+            entity.Property(ch => ch.Status)
+                .HasConversion<string>();
+
+            entity.Property(ch => ch.Type)
+                .HasConversion<string>();
+
+            entity.HasOne(ch => ch.User)
+                .WithMany(u => u.CommunicationHistories)
+                .HasForeignKey(ch => ch.UserId)
+                .IsRequired()
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(ch => ch.UserId);
+            entity.HasIndex(ch => ch.SentAt);
         });
 
         modelBuilder.Entity<User>().HasData(new User

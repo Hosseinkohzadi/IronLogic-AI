@@ -61,6 +61,8 @@ interface UserRow {
 })
 export class UserRowDrawerComponent {
   row = input<unknown>(null);
+  record = input<unknown>(null);
+  data = input<unknown>(null);
 
   saved = output<ApplicationUser>();
   close = output<void>();

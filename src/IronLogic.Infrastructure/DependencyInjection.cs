@@ -1,4 +1,4 @@
-﻿using IronLogic.Application.Interfaces;
+using IronLogic.Application.Interfaces;
 using IronLogic.Application.Services;
 using IronLogic.Domain.Interfaces;
 using IronLogic.Infrastructure.Repositories;
@@ -85,6 +85,7 @@ public static class DependencyInjection
         services.AddScoped<IEmailAutomationService, EmailAutomationService>();
         services.AddScoped<IOtpService, OtpService>();
         services.AddScoped<IPlatformSettingsService, PlatformSettingsService>();
+        services.AddScoped<ICommunicationService, CommunicationService>();
 
         services.AddSingleton<IWorkoutParserService, WorkoutParserService>();
 

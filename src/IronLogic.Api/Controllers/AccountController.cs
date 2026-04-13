@@ -2,6 +2,7 @@ using System.Security.Claims;
 
 using IronLogic.Application.DTOs.Profile;
 using IronLogic.Application.Interfaces;
+using IronLogic.Application.Shared;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -63,7 +64,7 @@ public class AccountController(IProfileService profileService) : ControllerBase
             return Unauthorized(new { message = "User is not authenticated" });
         }
 
-        var result = await profileService.UpdateProfileAsync(userId, request, cancellationToken);
+        Result<UserProfileResponseDto> result = await profileService.UpdateProfileAsync(userId, request, cancellationToken);
         if (result.IsFailure)
         {
             return NotFound(new { message = result.Error });

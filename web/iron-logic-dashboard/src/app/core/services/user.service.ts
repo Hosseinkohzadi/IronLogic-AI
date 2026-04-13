@@ -8,11 +8,14 @@ import { ApplicationUser } from '@core/models';
 export type UserUpdateRequest = ApplicationUser;
 
 export interface AthleteProfile extends ApplicationUser {
+  userId?: string;
+  name?: string;
+  profilePictureUrl: string;
   language: string;
   currentWeight: number | null;
   height: number | null;
   targetWeight: number | null;
-  activityLevel: string;
+  activityLevel: string | number;
   bio: string;
 }
 
@@ -75,7 +78,9 @@ export class UserService {
     return this.http.get<AthleteProfile>(this.accountMeUrl);
   }
 
-  updateMyProfile(profile: AthleteProfile): Observable<AthleteProfile> {
+  updateMyProfile(
+    profile: AthleteProfile | { request: AthleteProfile },
+  ): Observable<AthleteProfile> {
     return this.http.put<AthleteProfile>(this.accountMeUrl, profile);
   }
 

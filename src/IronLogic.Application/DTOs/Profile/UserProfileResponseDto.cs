@@ -18,9 +18,29 @@ public record UserProfileResponseDto
     public string? Email { get; init; }
 
     /// <summary>
-    /// Gets or sets the user's display name.
+    /// Gets or sets the user's display name (username).
     /// </summary>
     public string? Name { get; init; }
+
+    /// <summary>
+    /// Gets or sets the user's first name.
+    /// </summary>
+    public string FirstName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the user's last name.
+    /// </summary>
+    public string LastName { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the user's phone number.
+    /// </summary>
+    public string PhoneNumber { get; init; } = string.Empty;
+
+    /// <summary>
+    /// Gets or sets the user's profile picture URL.
+    /// </summary>
+    public string ProfilePictureUrl { get; init; } = string.Empty;
 
     /// <summary>
     /// Gets or sets the user's gender.

@@ -22,55 +22,60 @@
           </div>
         </div>
 
-        <button
-          type="button"
-          aria-label="Close row details"
-          (click)="close.emit()"
-          class="h-9 w-9 rounded-lg border border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
-        >
-          <lucide-icon name="x" class="mx-auto h-4 w-4"></lucide-icon>
-        </button>
-      </div>
-
-      <nav class="mt-4" aria-label="User drawer tabs">
-        <div class="grid grid-cols-3 gap-2 rounded-xl border border-slate-700/60 bg-slate-900/70 p-2">
+        <div class="flex items-center gap-2">
           <button
             type="button"
-            (click)="setTab('profile')"
-            class="rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] transition-all"
-            [class.bg-indigo-600]="activeTab() === 'profile'"
-            [class.text-white]="activeTab() === 'profile'"
-            [class.text-slate-400]="activeTab() !== 'profile'"
-            [class.hover:text-white]="activeTab() !== 'profile'"
-            [class.hover:bg-slate-800]="activeTab() !== 'profile'"
+            aria-label="Delete user"
+            (click)="onDeleteClick()"
+            class="h-9 w-9 flex items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors cursor-pointer"
           >
-            Profile
+            <lucide-icon name="trash-2" class="h-4 w-4"></lucide-icon>
           </button>
           <button
             type="button"
-            (click)="setTab('billing')"
-            class="rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] transition-all"
-            [class.bg-indigo-600]="activeTab() === 'billing'"
-            [class.text-white]="activeTab() === 'billing'"
-            [class.text-slate-400]="activeTab() !== 'billing'"
-            [class.hover:text-white]="activeTab() !== 'billing'"
-            [class.hover:bg-slate-800]="activeTab() !== 'billing'"
+            aria-label="Close row details"
+            (click)="close.emit()"
+            class="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
           >
-            Billing
-          </button>
-          <button
-            type="button"
-            (click)="setTab('emails')"
-            class="rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-[0.14em] transition-all"
-            [class.bg-indigo-600]="activeTab() === 'emails'"
-            [class.text-white]="activeTab() === 'emails'"
-            [class.text-slate-400]="activeTab() !== 'emails'"
-            [class.hover:text-white]="activeTab() !== 'emails'"
-            [class.hover:bg-slate-800]="activeTab() !== 'emails'"
-          >
-            Emails
+            <lucide-icon name="x" class="h-4 w-4"></lucide-icon>
           </button>
         </div>
+      </div>
+
+      <nav class="mt-6 flex gap-6 border-b border-slate-800" aria-label="Tabs">
+        <button
+          type="button"
+          (click)="setTab('profile')"
+          [class]="
+            activeTab() === 'profile'
+              ? '-mb-px pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-white transition-all'
+              : '-mb-px pb-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700 transition-all'
+          "
+        >
+          Profile
+        </button>
+        <button
+          type="button"
+          (click)="setTab('billing')"
+          [class]="
+            activeTab() === 'billing'
+              ? '-mb-px pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-white transition-all'
+              : '-mb-px pb-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700 transition-all'
+          "
+        >
+          Billing
+        </button>
+        <button
+          type="button"
+          (click)="setTab('emails')"
+          [class]="
+            activeTab() === 'emails'
+              ? '-mb-px pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-white transition-all'
+              : '-mb-px pb-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700 transition-all'
+          "
+        >
+          Emails
+        </button>
       </nav>
     </header>
 
@@ -186,7 +191,9 @@
           <div class="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4">
             <form [formGroup]="composeForm" (ngSubmit)="sendManualMessage()" class="space-y-3">
               <label class="block space-y-1">
-                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Subject</span>
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400"
+                  >Subject</span
+                >
                 <input
                   formControlName="subject"
                   placeholder="Subject"
@@ -195,7 +202,9 @@
               </label>
 
               <label class="block space-y-1">
-                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Message</span>
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400"
+                  >Message</span
+                >
                 <textarea
                   formControlName="message"
                   rows="5"
@@ -234,7 +243,9 @@
             } @else {
               <div class="mt-4 border-l border-slate-700 pl-4">
                 @for (item of emailHistory(); track trackHistoryItem($index, item)) {
-                  <article class="relative bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 mb-3">
+                  <article
+                    class="relative bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 mb-3"
+                  >
                     <span
                       class="absolute -left-[1.15rem] top-5 h-2.5 w-2.5 rounded-full bg-indigo-500"
                     ></span>

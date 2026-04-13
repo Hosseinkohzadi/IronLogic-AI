@@ -61,9 +61,12 @@ interface UserRow {
 })
 export class UserRowDrawerComponent {
   row = input<unknown>(null);
+  record = input<unknown>(null);
+  data = input<unknown>(null);
 
   saved = output<ApplicationUser>();
   close = output<void>();
+  deleteUser = output<string>();
 
   private readonly fb = inject(FormBuilder);
   private readonly communicationService = inject(CommunicationService);
@@ -142,6 +145,15 @@ export class UserRowDrawerComponent {
     if (tab === 'emails' && currentUser?.id) {
       this.loadEmailHistory(currentUser.id);
     }
+  }
+
+  onDeleteClick(): void {
+    const currentUser = this.user();
+    if (!currentUser) {
+      return;
+    }
+
+    this.deleteUser.emit(currentUser.id);
   }
 
   sendManualMessage(): void {

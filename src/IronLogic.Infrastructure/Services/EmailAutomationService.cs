@@ -2,6 +2,8 @@ using IronLogic.Application.Interfaces;
 using IronLogic.Domain.Entities;
 using IronLogic.Domain.Enums;
 
+using Hangfire;
+
 using Microsoft.Extensions.Logging;
 
 namespace IronLogic.Infrastructure.Services;
@@ -12,6 +14,7 @@ namespace IronLogic.Infrastructure.Services;
 public class EmailAutomationService(
     AppDbContext dbContext,
     IEmailService emailService,
+  IBackgroundJobClient backgroundJobClient,
     ILogger<EmailAutomationService> logger) : IEmailAutomationService
 {
     /// <inheritdoc />
@@ -106,6 +109,84 @@ public class EmailAutomationService(
             const string body = "<p>We have not seen your workout activity in the last 2 days. Jump back in and keep your streak alive.</p>";
             await ExecuteEmailSafelyAsync(userId, subject, body, cancellationToken);
         }
+    }
+
+    /// <inheritdoc />
+    public async Task QueueDiscountOfferBroadcastAsync(
+      string subject,
+      decimal discountPercentage,
+      string? customMessage,
+      string callToActionUrl,
+      CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(subject);
+        ArgumentException.ThrowIfNullOrWhiteSpace(callToActionUrl);
+
+        var userIds = await dbContext.Users
+          .AsNoTracking()
+          .Where(u => !string.IsNullOrWhiteSpace(u.Email))
+          .Select(u => u.Id)
+          .ToListAsync(cancellationToken);
+
+        foreach (var userId in userIds)
+        {
+            backgroundJobClient.Enqueue<IEmailAutomationService>(service =>
+              service.SendDiscountOfferEmailAsync(
+                userId,
+                subject,
+                discountPercentage,
+                customMessage,
+                callToActionUrl,
+                CancellationToken.None));
+        }
+
+        logger.LogInformation(
+          "Queued discount campaign for {UserCount} users. Discount: {DiscountPercentage}",
+          userIds.Count,
+          discountPercentage);
+    }
+
+    /// <inheritdoc />
+    public async Task SendDiscountOfferEmailAsync(
+      string userId,
+      string subject,
+      decimal discountPercentage,
+      string? customMessage,
+      string callToActionUrl,
+      CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(userId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(subject);
+        ArgumentException.ThrowIfNullOrWhiteSpace(callToActionUrl);
+
+        var user = await dbContext.Users
+          .AsNoTracking()
+          .FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
+
+        if (user is null)
+        {
+            logger.LogWarning("Discount email skipped. User {UserId} not found.", userId);
+            return;
+        }
+
+        var model = new
+        {
+            Subject = subject,
+            DisplayName = string.IsNullOrWhiteSpace(user.UserName) ? "Athlete" : user.UserName,
+            DiscountPercentage = discountPercentage,
+            CustomMessage = string.IsNullOrWhiteSpace(customMessage)
+            ? "Upgrade today and keep progressing without interruption."
+            : customMessage,
+            CallToActionUrl = callToActionUrl
+        };
+
+        await emailService.SendAndLogTemplatedEmailAsync(
+          userId,
+          subject,
+          templateName: "DiscountOffer",
+          model,
+          isManual: false,
+          cancellationToken);
     }
 
     private async Task ExecuteEmailSafelyAsync(

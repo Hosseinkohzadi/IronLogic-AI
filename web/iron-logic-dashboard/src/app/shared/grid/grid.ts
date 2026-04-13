@@ -111,10 +111,14 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
   @Output() inlineSave = new EventEmitter<any>();
   @Output() onDetailSaved = new EventEmitter<{ row: any; payload: any }>();
 
+  @Output() onDetailDeleted = new EventEmitter<{ row: any; payload: any }>();
+  @Output() deleteUser = new EventEmitter<string>();
+
   selectedDetailRow: any = null;
   readonly isDrawerOpen = signal(false);
   private detailSaveUnsubscribe?: () => void;
   private detailCloseUnsubscribe?: () => void;
+  private detailDeleteUnsubscribe?: () => void;
 
   constructor(
     public gridDataService: GridDataService,
@@ -461,6 +465,7 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
 
     this.bindDetailSaveOutput(componentRef.instance, row);
     this.bindDetailCloseOutput(componentRef.instance);
+    this.bindDetailDeleteOutput(componentRef.instance, row);
     this.cdr.markForCheck();
   }
 
@@ -509,16 +514,37 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private cleanupDetailSaveSubscription(): void {
-    if (!this.detailSaveUnsubscribe) {
-      return;
+    if (this.detailSaveUnsubscribe) {
+      this.detailSaveUnsubscribe();
+      this.detailSaveUnsubscribe = undefined;
     }
-
-    this.detailSaveUnsubscribe();
-    this.detailSaveUnsubscribe = undefined;
 
     if (this.detailCloseUnsubscribe) {
       this.detailCloseUnsubscribe();
       this.detailCloseUnsubscribe = undefined;
     }
+
+    if (this.detailDeleteUnsubscribe) {
+      this.detailDeleteUnsubscribe();
+      this.detailDeleteUnsubscribe = undefined;
+    }
+  }
+
+  private bindDetailDeleteOutput(instance: any, row: any): void {
+    const output = instance?.['deleteUser'];
+    if (!output || typeof output.subscribe !== 'function') {
+      return;
+    }
+
+    const subscription = output.subscribe((payload: any) => {
+      this.onDetailDeleted.emit({ row, payload });
+      const resolvedId =
+        typeof payload === 'string' ? payload : String(payload?.id ?? row?.id ?? '');
+      if (resolvedId) {
+        this.deleteUser.emit(resolvedId);
+      }
+    });
+
+    this.detailDeleteUnsubscribe = () => subscription.unsubscribe();
   }
 }

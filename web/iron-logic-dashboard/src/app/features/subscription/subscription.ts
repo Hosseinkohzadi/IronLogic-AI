@@ -11,6 +11,7 @@ import { FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '
 import { finalize } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PaymentService, SubscribeRequest, SubscriptionPlan } from '@core/services/payment.service';
+import { SettingsService } from '@core/services/settings.service';
 
 @Component({
   selector: 'app-subscription',
@@ -21,11 +22,13 @@ import { PaymentService, SubscribeRequest, SubscriptionPlan } from '@core/servic
 })
 export class SubscriptionComponent {
   private readonly paymentService = inject(PaymentService);
+  private readonly settingsService = inject(SettingsService);
   private readonly formBuilder = inject(FormBuilder);
   private readonly destroyRef = inject(DestroyRef);
 
   readonly plans = signal<SubscriptionPlan[]>([]);
   readonly billingCycle = signal<'monthly' | 'yearly'>('monthly');
+  readonly yearlyDiscount = signal<number>(20);
   readonly selectedPlanId = signal<string | null>(null);
   readonly isLoading = signal(false);
   readonly isSubmitting = signal(false);
@@ -62,7 +65,9 @@ export class SubscriptionComponent {
       return 0;
     }
 
-    return this.billingCycle() === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
+    return this.billingCycle() === 'monthly'
+      ? this.getMonthlyPrice(plan)
+      : this.getYearlyPrice(plan);
   });
 
   readonly taxAmount = computed(() => {
@@ -78,6 +83,23 @@ export class SubscriptionComponent {
 
   constructor() {
     this.loadPlans();
+    this.loadPricingConfig();
+  }
+
+  getDisplayPrice(plan: SubscriptionPlan): number {
+    return this.billingCycle() === 'monthly'
+      ? this.getMonthlyPrice(plan)
+      : this.getYearlyPrice(plan);
+  }
+
+  getYearlyPrice(plan: SubscriptionPlan): number {
+    const monthlyPrice = this.getMonthlyPrice(plan);
+    return Math.round(monthlyPrice * 12 * (1 - this.yearlyDiscount() / 100));
+  }
+
+  getYearlySavings(plan: SubscriptionPlan): number {
+    const monthlyAnnualized = this.getMonthlyPrice(plan) * 12;
+    return monthlyAnnualized - this.getYearlyPrice(plan);
   }
 
   setBillingCycle(cycle: 'monthly' | 'yearly'): void {
@@ -206,6 +228,42 @@ export class SubscriptionComponent {
           console.warn('Using mock subscription plans due to API failure:', error);
         },
       });
+  }
+
+  private loadPricingConfig(): void {
+    this.settingsService
+      .getPublicPricingConfig()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (config) => {
+          const normalized = Math.max(
+            0,
+            Math.min(100, Number(config.YearlyDiscountPercentage ?? 20)),
+          );
+          this.yearlyDiscount.set(normalized);
+        },
+        error: () => {
+          // Keep default 20% when public pricing config is unavailable.
+          this.yearlyDiscount.set(20);
+        },
+      });
+  }
+
+  private getMonthlyPrice(plan: SubscriptionPlan): number {
+    const planName = plan.name.trim().toLowerCase();
+    if (planName === 'basic') {
+      return 0;
+    }
+
+    if (planName === 'pro') {
+      return 29;
+    }
+
+    if (planName === 'elite') {
+      return 99;
+    }
+
+    return plan.monthlyPrice;
   }
 
   private expiryValidator(control: { value: string }): ValidationErrors | null {

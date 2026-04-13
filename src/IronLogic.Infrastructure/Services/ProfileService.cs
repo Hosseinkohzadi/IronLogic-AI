@@ -16,8 +16,7 @@ public class ProfileService(
 {
     /// <inheritdoc />
     public async Task<Result<UserProfileResponseDto>> GetProfileAsync(string userId, CancellationToken cancellationToken)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(userId);
+    {ArgumentException.ThrowIfNullOrWhiteSpace(userId);
 
         var user = await userManager.Users
             .Include(u => u.Profile)
@@ -29,12 +28,12 @@ public class ProfileService(
             return Result.Failure<UserProfileResponseDto>("User not found.");
         }
 
-        if (user.Profile == null)
-        {
-            user.Profile = CreateDefaultProfile(user.Id);
-            dbContext.UserProfiles.Add(user.Profile);
-            await dbContext.SaveChangesAsync(cancellationToken);
-        }
+        if (user.Profile != null)
+            return Result.Success(MapToDto(user));
+
+        user.Profile = CreateDefaultProfile(user.Id);
+        dbContext.UserProfiles.Add(user.Profile);
+        await dbContext.SaveChangesAsync(cancellationToken);
 
         return Result.Success(MapToDto(user));
     }
@@ -81,6 +80,26 @@ public class ProfileService(
             user.NormalizedUserName = userManager.NormalizeName(request.Name);
         }
 
+        if (!string.IsNullOrWhiteSpace(request.PhoneNumber))
+        {
+            user.PhoneNumber = request.PhoneNumber;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.FirstName))
+        {
+            profile.FirstName = request.FirstName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.LastName))
+        {
+            profile.LastName = request.LastName;
+        }
+
+        if (!string.IsNullOrWhiteSpace(request.ProfilePictureUrl))
+        {
+            profile.ProfilePictureUrl = request.ProfilePictureUrl;
+        }
+
         profile.Gender = request.Gender;
         profile.Bio = request.Bio;
         profile.DateOfBirth = request.DateOfBirth;
@@ -110,6 +129,10 @@ public class ProfileService(
             UserId = user.Id,
             Email = user.Email,
             Name = user.UserName,
+            FirstName = user.Profile?.FirstName ?? string.Empty,
+            LastName = user.Profile?.LastName ?? string.Empty,
+            PhoneNumber = user.PhoneNumber ?? string.Empty,
+            ProfilePictureUrl = user.Profile?.ProfilePictureUrl ?? string.Empty,
             Gender = user.Profile?.Gender ?? Domain.Enums.Gender.Unknown,
             DateOfBirth = user.Profile?.DateOfBirth,
             Height = user.Profile?.Height,

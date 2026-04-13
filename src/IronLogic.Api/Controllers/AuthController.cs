@@ -12,10 +12,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 
+using SignInResult = Microsoft.AspNetCore.Identity.SignInResult;
+
 namespace IronLogic.Api.Controllers;
 
 /// <summary>
-/// Controller for handling user authentication operations including registration, login, and logout
+///     Controller for handling user authentication operations including registration, login, and logout
 /// </summary>
 [ApiController]
 [Route("api/v1/[controller]")]
@@ -30,8 +32,8 @@ public class AuthController(
     : ControllerBase
 {
     /// <summary>
-    /// Registers a new user and dispatches a six-digit verification code to their email address.
-    /// The JWT token is not issued at this stage; call <c>verify-email</c> after confirming the code.
+    ///     Registers a new user and dispatches a six-digit verification code to their email address.
+    ///     The JWT token is not issued at this stage; call <c>verify-email</c> after confirming the code.
     /// </summary>
     /// <param name="registerDto">Registration data containing email, password, and optional full name</param>
     /// <returns>User ID and a confirmation message indicating the verification code was sent</returns>
@@ -47,35 +49,36 @@ public class AuthController(
             EmailConfirmed = false
         };
 
-        var result = await userManager.CreateAsync(user, registerDto.Password);
+        IdentityResult result = await userManager.CreateAsync(user, registerDto.Password);
 
         if (!result.Succeeded)
             return BadRequest(result.Errors);
 
-        var roleResult = await userManager.AddToRoleAsync(user, "User");
-        if (!roleResult.Succeeded)
-        {
-            logger.LogWarning("Failed to assign User role to {Email}", registerDto.Email);
-        }
+        IdentityResult roleResult = await userManager.AddToRoleAsync(user, "User");
+        if (!roleResult.Succeeded) logger.LogWarning("Failed to assign User role to {Email}", registerDto.Email);
 
         var (code, _) = await otpService.GenerateAsync(user.Id);
 
-        backgroundJobClient.Enqueue<IEmailAutomationService>(
-            service => service.SendConfirmationCodeEmailAsync(user.Id, code, CancellationToken.None));
+        backgroundJobClient.Enqueue<IEmailAutomationService>(service =>
+            service.SendConfirmationCodeEmailAsync(user.Id, code, CancellationToken.None));
 
-        return Ok(new { UserId = user.Id, Message = "Registration successful. A 6-digit verification code has been sent to your email." });
+        return Ok(new
+        {
+            UserId = user.Id,
+            Message = "Registration successful. A 6-digit verification code has been sent to your email."
+        });
     }
 
     /// <summary>
-    /// Verifies the six-digit OTP code sent to the user's email address.
-    /// On success, confirms the email, issues a JWT token, and dispatches a welcome email.
+    ///     Verifies the six-digit OTP code sent to the user's email address.
+    ///     On success, confirms the email, issues a JWT token, and dispatches a welcome email.
     /// </summary>
     /// <param name="verifyEmailDto">Payload containing the user ID and the six-digit code</param>
     /// <returns>JWT token and user details on success; 400 on invalid or expired code</returns>
     [HttpPost("verify-email")]
     public async Task<IActionResult> VerifyEmail([FromBody] VerifyEmailDto verifyEmailDto)
     {
-        var user = await userManager.FindByIdAsync(verifyEmailDto.UserId);
+        User? user = await userManager.FindByIdAsync(verifyEmailDto.UserId);
         if (user is null)
             return NotFound(new { Message = "User not found." });
 
@@ -86,18 +89,18 @@ public class AuthController(
         if (token is null)
             return BadRequest(new { Message = "Invalid or expired verification code." });
 
-        var confirmResult = await userManager.ConfirmEmailAsync(user, token);
+        IdentityResult confirmResult = await userManager.ConfirmEmailAsync(user, token);
         if (!confirmResult.Succeeded)
         {
             logger.LogWarning("ConfirmEmailAsync failed for user {UserId}", user.Id);
             return BadRequest(new { Message = "Email confirmation failed. Please request a new code." });
         }
 
-        backgroundJobClient.Enqueue<IEmailAutomationService>(
-            service => service.SendWelcomeEmailAsync(user.Id, CancellationToken.None));
+        backgroundJobClient.Enqueue<IEmailAutomationService>(service =>
+            service.SendWelcomeEmailAsync(user.Id, CancellationToken.None));
 
         var jwtToken = await GenerateJwtTokenAsync(user);
-        var roles = await userManager.GetRolesAsync(user);
+        IList<string> roles = await userManager.GetRolesAsync(user);
         var role = roles.FirstOrDefault() ?? "User";
 
         var response = new AuthResponseDto(
@@ -113,14 +116,14 @@ public class AuthController(
     }
 
     /// <summary>
-    /// Authenticates a user with email and password and returns a JWT token
+    ///     Authenticates a user with email and password and returns a JWT token
     /// </summary>
     /// <param name="loginDto">Login credentials containing email and password</param>
     /// <returns>JWT token and user details if authentication is successful</returns>
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
     {
-        var user = await userManager.FindByEmailAsync(loginDto.Email);
+        User? user = await userManager.FindByEmailAsync(loginDto.Email);
 
         if (user == null)
         {
@@ -135,11 +138,11 @@ public class AuthController(
             return Unauthorized(new { Message = "Invalid credentials" });
         }
 
-        var result = await signInManager.PasswordSignInAsync(
+        SignInResult result = await signInManager.PasswordSignInAsync(
             user.UserName ?? loginDto.Email,
             loginDto.Password,
-            isPersistent: false,
-            lockoutOnFailure: false);
+            false,
+            false);
 
         if (!result.Succeeded)
         {
@@ -148,7 +151,7 @@ public class AuthController(
         }
 
         var token = await GenerateJwtTokenAsync(user);
-        var roles = await userManager.GetRolesAsync(user);
+        IList<string> roles = await userManager.GetRolesAsync(user);
         var role = roles.FirstOrDefault() ?? "User";
 
         var response = new AuthResponseDto(
@@ -163,7 +166,7 @@ public class AuthController(
     }
 
     /// <summary>
-    /// Signs out the current user
+    ///     Signs out the current user
     /// </summary>
     /// <returns>Success message confirming logout</returns>
     [HttpPost("logout")]
@@ -174,35 +177,34 @@ public class AuthController(
     }
 
     /// <summary>
-    /// Generates a JWT token for the authenticated user with role claims
+    ///     Generates a JWT token for the authenticated user with role claims
     /// </summary>
     /// <param name="user">The user entity to generate token for</param>
     /// <returns>JWT token as a string</returns>
     private async Task<string> GenerateJwtTokenAsync(User user)
     {
-        var roles = await userManager.GetRolesAsync(user);
+        IList<string> roles = await userManager.GetRolesAsync(user);
         var claims = new List<Claim>
         {
-            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
-            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            new(JwtRegisteredClaimNames.Sub, user.Id),
+            new(ClaimTypes.NameIdentifier, user.Id),
+            new(JwtRegisteredClaimNames.Email, user.Email ?? string.Empty),
+            new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
         };
 
         // Add role claims
-        foreach (var role in roles)
-        {
-            claims.Add(new Claim(ClaimTypes.Role, role));
-        }
+        foreach (var role in roles) claims.Add(new Claim(ClaimTypes.Role, role));
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ?? throw new InvalidOperationException("JWT Key is missing")));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["Jwt:Key"] ??
+                                                                  throw new InvalidOperationException(
+                                                                      "JWT Key is missing")));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires = DateTime.UtcNow.AddDays(Convert.ToDouble(configuration["Jwt:ExpireDays"] ?? "1"));
+        DateTime expires = DateTime.UtcNow.AddDays(Convert.ToDouble(configuration["Jwt:ExpireDays"] ?? "1"));
 
         var token = new JwtSecurityToken(
-            issuer: configuration["Jwt:Issuer"],
-            audience: configuration["Jwt:Audience"],
-            claims: claims,
+            configuration["Jwt:Issuer"],
+            configuration["Jwt:Audience"],
+            claims,
             expires: expires,
             signingCredentials: creds
         );
@@ -211,19 +213,17 @@ public class AuthController(
     }
 
     /// <summary>
-    /// Ensures that Admin and User roles exist in the database
+    ///     Ensures that Admin and User roles exist in the database
     /// </summary>
     private async Task EnsureRolesExistAsync()
     {
         string[] roles = ["Admin", "User"];
 
         foreach (var roleName in roles)
-        {
             if (!await roleManager.RoleExistsAsync(roleName))
             {
                 await roleManager.CreateAsync(new IdentityRole(roleName));
                 logger.LogInformation("Created role: {RoleName}", roleName);
             }
-        }
     }
 }

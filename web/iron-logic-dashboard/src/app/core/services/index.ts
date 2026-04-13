@@ -8,3 +8,5 @@ export * from './ai-engine-connection.service';
 export * from './financial-rates.service';
 export * from './subscription.service';
 export * from './communication.service';
+export * from './settings.service';
+export * from './marketing.service';

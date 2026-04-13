@@ -6,6 +6,7 @@ using IronLogic.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace IronLogic.Api.Controllers.Admin;
 
@@ -21,6 +22,65 @@ public class UsersController(
     IEmailService emailService,
     ILogger<UsersController> logger) : ControllerBase
 {
+    /// <summary>
+    /// Retrieves all users with their roles and subscription information
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>List of all users</returns>
+    /// <response code="200">Returns the list of users</response>
+    [HttpGet]
+    [ProducesResponseType<IReadOnlyList<AdminUserListDto>>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAllUsers(CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Retrieving all users for admin");
+
+        var users = userManager.Users
+            .Include(u => u.Profile)
+            .Include(u => u.UserSubscriptions)
+                .ThenInclude(s => s.Plan)
+            .ToList();
+
+        var userList = new List<AdminUserListDto>();
+
+        foreach (var user in users)
+        {
+            var roles = await userManager.GetRolesAsync(user);
+            var primaryRole = roles.FirstOrDefault() ?? "User";
+
+            var subscription = user.UserSubscriptions
+                .Where(s => s.IsActive)
+                .OrderByDescending(s => s.EndDate)
+                .FirstOrDefault();
+
+            string plan = "Basic";
+            string status = "Expired";
+            DateTimeOffset? subscriptionEndDate = null;
+
+            if (subscription != null)
+            {
+                plan = subscription.Plan?.Name ?? "Basic";
+                subscriptionEndDate = subscription.EndDate;
+                status = subscription.EndDate >= DateTimeOffset.UtcNow ? "Active" : "Expired";
+            }
+
+            userList.Add(new AdminUserListDto
+            {
+                Id = user.Id,
+                FirstName = user.Profile?.FirstName ?? user.UserName?.Split('@')[0] ?? "User",
+                LastName = user.Profile?.LastName ?? string.Empty,
+                Email = user.Email ?? string.Empty,
+                Role = primaryRole,
+                Plan = plan,
+                Status = status,
+                SubscriptionEndDate = subscriptionEndDate,
+                ProfileImageUrl = user.Profile?.ProfilePictureUrl ?? string.Empty
+            });
+        }
+
+        logger.LogInformation("Retrieved {Count} users for admin", userList.Count);
+        return Ok(userList);
+    }
+
     /// <summary>
     /// Retrieves detailed information about a specific user including claims, roles, and lockout status
     /// </summary>

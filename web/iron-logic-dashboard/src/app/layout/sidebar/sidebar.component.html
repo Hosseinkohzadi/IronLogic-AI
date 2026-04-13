@@ -25,17 +25,32 @@
       </div>
     }
 
-    <button
-      type="button"
-      class="text-slate-400 hover:text-slate-950 transition-colors"
-      [attr.aria-label]="isCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
-      (click)="toggleSidebar()"
-    >
-      <lucide-icon
-        [name]="isCollapsed() ? 'chevron-right' : 'chevron-left'"
-        class="w-4 h-4"
-      ></lucide-icon>
-    </button>
+    <div class="flex items-center gap-2">
+      <a
+        routerLink="/athlete/profile"
+        class="inline-flex rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400"
+        aria-label="Open profile"
+      >
+        <img
+          [src]="userProfile()?.profilePictureUrl || 'assets/default-avatar.png'"
+          alt="User profile picture"
+          class="w-10 h-10 rounded-full border border-slate-700 object-cover"
+          (error)="onAvatarImageError($event)"
+        />
+      </a>
+
+      <button
+        type="button"
+        class="text-slate-400 hover:text-slate-950 transition-colors"
+        [attr.aria-label]="isCollapsed() ? 'Expand sidebar' : 'Collapse sidebar'"
+        (click)="toggleSidebar()"
+      >
+        <lucide-icon
+          [name]="isCollapsed() ? 'chevron-right' : 'chevron-left'"
+          class="w-4 h-4"
+        ></lucide-icon>
+      </button>
+    </div>
   </div>
 
   <div class="flex-1 px-4 overflow-y-auto custom-scrollbar">

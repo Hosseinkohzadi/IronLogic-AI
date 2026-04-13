@@ -16,10 +16,36 @@ public record UpdateProfileDto
     public string? Email { get; init; }
 
     /// <summary>
-    /// Gets or sets the user's display name.
+    /// Gets or sets the user's display name (username).
     /// </summary>
     [StringLength(100, ErrorMessage = "Name must be 100 characters or fewer")]
     public string? Name { get; init; }
+
+    /// <summary>
+    /// Gets or sets the user's first name.
+    /// </summary>
+    [StringLength(50, ErrorMessage = "First name must be 50 characters or fewer")]
+    public string? FirstName { get; init; }
+
+    /// <summary>
+    /// Gets or sets the user's last name.
+    /// </summary>
+    [StringLength(50, ErrorMessage = "Last name must be 50 characters or fewer")]
+    public string? LastName { get; init; }
+
+    /// <summary>
+    /// Gets or sets the user's phone number.
+    /// </summary>
+    [Phone(ErrorMessage = "Invalid phone number format")]
+    [StringLength(20, ErrorMessage = "Phone number must be 20 characters or fewer")]
+    public string? PhoneNumber { get; init; }
+
+    /// <summary>
+    /// Gets or sets the user's profile picture URL.
+    /// </summary>
+    [Url(ErrorMessage = "Invalid URL format")]
+    [StringLength(500, ErrorMessage = "Profile picture URL must be 500 characters or fewer")]
+    public string? ProfilePictureUrl { get; init; }
 
     /// <summary>
     /// Gets or sets the user's gender.

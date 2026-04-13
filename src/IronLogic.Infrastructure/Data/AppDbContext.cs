@@ -37,6 +37,8 @@ public class AppDbContext : IdentityDbContext<User>
 
     public DbSet<UserOtp> UserOtps { get; set; }
 
+    public DbSet<PlatformSetting> PlatformSettings { get; set; }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         if (optionsBuilder.IsConfigured)
@@ -273,6 +275,34 @@ public class AppDbContext : IdentityDbContext<User>
 
             entity.HasIndex(o => o.UserId);
             entity.HasIndex(o => new { o.UserId, o.Code });
+        });
+
+        modelBuilder.Entity<PlatformSetting>(entity =>
+        {
+            entity.Property(ps => ps.Key)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(ps => ps.Value)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            entity.Property(ps => ps.Description)
+                .HasMaxLength(500);
+
+            entity.HasIndex(ps => ps.Key)
+                .IsUnique();
+
+            entity.HasData(new PlatformSetting
+            {
+                Id = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                Key = "YearlyDiscountPercentage",
+                Value = "20",
+                Description = "Default yearly subscription discount percentage.",
+                UpdatedAt = new DateTime(2026, 4, 12, 0, 0, 0, DateTimeKind.Utc),
+                DateCreated = new DateTimeOffset(2026, 4, 12, 0, 0, 0, TimeSpan.Zero),
+                DateModified = new DateTimeOffset(2026, 4, 12, 0, 0, 0, TimeSpan.Zero)
+            });
         });
 
         modelBuilder.Entity<User>().HasData(new User

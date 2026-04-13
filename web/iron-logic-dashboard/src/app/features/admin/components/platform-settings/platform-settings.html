@@ -1,0 +1,187 @@
+<section class="min-h-full bg-slate-950 p-6 text-white lg:p-8">
+  <div class="mx-auto max-w-4xl space-y-6">
+    <header>
+      <p class="text-xs font-black uppercase tracking-[0.18em] text-slate-400">SuperAdmin</p>
+      <h1 class="mt-2 text-3xl font-black tracking-tight">Platform Configuration</h1>
+      <p class="mt-2 text-sm text-slate-400">
+        Manage global settings applied across all subscriptions.
+      </p>
+    </header>
+
+    <article
+      class="rounded-3xl border border-slate-800 bg-slate-900/40 p-6 backdrop-blur-xl lg:p-8"
+    >
+      <div class="flex items-center gap-3">
+        <div class="rounded-xl border border-indigo-500/30 bg-indigo-500/10 p-2.5">
+          <lucide-icon name="banknote" class="h-5 w-5 text-indigo-300"></lucide-icon>
+        </div>
+        <div>
+          <h2 class="text-lg font-black">Subscription Settings</h2>
+          <p class="text-sm text-slate-400">
+            Set the yearly discount percentage used by platform billing.
+          </p>
+        </div>
+      </div>
+
+      @if (loadError()) {
+        <div
+          class="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+        >
+          {{ loadError() }}
+        </div>
+      }
+
+      <div class="mt-6 space-y-3">
+        <label
+          for="yearlyDiscount"
+          class="text-xs font-black uppercase tracking-[0.14em] text-slate-400"
+        >
+          Yearly Discount Percentage (%)
+        </label>
+        <input
+          id="yearlyDiscount"
+          type="number"
+          min="0"
+          max="100"
+          step="1"
+          [value]="yearlyDiscountPercentage()"
+          [disabled]="isLoading() || isSaving()"
+          (input)="onDiscountInput($event)"
+          class="w-full rounded-2xl border border-slate-700 bg-slate-800/70 px-4 py-3 text-sm font-semibold text-white outline-none transition-all focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/30 disabled:cursor-not-allowed disabled:opacity-60"
+        />
+        <p class="text-xs text-slate-500">Accepted range: 0% to 100%.</p>
+      </div>
+
+      <div class="mt-8 flex justify-end">
+        <button
+          type="button"
+          (click)="saveConfiguration()"
+          [disabled]="isSaving() || isLoading()"
+          class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition-all hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          @if (isSaving()) {
+            <lucide-icon name="refresh-cw" class="h-4 w-4 animate-spin"></lucide-icon>
+          }
+          Save Configuration
+        </button>
+      </div>
+
+      <section
+        class="mt-10 rounded-2xl border border-amber-500/25 bg-amber-500/10 p-6 backdrop-blur-xl"
+      >
+        <div class="flex items-start gap-3">
+          <div class="rounded-xl border border-amber-500/35 bg-amber-500/15 p-2.5">
+            <lucide-icon name="megaphone" class="h-5 w-5 text-amber-300"></lucide-icon>
+          </div>
+          <div>
+            <h3 class="text-lg font-black text-amber-200">Marketing Campaign</h3>
+            <p class="mt-1 text-sm text-amber-100/80">
+              Broadcast the current discount offer to a selected audience.
+            </p>
+          </div>
+        </div>
+
+        @if (marketingError()) {
+          <div
+            class="mt-5 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300"
+          >
+            {{ marketingError() }}
+          </div>
+        }
+
+        <div class="mt-6 grid gap-5 lg:grid-cols-2">
+          <label class="space-y-2">
+            <span class="text-xs font-black uppercase tracking-[0.14em] text-amber-100/80">
+              Target Audience
+            </span>
+            <select
+              [value]="targetAudience()"
+              (change)="onTargetAudienceChange($event)"
+              class="w-full rounded-2xl border border-amber-500/25 bg-slate-900/80 px-4 py-3 text-sm font-semibold text-white outline-none transition-all focus:border-amber-400 focus:ring-2 focus:ring-amber-500/30"
+            >
+              <option value="AllUsers">All Users</option>
+              <option value="BasicPlanUsersOnly">Basic Plan Users Only</option>
+            </select>
+
+            <p class="text-xs text-amber-100/70">
+              @if (isAudienceCountLoading()) {
+                Estimating recipients...
+              } @else {
+                Estimated recipients: {{ targetAudienceCount() }} users
+              }
+            </p>
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-xs font-black uppercase tracking-[0.14em] text-amber-100/80">
+              Custom Message (Optional)
+            </span>
+            <textarea
+              rows="4"
+              [value]="customMessage()"
+              (input)="onCustomMessageInput($event)"
+              placeholder="Black Friday Special!"
+              class="w-full rounded-2xl border border-amber-500/25 bg-slate-900/80 px-4 py-3 text-sm text-white outline-none transition-all placeholder:text-amber-100/40 focus:border-amber-400 focus:ring-2 focus:ring-amber-500/30"
+            ></textarea>
+          </label>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <button
+            type="button"
+            (click)="openBroadcastConfirmation()"
+            [disabled]="isBroadcasting() || isLoading() || isSaving()"
+            class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-amber-500 px-6 py-3 text-sm font-black uppercase tracking-[0.12em] text-slate-900 transition-all hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50 lg:w-auto"
+          >
+            <lucide-icon name="megaphone" class="h-4 w-4"></lucide-icon>
+            Broadcast Discount Offer
+          </button>
+        </div>
+      </section>
+    </article>
+  </div>
+
+  @if (isConfirmModalOpen()) {
+    <div
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-4 backdrop-blur-sm"
+      (click)="closeBroadcastConfirmation()"
+    >
+      <div
+        class="w-full max-w-lg rounded-2xl border border-amber-500/30 bg-slate-900/95 p-6 shadow-2xl"
+        (click)="$event.stopPropagation()"
+      >
+        <h3 class="text-xl font-black text-white">Confirm Campaign Broadcast</h3>
+        <p class="mt-3 text-sm text-slate-300">
+          Are you sure you want to send this offer to {{ targetAudienceCount() }} users? This action
+          cannot be undone.
+        </p>
+        <p class="mt-2 text-xs uppercase tracking-[0.12em] text-amber-300">
+          Audience: {{ audienceLabel(targetAudience()) }} | Discount:
+          {{ yearlyDiscountPercentage() }}%
+        </p>
+
+        <div class="mt-6 flex justify-end gap-3">
+          <button
+            type="button"
+            (click)="closeBroadcastConfirmation()"
+            [disabled]="isBroadcasting()"
+            class="rounded-xl border border-slate-700 px-4 py-2 text-sm font-semibold text-slate-300 transition-all hover:bg-slate-800 hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            (click)="confirmBroadcast()"
+            [disabled]="isBroadcasting()"
+            class="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-sm font-black text-slate-900 transition-all hover:bg-amber-400 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            @if (isBroadcasting()) {
+              <lucide-icon name="refresh-cw" class="h-4 w-4 animate-spin"></lucide-icon>
+            }
+            Confirm Broadcast
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+</section>

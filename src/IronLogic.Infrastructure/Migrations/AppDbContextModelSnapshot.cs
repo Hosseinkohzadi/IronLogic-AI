@@ -361,6 +361,55 @@ namespace IronLogic.Infrastructure.Migrations
                     b.ToTable("PaymentTransactions");
                 });
 
+            modelBuilder.Entity("IronLogic.Domain.Entities.PlatformSetting", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("DateModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(500)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Key")
+                        .IsUnique();
+
+                    b.ToTable("PlatformSettings");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                            DateCreated = new DateTimeOffset(new DateTime(2026, 4, 12, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            DateModified = new DateTimeOffset(new DateTime(2026, 4, 12, 0, 0, 0, 0, DateTimeKind.Unspecified), new TimeSpan(0, 0, 0, 0, 0)),
+                            Description = "Default yearly subscription discount percentage.",
+                            Key = "YearlyDiscountPercentage",
+                            UpdatedAt = new DateTime(2026, 4, 12, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Value = "20"
+                        });
+                });
+
             modelBuilder.Entity("IronLogic.Domain.Entities.Session", b =>
                 {
                     b.Property<Guid>("Id")
@@ -544,6 +593,46 @@ namespace IronLogic.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("IronLogic.Domain.Entities.UserOtp", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(6)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("DateCreated")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTimeOffset>("DateModified")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsUsed")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Token")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("UserId", "Code");
+
+                    b.ToTable("UserOtps");
+                });
+
             modelBuilder.Entity("IronLogic.Domain.Entities.UserProfile", b =>
                 {
                     b.Property<Guid>("Id")
@@ -571,12 +660,21 @@ namespace IronLogic.Infrastructure.Migrations
                     b.Property<DateTime?>("DateOfBirth")
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("FirstName")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Gender")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<decimal?>("Height")
                         .HasPrecision(5, 2)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("LastName")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProfilePictureUrl")
                         .HasColumnType("TEXT");
 
                     b.Property<decimal?>("TargetWeight")
@@ -872,6 +970,17 @@ namespace IronLogic.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("IronLogic.Domain.Entities.UserOtp", b =>
+                {
+                    b.HasOne("IronLogic.Domain.Entities.User", "User")
+                        .WithMany("Otps")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("IronLogic.Domain.Entities.UserProfile", b =>
                 {
                     b.HasOne("IronLogic.Domain.Entities.User", "User")
@@ -975,6 +1084,8 @@ namespace IronLogic.Infrastructure.Migrations
                     b.Navigation("CommunicationHistories");
 
                     b.Navigation("DailyWeights");
+
+                    b.Navigation("Otps");
 
                     b.Navigation("PaymentTransactions");
 

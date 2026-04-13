@@ -4,10 +4,11 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '@core/services/auth.service';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-login',
-  imports: [RouterLink, ReactiveFormsModule],
+  imports: [RouterLink, ReactiveFormsModule, LucideAngularModule],
   templateUrl: './login.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -17,6 +18,7 @@ export class LoginComponent {
 
   readonly isLoading = signal(false);
   readonly errorMessage = signal<string | null>(null);
+  readonly showPassword = signal(false);
 
   readonly loginForm = this.formBuilder.nonNullable.group({
     email: this.formBuilder.nonNullable.control('', [Validators.required]),
@@ -60,6 +62,10 @@ export class LoginComponent {
 
   loginAsAthleteHossein(): void {
     this.authService.loginAsAthlete('athlete-hossein-001');
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword.update((v) => !v);
   }
 
   private extractErrorMessage(error: unknown): string {

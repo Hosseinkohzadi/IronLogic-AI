@@ -18,6 +18,21 @@ public class UserProfile : BaseEntity
     public User? User { get; set; }
 
     /// <summary>
+    /// Gets or sets the user's first name.
+    /// </summary>
+    public string? FirstName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the user's last name.
+    /// </summary>
+    public string? LastName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the user's profile picture URL.
+    /// </summary>
+    public string? ProfilePictureUrl { get; set; }
+
+    /// <summary>
     /// Gets or sets the user biography.
     /// </summary>
     public string? Bio { get; set; }

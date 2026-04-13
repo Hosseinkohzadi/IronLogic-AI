@@ -11,6 +11,7 @@ export interface AuthUser {
   email?: string;
   fullName?: string;
   role?: string;
+  profilePictureUrl?: string;
 }
 
 export interface LoginRequest {
@@ -211,6 +212,9 @@ export class AuthService {
       email: this.readString(userObject, ['email', 'Email']) ?? undefined,
       fullName: this.readString(userObject, ['fullName', 'FullName', 'name', 'Name']) ?? undefined,
       role: roleRaw ?? undefined,
+      profilePictureUrl:
+        this.readString(userObject, ['profilePictureUrl', 'profileImageUrl', 'avatarUrl']) ??
+        undefined,
     };
 
     return {

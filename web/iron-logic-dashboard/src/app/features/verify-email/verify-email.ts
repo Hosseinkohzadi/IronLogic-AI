@@ -11,7 +11,7 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterLink } from '@angular/router';
+import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { LucideAngularModule } from 'lucide-angular';
 import { finalize } from 'rxjs/operators';
@@ -24,7 +24,7 @@ const REDIRECT_DELAY_MS = 2000;
 
 @Component({
   selector: 'app-verify-email',
-  imports: [CommonModule, RouterLink, LucideAngularModule],
+  imports: [CommonModule, LucideAngularModule],
   templateUrl: './verify-email.html',
   styleUrl: './verify-email.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -37,6 +37,7 @@ export class VerifyEmailComponent implements AfterViewInit, OnDestroy {
   private readonly notificationService = inject(NotificationService);
 
   readonly digits = signal<string[]>(Array(DIGIT_COUNT).fill(''));
+  readonly verificationCode = signal<string>('');
   readonly isVerifying = signal(false);
   readonly isVerified = signal(false);
   readonly verifyError = signal<string | null>(null);
@@ -46,8 +47,15 @@ export class VerifyEmailComponent implements AfterViewInit, OnDestroy {
   private resendTimer: ReturnType<typeof setInterval> | null = null;
   private redirectTimer: ReturnType<typeof setTimeout> | null = null;
 
-  readonly verificationCode = computed(() => this.digits().join(''));
   readonly isCodeComplete = computed(() => this.verificationCode().length === DIGIT_COUNT);
+  readonly resendCountdownText = computed(() => {
+    const seconds = this.resendCountdown();
+    const minutePart = Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, '0');
+    const secondPart = (seconds % 60).toString().padStart(2, '0');
+    return `${minutePart}:${secondPart}`;
+  });
 
   readonly pendingEmail = signal<string | null>(
     typeof sessionStorage !== 'undefined'
@@ -57,6 +65,7 @@ export class VerifyEmailComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     this.focusDigit(0);
+    this.startResendCountdown();
   }
 
   ngOnDestroy(): void {
@@ -77,6 +86,7 @@ export class VerifyEmailComponent implements AfterViewInit, OnDestroy {
       const pasted = raw.slice(0, DIGIT_COUNT).split('');
       const filled = [...pasted, ...Array(DIGIT_COUNT - pasted.length).fill('')];
       this.digits.set(filled);
+      this.updateVerificationCode();
       this.setInputValues(filled);
       this.focusDigit(Math.min(pasted.length, DIGIT_COUNT - 1));
       if (pasted.length === DIGIT_COUNT) {
@@ -90,25 +100,24 @@ export class VerifyEmailComponent implements AfterViewInit, OnDestroy {
     if (char && index < DIGIT_COUNT - 1) {
       this.focusDigit(index + 1);
     }
-    if (this.isCodeComplete()) {
+    if (index === DIGIT_COUNT - 1 && char && this.isCodeComplete()) {
       this.triggerVerify();
     }
   }
 
-  onDigitKeydown(index: number, event: KeyboardEvent): void {
-    if (event.key === 'Backspace') {
-      if (this.digits()[index]) {
-        this.updateDigit(index, '');
-      } else if (index > 0) {
-        this.updateDigit(index - 1, '');
-        this.focusDigit(index - 1);
-      }
-      this.verifyError.set(null);
-    } else if (event.key === 'ArrowLeft' && index > 0) {
+  onBackspace(index: number, event: Event): void {
+    event.preventDefault();
+    if (this.digits()[index]) {
+      this.updateDigit(index, '');
+    } else if (index > 0) {
+      this.updateDigit(index - 1, '');
       this.focusDigit(index - 1);
-    } else if (event.key === 'ArrowRight' && index < DIGIT_COUNT - 1) {
-      this.focusDigit(index + 1);
     }
+    this.verifyError.set(null);
+  }
+
+  verifyAccount(): void {
+    this.triggerVerify();
   }
 
   sendResend(): void {
@@ -146,6 +155,11 @@ export class VerifyEmailComponent implements AfterViewInit, OnDestroy {
     const code = this.verificationCode();
     const email = this.pendingEmail();
 
+    if (!this.isCodeComplete()) {
+      this.verifyError.set('Please enter all 6 digits.');
+      return;
+    }
+
     if (!email) {
       this.verifyError.set('Session expired. Please register again.');
       return;
@@ -169,6 +183,7 @@ export class VerifyEmailComponent implements AfterViewInit, OnDestroy {
         error: () => {
           this.verifyError.set('Invalid or expired code. Please try again.');
           this.digits.set(Array(DIGIT_COUNT).fill(''));
+          this.updateVerificationCode();
           this.setInputValues(Array(DIGIT_COUNT).fill(''));
           this.focusDigit(0);
         },
@@ -181,10 +196,15 @@ export class VerifyEmailComponent implements AfterViewInit, OnDestroy {
       next[index] = value;
       return next;
     });
+    this.updateVerificationCode();
     const el = this.digitInputs?.get(index)?.nativeElement;
     if (el) {
       el.value = value;
     }
+  }
+
+  private updateVerificationCode(): void {
+    this.verificationCode.set(this.digits().join(''));
   }
 
   private setInputValues(values: string[]): void {
@@ -200,6 +220,11 @@ export class VerifyEmailComponent implements AfterViewInit, OnDestroy {
   }
 
   private startResendCountdown(): void {
+    if (this.resendTimer !== null) {
+      clearInterval(this.resendTimer);
+      this.resendTimer = null;
+    }
+
     this.resendCountdown.set(RESEND_COUNTDOWN_SEC);
     this.resendTimer = setInterval(() => {
       const next = this.resendCountdown() - 1;

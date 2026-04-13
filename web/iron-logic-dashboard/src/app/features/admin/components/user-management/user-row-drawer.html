@@ -46,27 +46,33 @@
         <button
           type="button"
           (click)="setTab('profile')"
-          [class]="activeTab() === 'profile'
-            ? '-mb-px pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-white transition-all'
-            : '-mb-px pb-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700 transition-all'"
+          [class]="
+            activeTab() === 'profile'
+              ? '-mb-px pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-white transition-all'
+              : '-mb-px pb-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700 transition-all'
+          "
         >
           Profile
         </button>
         <button
           type="button"
           (click)="setTab('billing')"
-          [class]="activeTab() === 'billing'
-            ? '-mb-px pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-white transition-all'
-            : '-mb-px pb-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700 transition-all'"
+          [class]="
+            activeTab() === 'billing'
+              ? '-mb-px pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-white transition-all'
+              : '-mb-px pb-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700 transition-all'
+          "
         >
           Billing
         </button>
         <button
           type="button"
           (click)="setTab('emails')"
-          [class]="activeTab() === 'emails'
-            ? '-mb-px pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-white transition-all'
-            : '-mb-px pb-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700 transition-all'"
+          [class]="
+            activeTab() === 'emails'
+              ? '-mb-px pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-white transition-all'
+              : '-mb-px pb-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700 transition-all'
+          "
         >
           Emails
         </button>
@@ -185,7 +191,9 @@
           <div class="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4">
             <form [formGroup]="composeForm" (ngSubmit)="sendManualMessage()" class="space-y-3">
               <label class="block space-y-1">
-                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Subject</span>
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400"
+                  >Subject</span
+                >
                 <input
                   formControlName="subject"
                   placeholder="Subject"
@@ -194,7 +202,9 @@
               </label>
 
               <label class="block space-y-1">
-                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Message</span>
+                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400"
+                  >Message</span
+                >
                 <textarea
                   formControlName="message"
                   rows="5"
@@ -233,7 +243,9 @@
             } @else {
               <div class="mt-4 border-l border-slate-700 pl-4">
                 @for (item of emailHistory(); track trackHistoryItem($index, item)) {
-                  <article class="relative bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 mb-3">
+                  <article
+                    class="relative bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 mb-3"
+                  >
                     <span
                       class="absolute -left-[1.15rem] top-5 h-2.5 w-2.5 rounded-full bg-indigo-500"
                     ></span>

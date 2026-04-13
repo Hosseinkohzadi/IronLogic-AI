@@ -37,6 +37,7 @@
         (click)="setBillingCycle('yearly')"
       >
         Yearly
+        <span class="ml-1">{{ yearlyDiscount() }}% DISCOUNT</span>
       </button>
     </div>
 
@@ -94,10 +95,7 @@
 
                       <div class="flex items-baseline gap-2">
                         <span class="price-display text-5xl font-extrabold text-white">
-                          {{
-                            (billingCycle() === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice)
-                              | currency: 'USD' : 'symbol' : '1.0-0'
-                          }}
+                          {{ getDisplayPrice(plan) | currency: 'USD' : 'symbol' : '1.0-0' }}
                         </span>
                         <span class="text-sm font-medium text-slate-400">
                           {{ billingCycle() === 'monthly' ? '/mo' : '/yr' }}
@@ -110,7 +108,7 @@
                           <span
                             class="discount-badge bg-amber-500/20 text-amber-300 border border-amber-500/30"
                           >
-                            💰 Save 20%
+                            💰 Save {{ yearlyDiscount() }}%
                           </span>
                         </div>
                       }
@@ -184,12 +182,9 @@
                   <p class="text-sm font-bold text-slate-100">{{ selectedPlan()!.name }}</p>
                 </div>
                 <span class="text-xl font-black text-indigo-400">
-                  {{
-                    (billingCycle() === 'monthly'
-                      ? selectedPlan()!.monthlyPrice
-                      : selectedPlan()!.yearlyPrice
-                    ) | currency: 'USD' : 'symbol' : '1.0-0'
-                  }}/{{ billingCycle() === 'monthly' ? 'mo' : 'yr' }}
+                  {{ getDisplayPrice(selectedPlan()!) | currency: 'USD' : 'symbol' : '1.0-0' }}/{{
+                    billingCycle() === 'monthly' ? 'mo' : 'yr'
+                  }}
                 </span>
               </div>
 
@@ -197,10 +192,7 @@
                 <div class="rounded-lg bg-amber-950/40 p-3 border border-amber-500/20">
                   <p class="text-xs font-bold text-amber-300">
                     💰 Save
-                    {{
-                      selectedPlan()!.monthlyPrice * 12 - selectedPlan()!.yearlyPrice
-                        | currency: 'USD' : 'symbol' : '1.0-0'
-                    }}
+                    {{ getYearlySavings(selectedPlan()!) | currency: 'USD' : 'symbol' : '1.0-0' }}
                     per year
                   </p>
                 </div>

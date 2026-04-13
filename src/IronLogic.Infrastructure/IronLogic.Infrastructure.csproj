@@ -16,12 +16,19 @@
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" />
     <PackageReference Include="Microsoft.SemanticKernel" />
+    <PackageReference Include="Hangfire.AspNetCore" />
     <PackageReference Include="SendGrid" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\IronLogic.Domain\IronLogic.Domain.csproj" />
     <ProjectReference Include="..\IronLogic.Application\IronLogic.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Emails\Templates\*.html">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
   <PropertyGroup>

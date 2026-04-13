@@ -80,8 +80,8 @@ export const routes: Routes = [
       {
         path: 'settings',
         loadComponent: () =>
-          import('@features/admin/components/settings-page/settings-page').then(
-            (m) => m.SettingsPageComponent,
+          import('@features/admin/components/platform-settings/platform-settings').then(
+            (m) => m.PlatformSettingsComponent,
           ),
       },
       {

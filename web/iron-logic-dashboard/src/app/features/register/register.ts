@@ -5,10 +5,11 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService, RegisterRequest } from '@core/services/auth.service';
+import { LucideAngularModule } from 'lucide-angular';
 
 @Component({
   selector: 'app-register',
-  imports: [CommonModule, RouterLink, ReactiveFormsModule],
+  imports: [CommonModule, RouterLink, ReactiveFormsModule, LucideAngularModule],
   templateUrl: './register.html',
   styleUrl: './register.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,6 +22,8 @@ export class RegisterComponent {
   readonly isLoading = signal(false);
   readonly errorMessages = signal<string[]>([]);
   readonly successMessage = signal<string | null>(null);
+  readonly showPassword = signal(false);
+  readonly showConfirmPassword = signal(false);
 
   readonly registerForm = this.formBuilder.nonNullable.group({
     fullName: this.formBuilder.nonNullable.control('', [
@@ -89,6 +92,14 @@ export class RegisterComponent {
           this.errorMessages.set(this.extractErrorMessages(error));
         },
       });
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword.update((v) => !v);
+  }
+
+  toggleConfirmPasswordVisibility(): void {
+    this.showConfirmPassword.update((v) => !v);
   }
 
   private extractErrorMessages(error: unknown): string[] {

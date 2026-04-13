@@ -138,6 +138,26 @@ export class GridBodyComponent implements OnDestroy {
           : 'badge-user-status-banned';
     }
 
+    if (col.badgeStyle === 'userRole') {
+      return value === 'Admin'
+        ? 'bg-purple-100 text-purple-700'
+        : value === 'Coach'
+          ? 'bg-emerald-100 text-emerald-700'
+          : 'bg-blue-100 text-blue-700';
+    }
+
+    if (col.badgeStyle === 'subscriptionPlan') {
+      return value === 'Elite'
+        ? 'bg-amber-100 text-amber-700'
+        : value === 'Pro'
+          ? 'bg-indigo-100 text-indigo-700'
+          : 'bg-slate-100 text-slate-700';
+    }
+
+    if (col.badgeStyle === 'subscriptionStatus') {
+      return value === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700';
+    }
+
     return value === 'Active'
       ? 'bg-emerald-100 text-emerald-700'
       : value === 'Review'

@@ -18,9 +18,30 @@ namespace IronLogic.Infrastructure.Services;
 public class EmailService(
     AppDbContext dbContext,
     UserManager<User> userManager,
+    IEmailTemplateService emailTemplateService,
     IOptions<EmailOptions> emailOptions,
     ILogger<EmailService> logger) : IEmailService
 {
+    /// <inheritdoc />
+    public async Task SendAndLogTemplatedEmailAsync(
+        string userId,
+        string subject,
+        string templateName,
+        object model,
+        bool isManual,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(templateName);
+        ArgumentNullException.ThrowIfNull(model);
+
+        var renderedBody = await emailTemplateService.GetRenderedTemplateAsync(
+            templateName,
+            model,
+            cancellationToken);
+
+        await SendAndLogEmailAsync(userId, subject, renderedBody, isManual, cancellationToken);
+    }
+
     /// <inheritdoc />
     public async Task SendAndLogEmailAsync(
         string userId,
@@ -103,4 +124,5 @@ public class EmailService(
             throw new InvalidOperationException("Email server is unavailable. Please try again later.", ex);
         }
     }
+
 }

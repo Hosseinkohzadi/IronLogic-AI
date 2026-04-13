@@ -83,15 +83,26 @@
         </div>
         <span
           class="inline-flex rounded-full bg-slate-100 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.12em] text-slate-600"
-          >{{ filteredUsers().length }} users</span
+          >{{ users$().length }} users</span
         >
       </div>
       <div class="p-4 grid-shell">
+        @if (isLoading()) {
+          <div
+            class="flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-8"
+          >
+            <div class="inline-flex items-center gap-2 text-sm font-semibold text-slate-500">
+              <lucide-icon name="refresh-cw" class="h-4 w-4 animate-spin"></lucide-icon>
+              Loading users...
+            </div>
+          </div>
+        }
+
         <app-grid
           [resizableRows]="true"
           class="h-full w-full"
           [columns]="userColumns"
-          [data]="filteredUsers()"
+          [data]="users$()"
           [detailViewConfig]="userDrawerConfig"
           [isLoading]="isLoading()"
           [searchTerm]="searchTerm()"
@@ -102,6 +113,7 @@
           (refresh)="loadData()"
           (refreshGrid)="refreshGridData()"
           (onDetailSaved)="onDrawerSave($event)"
+          (deleteUser)="onDeleteUserRequest($event)"
           (actionTriggered)="handleGridAction($event)"
           (selectionChanged)="selectedUsers.set($event)"
           [reorderable]="true"

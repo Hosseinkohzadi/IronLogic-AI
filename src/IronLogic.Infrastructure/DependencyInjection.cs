@@ -81,8 +81,10 @@ public static class DependencyInjection
         services.AddScoped<ISubscriptionService, SubscriptionService>();
         services.AddScoped<IProfileService, ProfileService>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IEmailTemplateService, EmailTemplateService>();
         services.AddScoped<IEmailAutomationService, EmailAutomationService>();
         services.AddScoped<IOtpService, OtpService>();
+        services.AddScoped<IPlatformSettingsService, PlatformSettingsService>();
 
         services.AddSingleton<IWorkoutParserService, WorkoutParserService>();
 

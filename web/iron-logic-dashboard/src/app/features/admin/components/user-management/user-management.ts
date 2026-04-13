@@ -1,14 +1,25 @@
-import { ChangeDetectionStrategy, Component, OnInit, signal, inject } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  OnInit,
+  computed,
+  signal,
+  inject,
+  viewChild,
+} from '@angular/core';
+
 import { CommonModule } from '@angular/common';
-import { IronLogicApiService } from '@core/services/iron-logic-api.service';
 import { LucideAngularModule } from 'lucide-angular';
 import { FormsModule } from '@angular/forms';
 
 import { DetailViewConfig, GridComponent } from '@shared/grid/grid';
+
 import { ColumnConfig } from '@shared/grid/models/column-config';
 import { KpiCardComponent } from '@shared/kpi-card/kpi-card.component';
 import { UserRowDrawerComponent } from './user-row-drawer';
 import { ApplicationUser } from '@core/models';
+import { AdminUserGridModel, UserService } from '@core/services/user.service';
+import { NotificationService } from '@core/services/notification.service';
 
 type UserGridStatus = 'Active' | 'Review' | 'Banned';
 type UserGridTier = 'Basic' | 'Pro' | 'Elite';
@@ -29,7 +40,9 @@ interface UserFormState {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class UserManagementComponent implements OnInit {
-  private apiService = inject(IronLogicApiService);
+  private readonly userService = inject(UserService);
+  private readonly notificationService = inject(NotificationService);
+  private readonly gridRef = viewChild(GridComponent);
 
   readonly cards = [
     {
@@ -66,8 +79,21 @@ export class UserManagementComponent implements OnInit {
     },
   ];
 
-  readonly users = signal<any[]>([]);
-  readonly filteredUsers = signal<any[]>([]);
+  readonly users = signal<AdminUserGridModel[]>([]);
+  readonly users$ = computed(() => {
+    const lower = this.searchTerm().trim().toLowerCase();
+    if (!lower) {
+      return this.users();
+    }
+
+    return this.users().filter(
+      (u) =>
+        u.name.toLowerCase().includes(lower) ||
+        u.email.toLowerCase().includes(lower) ||
+        u.role.toLowerCase().includes(lower) ||
+        u.plan.toLowerCase().includes(lower),
+    );
+  });
   readonly searchTerm = signal('');
   readonly selectedUsers = signal<any[]>([]);
   readonly isUserFormOpen = signal(false);
@@ -91,76 +117,62 @@ export class UserManagementComponent implements OnInit {
     { field: 'selection', title: '', type: 'selection', width: '50px' },
     {
       field: 'name',
-      title: 'NAME',
+      title: 'USER',
       type: 'profile',
       sortable: true,
-      width: '250px',
+      width: '300px',
       locked: true,
       filterType: 'text',
-    },
-    {
-      field: 'status',
-      title: 'STATUS',
-      type: 'badge',
-      badgeStyle: 'userStatus',
-      sortable: true,
-      width: '120px',
-      locked: true,
-      filterType: 'select',
-      filterOptions: [
-        { label: 'Active', value: 'Active' },
-        { label: 'Review', value: 'Review' },
-        { label: 'Banned', value: 'Banned' },
-      ],
-    },
-    {
-      field: 'tier',
-      title: 'TIER',
-      type: 'badge',
-      badgeStyle: 'userTier',
-      sortable: true,
-      width: '100px',
-      filterType: 'select',
-      filterOptions: [
-        { label: 'Elite', value: 'Elite' },
-        { label: 'Pro', value: 'Pro' },
-        { label: 'Basic', value: 'Basic' },
-      ],
-    },
-    {
-      field: 'sessions',
-      title: 'SESSIONS',
-      type: 'number',
-      sortable: true,
-      width: '100px',
-      filterType: 'number',
-      filterMode: 'compare',
-    },
-    {
-      field: 'dailyWeights',
-      title: 'WEIGHTS',
-      type: 'number',
-      sortable: true,
-      width: '100px',
-      filterType: 'number',
-      filterMode: 'compare',
+      subfield: 'email',
     },
     {
       field: 'email',
       title: 'EMAIL',
       type: 'email',
       sortable: true,
-      width: '220px',
+      width: '260px',
       filterType: 'text',
     },
     {
-      field: 'lastLogin',
-      title: 'LAST LOGIN',
-      type: 'calendar',
+      field: 'role',
+      title: 'ROLE',
+      type: 'badge',
+      badgeStyle: 'userRole',
       sortable: true,
-      width: '140px',
-      filterType: 'date',
-      filterMode: 'exact',
+      width: '120px',
+      filterType: 'select',
+      filterOptions: [
+        { label: 'Admin', value: 'Admin' },
+        { label: 'Coach', value: 'Coach' },
+        { label: 'Athlete', value: 'Athlete' },
+      ],
+    },
+    {
+      field: 'plan',
+      title: 'PLAN',
+      type: 'badge',
+      badgeStyle: 'subscriptionPlan',
+      sortable: true,
+      width: '120px',
+      filterType: 'select',
+      filterOptions: [
+        { label: 'Basic', value: 'Basic' },
+        { label: 'Pro', value: 'Pro' },
+        { label: 'Elite', value: 'Elite' },
+      ],
+    },
+    {
+      field: 'status',
+      title: 'STATUS',
+      type: 'badge',
+      badgeStyle: 'subscriptionStatus',
+      sortable: true,
+      width: '120px',
+      filterType: 'select',
+      filterOptions: [
+        { label: 'Active', value: 'Active' },
+        { label: 'Expired', value: 'Expired' },
+      ],
     },
     { field: 'actions', title: 'ACTION', type: 'action', width: '80px' },
   ];
@@ -171,85 +183,14 @@ export class UserManagementComponent implements OnInit {
 
   loadData() {
     this.isLoading.set(true);
-    this.apiService.getUsers().subscribe({
-      next: (data: any[]) => {
-        if (data) {
-          const avatarUrls = [
-            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=96&q=80',
-            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=96&q=80',
-            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=96&q=80',
-            'https://images.unsplash.com/photo-1502685176499-5d707b212601?auto=format&fit=crop&w=96&q=80',
-            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=96&q=80',
-          ];
-
-          const enrichedData = data.map((u: any, index: number) => {
-            let calculatedStatus: UserGridStatus = 'Active';
-            if (u.lockoutEnd && new Date(u.lockoutEnd) > new Date()) {
-              calculatedStatus = 'Banned';
-            } else if (u.emailConfirmed === false) {
-              calculatedStatus = 'Review';
-            }
-
-            const calculatedTier: UserGridTier =
-              u.tier === 'Elite' || u.tier === 'Pro' || u.tier === 'Basic' ? u.tier : 'Basic';
-
-            const mockDate = new Date();
-            mockDate.setDate(mockDate.getDate() - index * 2);
-
-            return {
-              ...u,
-              status: calculatedStatus,
-              tier: calculatedTier,
-              profileImageUrl: avatarUrls[index % avatarUrls.length],
-              dailyWeights: Math.floor(u.sessions * 0.6),
-              lastLogin: mockDate.toISOString(),
-            };
-          });
-
-          const targetRecordCount = 100;
-          const expandedData = enrichedData.length
-            ? Array.from({ length: targetRecordCount }, (_, index) => {
-                const source = enrichedData[index % enrichedData.length];
-                const uniqueSuffix = String(index + 1).padStart(3, '0');
-                const duplicateWave = Math.floor(index / enrichedData.length);
-
-                const loginDate = new Date();
-                loginDate.setDate(loginDate.getDate() - index);
-
-                const baseSessions = Number(source.sessions ?? 0);
-                const nextSessions = baseSessions + (index % 9);
-
-                const baseEmail = String(source.email ?? '').trim();
-                let nextEmail = `user${uniqueSuffix}@example.com`;
-                if (baseEmail.includes('@')) {
-                  const [local, domain] = baseEmail.split('@');
-                  nextEmail = `${local}+${uniqueSuffix}@${domain}`;
-                }
-
-                return {
-                  ...source,
-                  id: source.id ? `${source.id}-${uniqueSuffix}` : `usr-${uniqueSuffix}`,
-                  userName: source.userName
-                    ? `${source.userName}${duplicateWave > 0 ? `_${duplicateWave + 1}` : ''}`
-                    : `user_${uniqueSuffix}`,
-                  name: source.name ? `${source.name} ${uniqueSuffix}` : `User ${uniqueSuffix}`,
-                  email: nextEmail,
-                  sessions: nextSessions,
-                  dailyWeights: Math.floor(nextSessions * 0.6),
-                  lastLogin: loginDate.toISOString(),
-                  profileImageUrl: source.profileImageUrl,
-                  isSelected: false,
-                };
-              })
-            : [];
-
-          this.users.set(expandedData);
-          this.filteredUsers.set(expandedData);
-        }
+    this.userService.getUsers().subscribe({
+      next: (data) => {
+        this.users.set(data);
         this.isLoading.set(false);
       },
-      error: (err: any) => {
+      error: (err: unknown) => {
         console.error('API Error:', err);
+        this.users.set([]);
         this.isLoading.set(false);
       },
     });
@@ -257,14 +198,6 @@ export class UserManagementComponent implements OnInit {
 
   onSearch(term: string) {
     this.searchTerm.set(term);
-    const lower = term.toLowerCase();
-    const filtered = this.users().filter(
-      (u) =>
-        u.name.toLowerCase().includes(lower) ||
-        u.email.toLowerCase().includes(lower) ||
-        u.id.toLowerCase().includes(lower),
-    );
-    this.filteredUsers.set(filtered);
   }
 
   handleGridAction(event: { type: string; row: any }) {
@@ -290,8 +223,8 @@ export class UserManagementComponent implements OnInit {
     this.userForm.set({
       fullName: String(row.name ?? ''),
       email: String(row.email ?? ''),
-      tier: (row.tier ?? 'Basic') as UserGridTier,
-      status: row.status === 'Review' ? 'Review' : 'Active',
+      tier: (row.plan ?? 'Basic') as UserGridTier,
+      status: row.status === 'Expired' ? 'Review' : 'Active',
     });
     this.isUserFormOpen.set(true);
     document.body.style.overflow = 'hidden';
@@ -325,8 +258,8 @@ export class UserManagementComponent implements OnInit {
                 ...user,
                 name: fullName,
                 email,
-                tier: form.tier,
-                status: form.status,
+                plan: form.tier,
+                status: form.status === 'Active' ? 'Active' : 'Expired',
               }
             : user,
         ),
@@ -339,23 +272,18 @@ export class UserManagementComponent implements OnInit {
         name: fullName,
         email,
         emailConfirmed: form.status === 'Active',
-        phoneNumberConfirmed: false,
-        twoFactorEnabled: false,
-        accessFailedCount: 0,
-        sessions: 0,
-        weights: 0,
-        tier: form.tier,
-        status: form.status,
+        role: 'Athlete' as const,
+        plan: form.tier,
+        status: (form.status === 'Active' ? 'Active' : 'Expired') as 'Active' | 'Expired',
+        subscriptionEndDate: null,
         profileImageUrl: '',
-        dailyWeights: 0,
-        lastLogin: createdAt,
+        firstName: fullName.split(' ')[0] ?? fullName,
+        lastName: fullName.split(' ').slice(1).join(' '),
         isSelected: false,
       };
 
       this.users.update((current) => [nextUser, ...current]);
     }
-
-    this.onSearch(this.searchTerm());
     this.closeUserForm();
   }
 
@@ -376,7 +304,32 @@ export class UserManagementComponent implements OnInit {
   }
 
   refreshGridData(): void {
-    this.onSearch(this.searchTerm());
+    this.searchTerm.update((v) => v);
+  }
+
+  onDeleteUserRequest(userId: string): void {
+    if (!userId) {
+      return;
+    }
+
+    const confirmed = confirm(
+      'Are you sure you want to permanently delete this user? This action cannot be undone.',
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    this.userService.deleteUser(userId).subscribe({
+      next: () => {
+        this.users.update((current) => current.filter((u) => u.id !== userId));
+        this.refreshGridData();
+        this.notificationService.showSuccess('User deleted successfully.');
+        this.gridRef()?.closeDetailView();
+      },
+      error: () => {
+        this.notificationService.showError('Failed to delete user. Please try again.');
+      },
+    });
   }
 
   private mapApplicationUserToGridRow(user: ApplicationUser): any {

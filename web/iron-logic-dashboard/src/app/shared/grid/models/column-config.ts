@@ -108,7 +108,10 @@ export interface ColumnConfig {
     | 'userTier'
     | 'userStatus'
     | 'difficulty'
-    | 'billingStatus';
+    | 'billingStatus'
+    | 'userRole'
+    | 'subscriptionPlan'
+    | 'subscriptionStatus';
   /** Optional icon name for action button cells */
   actionIcon?: string;
   /** Optional event type emitted by action button cells */

@@ -233,7 +233,10 @@ export class UserRowDrawerComponent {
       });
   }
 
-  private mergeProfileDetail(user: UserDetailResponse, profile: AthleteProfile): UserDetailResponse {
+  private mergeProfileDetail(
+    user: UserDetailResponse,
+    profile: AthleteProfile,
+  ): UserDetailResponse {
     return {
       ...user,
       id: String(profile.userId ?? user.id ?? ''),

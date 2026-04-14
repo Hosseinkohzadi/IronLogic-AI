@@ -32,6 +32,16 @@ export interface AdminUserGridModel {
   profileImageUrl: string;
 }
 
+export interface UserDetailResponse extends ApplicationUser {
+  lastLoginDate: string | null;
+  failedLoginAttempts: number;
+  lockoutEnd: string | null;
+  lockoutEnabled: boolean;
+  emailConfirmed: boolean;
+  phoneNumberConfirmed: boolean;
+  twoFactorEnabled: boolean;
+}
+
 interface AdminUserApiResponse {
   id?: string;
   firstName?: string;
@@ -47,6 +57,28 @@ interface AdminUserApiResponse {
   planEndDate?: string | null;
 }
 
+interface UserDetailApiResponse {
+  id?: string;
+  userName?: string | null;
+  email?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  phoneNumber?: string | null;
+  profilePictureUrl?: string | null;
+  profileImageUrl?: string | null;
+  avatarUrl?: string | null;
+  roles?: string[];
+  isActive?: boolean;
+  lastLoginDate?: string | null;
+  failedLoginAttempts?: number;
+  accessFailedCount?: number;
+  lockoutEnd?: string | null;
+  lockoutEnabled?: boolean;
+  emailConfirmed?: boolean;
+  phoneNumberConfirmed?: boolean;
+  twoFactorEnabled?: boolean;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -56,8 +88,10 @@ export class UserService {
   private readonly adminUsersUrl = `${environment.apiUrl}/admin/users`;
   private readonly accountMeUrl = `${environment.apiUrl}/Account/me`;
 
-  getUserById(id: string): Observable<ApplicationUser> {
-    return this.http.get<ApplicationUser>(`${this.usersUrl}/${id}`);
+  getUserById(id: string): Observable<UserDetailResponse> {
+    return this.http
+      .get<UserDetailApiResponse>(`${this.adminUsersUrl}/${id}`)
+      .pipe(map((item) => this.mapUserDetail(item)));
   }
 
   getUsers(): Observable<AdminUserGridModel[]> {
@@ -135,6 +169,32 @@ export class UserService {
     }
 
     return 'Basic';
+  }
+
+  private mapUserDetail(item: UserDetailApiResponse): UserDetailResponse {
+    const email = String(item.email ?? '');
+    const userName = String(item.userName ?? email.split('@')[0] ?? '');
+
+    return {
+      id: String(item.id ?? ''),
+      userName,
+      email,
+      firstName: String(item.firstName ?? ''),
+      lastName: String(item.lastName ?? ''),
+      phoneNumber: String(item.phoneNumber ?? ''),
+      profilePictureUrl: String(
+        item.profilePictureUrl ?? item.profileImageUrl ?? item.avatarUrl ?? '',
+      ),
+      roles: Array.isArray(item.roles) ? item.roles : [],
+      isActive: item.isActive ?? true,
+      lastLoginDate: item.lastLoginDate ?? null,
+      failedLoginAttempts: Number(item.failedLoginAttempts ?? item.accessFailedCount ?? 0),
+      lockoutEnd: item.lockoutEnd ?? null,
+      lockoutEnabled: item.lockoutEnabled ?? false,
+      emailConfirmed: item.emailConfirmed ?? false,
+      phoneNumberConfirmed: item.phoneNumberConfirmed ?? false,
+      twoFactorEnabled: item.twoFactorEnabled ?? false,
+    };
   }
 
   private resolveStatus(subscriptionEndDate: string | null): 'Active' | 'Expired' {

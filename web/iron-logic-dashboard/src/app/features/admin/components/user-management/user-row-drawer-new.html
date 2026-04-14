@@ -1,0 +1,243 @@
+@if (user(); as details) {
+  <div class="h-full flex flex-col bg-slate-50 text-slate-800">
+    <!-- ─── HEADER ─────────────────────────────────────────── -->
+    <header class="shrink-0 border-b border-slate-200 bg-white p-6 shadow-sm">
+      <div class="flex items-start justify-between gap-4">
+        <!-- User Avatar, Name, Email -->
+        <div class="flex items-center gap-4 min-w-0 flex-1">
+          <div
+            class="h-12 w-12 rounded-full overflow-hidden bg-gradient-to-br from-indigo-500 to-indigo-600 border border-indigo-200 shrink-0 flex items-center justify-center"
+          >
+            @if (details.profileImageUrl) {
+              <img [src]="details.profileImageUrl" alt="" class="h-full w-full object-cover" />
+            } @else {
+              <span class="text-sm font-bold text-white">{{ details.name[0] | uppercase }}</span>
+            }
+          </div>
+          <div class="min-w-0 flex-1">
+            <h3 class="truncate text-base font-bold text-slate-900">{{ details.name }}</h3>
+            <p class="truncate text-sm text-slate-600">{{ details.email }}</p>
+          </div>
+        </div>
+
+        <!-- Status & Tier Badges -->
+        <div class="flex items-center gap-2 shrink-0">
+          <!-- Status Badge -->
+          <span
+            [class]="
+              details.status === 'Active'
+                ? 'bg-emerald-100 text-emerald-700'
+                : details.status === 'Review'
+                  ? 'bg-amber-100 text-amber-700'
+                  : 'bg-rose-100 text-rose-700'
+            "
+            class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold"
+          >
+            {{ details.status }}
+          </span>
+
+          <!-- Tier Badge -->
+          <span
+            [class]="
+              details.tier === 'Elite'
+                ? 'bg-slate-900 text-white'
+                : details.tier === 'Pro'
+                  ? 'bg-indigo-100 text-indigo-700'
+                  : 'bg-slate-200 text-slate-700'
+            "
+            class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold"
+          >
+            {{ details.tier }}
+          </span>
+        </div>
+
+        <!-- Close Button -->
+        <button
+          type="button"
+          aria-label="Close drawer"
+          (click)="close.emit()"
+          class="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors shrink-0"
+        >
+          <lucide-icon name="x" class="h-4 w-4"></lucide-icon>
+        </button>
+      </div>
+    </header>
+
+    <!-- ─── SCROLLABLE CONTENT ─────────────────────────── -->
+    <div class="min-h-0 flex-1 overflow-y-auto px-6 py-6">
+      <div class="space-y-4 max-w-2xl">
+        <!-- Card 1: Identity -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+          <h4 class="mb-4 text-base font-bold text-slate-900">Identity</h4>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">User ID</span>
+              <span class="font-semibold text-slate-900 font-mono"
+                >{{ details.id | slice: 0 : 8 }}...</span
+              >
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Email</span>
+              <span class="font-semibold text-slate-900">{{ details.email }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Roles</span>
+              <span class="font-semibold text-slate-900">{{
+                details.roles?.[0] || 'User' | titlecase
+              }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Account Status</span>
+              <span
+                [class]="
+                  details.isActive ? 'text-emerald-600 bg-emerald-50' : 'text-rose-600 bg-rose-50'
+                "
+                class="inline-flex items-center rounded-full px-2 py-1 text-xs font-bold"
+              >
+                {{ details.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 2: Activity Summary -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+          <h4 class="mb-4 text-base font-bold text-slate-900">Activity Summary</h4>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Workout Sessions</span>
+              <span class="font-semibold text-slate-900">{{ details.sessions }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Weight Entries</span>
+              <span class="font-semibold text-slate-900">{{ details.dailyWeights }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Last Login</span>
+              <span class="font-semibold text-slate-900">
+                {{ details.lastLogin ? (details.lastLogin | date: 'medium') : 'Never' }}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 3: Account Risk & Lockout -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+          <h4 class="mb-4 text-base font-bold text-slate-900">Account Risk & Lockout</h4>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Failed Login Attempts</span>
+              <span
+                class="font-semibold"
+                [class]="(details.accessFailedCount ?? 0) > 3 ? 'text-rose-600' : 'text-slate-900'"
+              >
+                {{ details.accessFailedCount ?? 0 }} / 5
+              </span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Lockout Status</span>
+              <span
+                [class]="
+                  details.status === 'Banned'
+                    ? 'text-rose-600 bg-rose-50'
+                    : 'text-emerald-600 bg-emerald-50'
+                "
+                class="inline-flex items-center rounded-full px-2 py-1 text-xs font-bold"
+              >
+                {{ details.status === 'Banned' ? 'Locked Out' : 'Clear' }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Lockout Expires</span>
+              <span class="font-semibold text-slate-900">
+                {{ details.lockoutEnd ? (details.lockoutEnd | date: 'medium') : 'N/A' }}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Card 4: Email History -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+          <h4 class="mb-4 text-base font-bold text-slate-900">Communication History</h4>
+
+          @if (isLoadingEmailHistory()) {
+            <div class="flex items-center justify-center py-8">
+              <lucide-icon
+                name="refresh-cw"
+                class="h-4 w-4 animate-spin text-slate-500 mr-2"
+              ></lucide-icon>
+              <span class="text-sm text-slate-600">Loading...</span>
+            </div>
+          } @else if (emailHistory().length === 0) {
+            <p class="text-sm text-slate-600 py-4">No communications yet.</p>
+          } @else {
+            <div class="space-y-2">
+              @for (item of emailHistory(); track $index) {
+                <article class="bg-slate-50 border border-slate-200 rounded-lg p-3">
+                  <div class="flex items-start justify-between gap-2 mb-2">
+                    <p class="text-sm font-semibold text-slate-900">{{ item.subject }}</p>
+                    <span
+                      [class]="
+                        item.status === 'Sent'
+                          ? 'text-emerald-600 bg-emerald-50'
+                          : 'text-rose-600 bg-rose-50'
+                      "
+                      class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold whitespace-nowrap"
+                    >
+                      {{ item.status === 'Sent' ? 'Sent' : 'Failed' }}
+                    </span>
+                  </div>
+                  <p class="text-xs text-slate-600">
+                    {{ item.sentAt | date: 'MMM d, y, h:mm a' }}
+                  </p>
+                </article>
+              }
+            </div>
+          }
+        </section>
+      </div>
+    </div>
+
+    <!-- ─── ADMIN ACTIONS FOOTER ──────────────────────── -->
+    <footer class="shrink-0 border-t border-slate-200 bg-white px-6 py-4 shadow-md">
+      <div class="flex items-center justify-end gap-3">
+        <!-- Edit Button -->
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-lg bg-slate-900 text-white px-4 py-2 text-sm font-semibold hover:bg-slate-800 transition-colors"
+        >
+          <lucide-icon name="edit-2" class="h-4 w-4"></lucide-icon>
+          Edit Profile
+        </button>
+
+        <!-- Suspend Button -->
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-lg bg-slate-100 text-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-200 transition-colors"
+        >
+          <lucide-icon name="pause-circle" class="h-4 w-4"></lucide-icon>
+          Suspend
+        </button>
+
+        <!-- Reset Password Button -->
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-lg bg-slate-100 text-slate-700 px-4 py-2 text-sm font-semibold hover:bg-slate-200 transition-colors"
+        >
+          <lucide-icon name="key" class="h-4 w-4"></lucide-icon>
+          Reset Password
+        </button>
+
+        <!-- Delete Button -->
+        <button
+          type="button"
+          (click)="onDeleteClick()"
+          class="inline-flex items-center gap-2 rounded-lg bg-red-50 text-red-600 px-4 py-2 text-sm font-semibold hover:bg-red-100 transition-colors"
+        >
+          <lucide-icon name="trash-2" class="h-4 w-4"></lucide-icon>
+          Delete
+        </button>
+      </div>
+    </footer>
+  </div>
+}

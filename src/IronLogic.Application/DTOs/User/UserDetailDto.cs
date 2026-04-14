@@ -61,6 +61,51 @@ public record UserDetailDto
     public IReadOnlyList<string> Roles { get; init; } = new List<string>();
 
     /// <summary>
+    /// Gets or sets whether the user account is currently active
+    /// </summary>
+    public bool IsActive { get; init; }
+
+    /// <summary>
+    /// Gets or sets the last login date and time in UTC
+    /// </summary>
+    public DateTime? LastLoginDate { get; init; }
+
+    /// <summary>
+    /// Gets or sets the total count of workout sessions for this user
+    /// </summary>
+    public int TotalSessions { get; init; }
+
+    /// <summary>
+    /// Gets or sets the total count of daily weight entries for this user
+    /// </summary>
+    public int TotalDailyWeights { get; init; }
+
+    /// <summary>
+    /// Gets or sets the user's profile image URL
+    /// </summary>
+    public string? ProfileImageUrl { get; init; }
+
+    /// <summary>
+    /// Gets or sets the user's first name from profile
+    /// </summary>
+    public string? FirstName { get; init; }
+
+    /// <summary>
+    /// Gets or sets the user's last name from profile
+    /// </summary>
+    public string? LastName { get; init; }
+
+    /// <summary>
+    /// Gets or sets the user's subscription tier
+    /// </summary>
+    public string SubscriptionTier { get; init; } = "Free";
+
+    /// <summary>
+    /// Gets or sets the user's subscription status
+    /// </summary>
+    public string SubscriptionStatus { get; init; } = "Inactive";
+
+    /// <summary>
     /// Gets or sets the list of claims assigned to the user
     /// </summary>
     public IReadOnlyList<UserClaimDto> Claims { get; init; } = new List<UserClaimDto>();

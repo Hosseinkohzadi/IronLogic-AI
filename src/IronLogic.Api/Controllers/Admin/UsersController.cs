@@ -20,8 +20,33 @@ namespace IronLogic.Api.Controllers.Admin;
 public class UsersController(
     UserManager<User> userManager,
     IEmailService emailService,
+    IAdminService adminService,
     ILogger<UsersController> logger) : ControllerBase
 {
+    /// <summary>
+    /// Retrieves administrative metrics for user management dashboard
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>User metrics including premium subscribers, active users, sessions, and churn risk</returns>
+    /// <response code="200">Returns the user metrics</response>
+    [HttpGet("metrics")]
+    [ProducesResponseType<AdminUserMetricsDto>(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetUserMetrics(CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Retrieving user metrics for admin dashboard");
+
+        var metrics = await adminService.GetUserMetricsAsync(cancellationToken);
+
+        logger.LogInformation(
+            "Retrieved user metrics: Premium={Premium}, WAU={WAU}, Sessions={Sessions}, Churn={Churn}",
+            metrics.PremiumSubscribers,
+            metrics.WeeklyActiveUsers,
+            metrics.TotalSessions,
+            metrics.ChurnRiskCount);
+
+        return Ok(metrics);
+    }
+
     /// <summary>
     /// Retrieves all users with their roles and subscription information
     /// </summary>
@@ -94,7 +119,13 @@ public class UsersController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetUserById(string id, CancellationToken cancellationToken)
     {
-        var user = await userManager.FindByIdAsync(id);
+        var user = await userManager.Users
+            .Include(u => u.Profile)
+            .Include(u => u.Sessions)
+            .Include(u => u.DailyWeights)
+            .Include(u => u.UserSubscriptions)
+                .ThenInclude(s => s.Plan)
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
         if (user == null)
         {
@@ -104,6 +135,20 @@ public class UsersController(
 
         var roles = await userManager.GetRolesAsync(user);
         var claims = await userManager.GetClaimsAsync(user);
+
+        var isActive = !(user.LockoutEnabled && user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow);
+        
+        var lastSession = user.Sessions
+            .OrderByDescending(s => s.Date)
+            .FirstOrDefault();
+        
+        var activeSubscription = user.UserSubscriptions
+            .Where(s => s.IsActive && s.EndDate >= DateTime.UtcNow)
+            .OrderByDescending(s => s.EndDate)
+            .FirstOrDefault();
+
+        var subscriptionTier = activeSubscription?.Plan?.Name ?? "Free";
+        var subscriptionStatus = activeSubscription != null ? "Active" : "Inactive";
 
         var userDetail = new UserDetailDto
         {
@@ -118,6 +163,15 @@ public class UsersController(
             LockoutEnabled = user.LockoutEnabled,
             AccessFailedCount = user.AccessFailedCount,
             Roles = roles.ToList(),
+            IsActive = isActive,
+            LastLoginDate = lastSession?.Date,
+            TotalSessions = user.Sessions.Count,
+            TotalDailyWeights = user.DailyWeights.Count,
+            ProfileImageUrl = user.Profile?.ProfilePictureUrl,
+            FirstName = user.Profile?.FirstName,
+            LastName = user.Profile?.LastName,
+            SubscriptionTier = subscriptionTier,
+            SubscriptionStatus = subscriptionStatus,
             Claims = claims.Select(c => new UserClaimDto
             {
                 Type = c.Type,
@@ -125,7 +179,13 @@ public class UsersController(
             }).ToList()
         };
 
-        logger.LogInformation("Retrieved user details for: {UserId}", id);
+        logger.LogInformation(
+            "Retrieved user details for: {UserId} - IsActive: {IsActive}, Sessions: {Sessions}, LastLogin: {LastLogin}",
+            id,
+            isActive,
+            user.Sessions.Count,
+            lastSession?.Date);
+
         return Ok(userDetail);
     }
 

@@ -16,7 +16,7 @@ import { ApplicationUser } from '@core/models';
 import { finalize } from 'rxjs/operators';
 import { CommunicationService, UserEmailHistoryItem } from '@core/services/communication.service';
 import { NotificationService } from '@core/services/notification.service';
-import { UserDetailResponse, UserService } from '@core/services/user.service';
+import { AthleteProfile, UserDetailResponse, UserService } from '@core/services/user.service';
 
 type UserTier = 'Basic' | 'Pro' | 'Elite';
 type UserStatus = 'Active' | 'Review' | 'Banned';
@@ -205,15 +205,124 @@ export class UserRowDrawerComponent {
       .pipe(finalize(() => this.isLoading.set(false)))
       .subscribe({
         next: (user) => {
-          this.userDetail.set(user);
+          this.userService.getMyProfile(userId).subscribe({
+            next: (profile) => {
+              this.userDetail.set(this.mergeProfileDetail(user, profile));
+              this.triggerChangeDetection();
+            },
+            error: () => {
+              this.userDetail.set(user);
+              this.triggerChangeDetection();
+            },
+          });
           this.triggerChangeDetection();
         },
         error: () => {
-          this.userDetail.set(null);
-          this.triggerChangeDetection();
-          this.notificationService.showError('Failed to load user details.');
+          this.userService.getMyProfile(userId).subscribe({
+            next: (profile) => {
+              this.userDetail.set(this.createDetailFromProfile(userId, profile));
+              this.triggerChangeDetection();
+            },
+            error: () => {
+              this.userDetail.set(null);
+              this.triggerChangeDetection();
+              this.notificationService.showError('Failed to load user details.');
+            },
+          });
         },
       });
+  }
+
+  private mergeProfileDetail(user: UserDetailResponse, profile: AthleteProfile): UserDetailResponse {
+    return {
+      ...user,
+      id: String(profile.userId ?? user.id ?? ''),
+      userName: String(profile.name ?? profile.userName ?? user.userName ?? ''),
+      email: String(profile.email ?? user.email ?? ''),
+      firstName: String(profile.firstName ?? user.firstName ?? ''),
+      lastName: String(profile.lastName ?? user.lastName ?? ''),
+      phoneNumber: String(profile.phoneNumber ?? user.phoneNumber ?? ''),
+      profilePictureUrl: String(profile.profilePictureUrl ?? user.profilePictureUrl ?? ''),
+      gender: this.normalizeGender(profile.gender),
+      currentWeight: Number(profile.currentWeight ?? user.currentWeight ?? 0),
+      height: Number(profile.height ?? user.height ?? 0),
+      targetWeight: Number(profile.targetWeight ?? user.targetWeight ?? 0),
+      activityLevel: this.normalizeActivityLevel(profile.activityLevel),
+      bio: String(profile.bio ?? user.bio ?? ''),
+    };
+  }
+
+  private createDetailFromProfile(userId: string, profile: AthleteProfile): UserDetailResponse {
+    return {
+      id: String(profile.userId ?? userId),
+      userName: String(profile.name ?? profile.userName ?? profile.email?.split('@')[0] ?? ''),
+      email: String(profile.email ?? ''),
+      firstName: String(profile.firstName ?? ''),
+      lastName: String(profile.lastName ?? ''),
+      phoneNumber: String(profile.phoneNumber ?? ''),
+      profilePictureUrl: String(profile.profilePictureUrl ?? ''),
+      roles: [],
+      isActive: true,
+      lastLoginDate: null,
+      failedLoginAttempts: 0,
+      lockoutEnd: null,
+      lockoutEnabled: false,
+      emailConfirmed: false,
+      phoneNumberConfirmed: false,
+      twoFactorEnabled: false,
+      gender: this.normalizeGender(profile.gender),
+      currentWeight: Number(profile.currentWeight ?? 0),
+      height: Number(profile.height ?? 0),
+      targetWeight: Number(profile.targetWeight ?? 0),
+      activityLevel: this.normalizeActivityLevel(profile.activityLevel),
+      bio: String(profile.bio ?? ''),
+    };
+  }
+
+  private normalizeGender(value: string | number | null | undefined): string {
+    if (typeof value === 'string' && value.trim()) {
+      return value;
+    }
+
+    const code = Number(value ?? 0);
+    if (code === 1) {
+      return 'Male';
+    }
+
+    if (code === 2) {
+      return 'Female';
+    }
+
+    if (code === 3) {
+      return 'Other';
+    }
+
+    return 'Unknown';
+  }
+
+  private normalizeActivityLevel(value: string | number | null | undefined): string {
+    if (typeof value === 'string' && value.trim()) {
+      return value;
+    }
+
+    const code = Number(value ?? 3);
+    if (code === 0) {
+      return 'None';
+    }
+
+    if (code === 1) {
+      return 'Sedentary';
+    }
+
+    if (code === 2) {
+      return 'Lightly Active';
+    }
+
+    if (code === 4) {
+      return 'Very Active';
+    }
+
+    return 'Moderately Active';
   }
 
   private loadEmailHistory(userId: string): void {

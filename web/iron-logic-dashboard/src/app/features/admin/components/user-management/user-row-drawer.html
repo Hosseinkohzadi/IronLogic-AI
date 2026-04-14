@@ -1,275 +1,447 @@
 @if (user(); as details) {
-  <div class="h-full flex flex-col gap-4">
-    <header
-      class="metric-card rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-sm backdrop-blur-xl"
-    >
-      <div class="flex items-start justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <div
-            class="h-14 w-14 rounded-full overflow-hidden bg-slate-800 border border-slate-700 shrink-0 flex items-center justify-center"
-          >
-            @if (details.profileImageUrl) {
-              <img [src]="details.profileImageUrl" alt="" class="h-full w-full object-cover" />
+  <div class="h-full flex flex-col bg-slate-50 text-slate-800 shadow-2xl border-l border-slate-200">
+    <!-- ─── HEADER ─────────────────────────────────────────── -->
+    <header class="shrink-0 border-b border-slate-200 bg-white p-6 shadow-sm">
+      <div class="flex items-start justify-between gap-4">
+        <!-- User Avatar, Name, Email -->
+        <div class="flex items-center gap-4 min-w-0 flex-1">
+          <div class="h-12 w-12 rounded-full shrink-0 overflow-hidden border border-slate-200">
+            @if (avatarUrl(); as profilePictureUrl) {
+              <img [src]="profilePictureUrl" alt="" class="h-full w-full object-cover" />
             } @else {
-              <span class="text-lg font-bold text-slate-200">{{
-                details.name[0] | uppercase
-              }}</span>
+              <div
+                class="flex h-full w-full items-center justify-center bg-indigo-600 text-sm font-bold text-white"
+              >
+                {{ avatarInitials }}
+              </div>
             }
           </div>
-          <div class="min-w-0">
-            <h3 class="truncate text-lg font-black text-white">{{ details.name }}</h3>
-            <p class="truncate text-xs text-slate-400">{{ details.email }}</p>
+          <div class="min-w-0 flex-1">
+            <h3 class="truncate text-base font-bold text-slate-900">{{ details.name }}</h3>
+            <p class="truncate text-sm text-slate-600">{{ details.email }}</p>
           </div>
         </div>
 
-        <div class="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label="Delete user"
-            (click)="onDeleteClick()"
-            class="h-9 w-9 flex items-center justify-center rounded-lg border border-red-500/20 bg-red-500/10 text-red-400 hover:bg-red-500/20 hover:text-red-300 transition-colors cursor-pointer"
+        <!-- Status & Tier Badges -->
+        <div class="flex items-center gap-2 shrink-0">
+          <!-- Status Badge -->
+          <span
+            [class]="
+              details.status === 'Active'
+                ? 'bg-emerald-100 text-emerald-700'
+                : details.status === 'Review'
+                  ? 'bg-amber-100 text-amber-700'
+                  : 'bg-rose-100 text-rose-700'
+            "
+            class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold"
           >
-            <lucide-icon name="trash-2" class="h-4 w-4"></lucide-icon>
-          </button>
-          <button
-            type="button"
-            aria-label="Close row details"
-            (click)="close.emit()"
-            class="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white transition-colors"
-          >
-            <lucide-icon name="x" class="h-4 w-4"></lucide-icon>
-          </button>
-        </div>
-      </div>
+            {{ details.status }}
+          </span>
 
-      <nav class="mt-6 flex gap-6 border-b border-slate-800" aria-label="Tabs">
+          <!-- Tier Badge -->
+          <span
+            [class]="
+              details.tier === 'Elite'
+                ? 'bg-slate-900 text-white'
+                : details.tier === 'Pro'
+                  ? 'bg-indigo-100 text-indigo-700'
+                  : 'bg-slate-200 text-slate-700'
+            "
+            class="inline-flex items-center rounded-full px-2.5 py-1 text-xs font-bold"
+          >
+            {{ details.tier }}
+          </span>
+        </div>
+
+        <!-- Close Button -->
         <button
           type="button"
-          (click)="setTab('profile')"
-          [class]="
-            activeTab() === 'profile'
-              ? '-mb-px pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-white transition-all'
-              : '-mb-px pb-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700 transition-all'
-          "
+          aria-label="Close drawer"
+          (click)="close.emit(); closeDrawer.emit()"
+          class="h-9 w-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors shrink-0"
         >
-          Profile
+          <lucide-icon name="x" class="h-4 w-4"></lucide-icon>
         </button>
-        <button
-          type="button"
-          (click)="setTab('billing')"
-          [class]="
-            activeTab() === 'billing'
-              ? '-mb-px pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-white transition-all'
-              : '-mb-px pb-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700 transition-all'
-          "
-        >
-          Billing
-        </button>
-        <button
-          type="button"
-          (click)="setTab('emails')"
-          [class]="
-            activeTab() === 'emails'
-              ? '-mb-px pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-white transition-all'
-              : '-mb-px pb-3 text-sm font-medium border-b-2 border-transparent text-slate-400 hover:text-slate-300 hover:border-slate-700 transition-all'
-          "
-        >
-          Emails
-        </button>
-      </nav>
+      </div>
     </header>
 
-    <div class="min-h-0 flex-1 overflow-y-auto space-y-4 pr-1">
-      @if (activeTab() === 'profile') {
-        <section
-          class="metric-card rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-sm backdrop-blur-xl"
+    <!-- ─── SCROLLABLE CONTENT ─────────────────────────── -->
+    <div class="min-h-0 flex-1 overflow-y-auto px-6 py-6">
+      @if (isLoading()) {
+        <div
+          class="flex items-center justify-center rounded-xl border border-slate-200 bg-white p-10 shadow-sm"
         >
-          <h4 class="mb-3 text-sm font-black text-white">Grid Row Data</h4>
-          <div class="space-y-2.5 text-sm">
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">ID</span>
-              <span class="font-semibold text-slate-100">{{ details.id }}</span>
-            </div>
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Name</span>
-              <span class="font-semibold text-slate-100">{{ details.name }}</span>
-            </div>
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Status</span>
-              <span class="font-semibold text-slate-100">{{ details.status }}</span>
-            </div>
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Tier</span>
-              <span class="font-semibold text-slate-100">{{ details.tier }}</span>
-            </div>
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Sessions</span>
-              <span class="font-semibold text-slate-100">{{ details.sessions }}</span>
-            </div>
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Weights</span>
-              <span class="font-semibold text-slate-100">{{ details.dailyWeights }}</span>
-            </div>
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Last Login</span>
-              <span class="font-semibold text-slate-100">{{
-                details.lastLogin | date: 'medium'
-              }}</span>
-            </div>
-          </div>
-        </section>
+          <lucide-icon
+            name="refresh-cw"
+            class="mr-3 h-5 w-5 animate-spin text-slate-500"
+          ></lucide-icon>
+          <span class="text-sm font-medium text-slate-600">Loading user details...</span>
+        </div>
+      }
 
-        <section
-          class="metric-card rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-sm backdrop-blur-xl"
-        >
-          <h4 class="mb-3 text-sm font-black text-white">Account Risk & Lockout</h4>
-          <div class="space-y-2.5 text-sm">
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Failed Login Attempts</span>
-              <span class="font-semibold text-slate-100"
-                >{{ details.accessFailedCount ?? 0 }} / 5</span
+      <div class="space-y-4 max-w-2xl">
+        <!-- Card 1: Grid Row Data -->
+        <div class="mb-4 min-w-0 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div class="mb-4 flex items-center justify-between gap-3">
+            <h4 class="text-base font-bold text-slate-800 flex items-center gap-2">
+              <lucide-icon name="eye" class="h-5 w-5 text-indigo-500"></lucide-icon>
+              Grid Row Data
+            </h4>
+            <button
+              type="button"
+              (click)="toggleProfilePreview()"
+              class="inline-flex items-center gap-1 text-xs font-semibold text-indigo-600 underline underline-offset-2 transition-colors hover:text-indigo-500"
+            >
+              <lucide-icon name="more-horizontal" class="h-3.5 w-3.5"></lucide-icon>
+              {{ isProfilePreviewExpanded() ? 'Less' : 'More' }}
+            </button>
+          </div>
+          <div class="flex flex-col gap-4 text-sm">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500 font-medium">ID</span>
+              <span
+                class="font-mono text-xs font-medium text-slate-800 truncate max-w-[140px]"
+                [title]="details.id"
               >
-            </div>
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Lockout Status</span>
-              <span class="font-semibold text-slate-100">
-                {{ details.status === 'Banned' ? 'Locked Out' : 'Clear' }}
+                {{ details.id || 'N/A' }}
               </span>
             </div>
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Lockout Ends</span>
-              <span class="font-semibold text-slate-100">
-                {{ details.lockoutEnd ? (details.lockoutEnd | date: 'medium') : '-' }}
+            <div class="flex items-start justify-between gap-3">
+              <span class="text-slate-500 font-medium">Name</span>
+              <span class="min-w-0 max-w-[65%] text-right font-medium text-slate-800 break-words">
+                {{ details.firstName }} {{ details.lastName }}
               </span>
             </div>
-          </div>
-        </section>
-
-        <app-user-form
-          [userId]="details.id"
-          [userPreview]="details"
-          (saved)="saved.emit($event); close.emit()"
-          (cancel)="close.emit()"
-        ></app-user-form>
-      }
-
-      @if (activeTab() === 'billing') {
-        <section
-          class="metric-card rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-sm backdrop-blur-xl"
-        >
-          <h4 class="mb-3 text-sm font-black text-white">Billing Snapshot</h4>
-          <div class="space-y-2.5 text-sm">
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Current Tier</span>
-              <span class="font-semibold text-slate-100">{{ details.tier }}</span>
-            </div>
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Session Records</span>
-              <span class="font-semibold text-slate-100">{{ details.sessions }}</span>
-            </div>
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Weight Entries</span>
-              <span class="font-semibold text-slate-100">{{ details.dailyWeights }}</span>
-            </div>
-            <div class="flex items-center justify-between gap-3">
-              <span class="text-slate-400">Linked User ID</span>
-              <span class="font-semibold text-slate-100">{{ details.id }}</span>
-            </div>
-          </div>
-        </section>
-      }
-
-      @if (activeTab() === 'emails') {
-        <section
-          class="metric-card rounded-2xl border border-slate-700 bg-slate-900/80 p-6 shadow-sm backdrop-blur-xl space-y-6"
-        >
-          <div>
-            <h4 class="text-sm font-black text-white">Emails / Communications</h4>
-            <p class="mt-1 text-xs text-slate-400">Compose and track manual user communications.</p>
-          </div>
-
-          <div class="rounded-2xl border border-slate-700/60 bg-slate-900/70 p-4">
-            <form [formGroup]="composeForm" (ngSubmit)="sendManualMessage()" class="space-y-3">
-              <label class="block space-y-1">
-                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400"
-                  >Subject</span
-                >
-                <input
-                  formControlName="subject"
-                  placeholder="Subject"
-                  class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white outline-none transition-all placeholder:text-slate-500 focus:border-indigo-500"
-                />
-              </label>
-
-              <label class="block space-y-1">
-                <span class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400"
-                  >Message</span
-                >
-                <textarea
-                  formControlName="message"
-                  rows="5"
-                  placeholder="Write your message..."
-                  class="w-full rounded-xl border border-slate-700 bg-slate-800 px-3 py-2 text-sm text-white outline-none transition-all placeholder:text-slate-500 focus:border-indigo-500"
-                ></textarea>
-              </label>
-
-              <div class="flex justify-end">
-                <button
-                  type="submit"
-                  [disabled]="isSendDisabled()"
-                  class="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  @if (isSendingEmail()) {
-                    <lucide-icon name="refresh-cw" class="h-4 w-4 animate-spin"></lucide-icon>
-                  }
-                  Send Email
-                </button>
+            <div class="flex items-start justify-between gap-3">
+              <span class="text-slate-500 font-medium">Email</span>
+              <div class="flex min-w-0 max-w-[65%] items-center justify-end gap-1.5">
+                <lucide-icon name="mail" class="h-4 w-4 text-emerald-500"></lucide-icon>
+                <span class="min-w-0 break-all text-right font-medium text-slate-800">{{
+                  details.email
+                }}</span>
               </div>
-            </form>
-          </div>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500 font-medium">Role</span>
+              <span
+                class="rounded-md bg-indigo-50 px-2.5 py-1 text-xs font-semibold text-indigo-700"
+              >
+                {{ details.roles?.[0] || 'Athlete' }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500 font-medium">Plan</span>
+              <span
+                class="rounded-md border border-slate-100 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700"
+              >
+                {{ details.tier || 'Basic' }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500 font-medium">Status</span>
+              @if (details.status === 'Active') {
+                <span
+                  class="rounded-md bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700"
+                >
+                  Active
+                </span>
+              } @else {
+                <span class="rounded-md bg-rose-50 px-2.5 py-1 text-xs font-semibold text-rose-700">
+                  {{ details.status || 'Expired' }}
+                </span>
+              }
+            </div>
 
-          <div>
-            <h5 class="text-xs font-black uppercase tracking-[0.14em] text-slate-400">
-              History Timeline
-            </h5>
+            @if (isProfilePreviewExpanded()) {
+              <div
+                class="rounded-xl border border-indigo-100 bg-indigo-50/40 p-3 max-h-80 overflow-y-auto"
+              >
+                <p class="mb-2 text-[11px] font-black uppercase tracking-widest text-indigo-600">
+                  Profile Preview
+                </p>
 
-            @if (isLoadingEmailHistory()) {
-              <div class="mt-3 flex items-center gap-2 text-sm text-slate-400">
-                <lucide-icon name="refresh-cw" class="h-4 w-4 animate-spin"></lucide-icon>
-                Loading history...
-              </div>
-            } @else if (emailHistory().length === 0) {
-              <p class="mt-3 text-sm text-slate-400">No emails found for this user yet.</p>
-            } @else {
-              <div class="mt-4 border-l border-slate-700 pl-4">
-                @for (item of emailHistory(); track trackHistoryItem($index, item)) {
-                  <article
-                    class="relative bg-slate-800/50 p-4 rounded-xl border border-slate-700/50 mb-3"
-                  >
-                    <span
-                      class="absolute -left-[1.15rem] top-5 h-2.5 w-2.5 rounded-full bg-indigo-500"
-                    ></span>
-                    <div class="flex items-start justify-between gap-3">
-                      <div>
-                        <p class="text-sm font-semibold text-white">{{ item.subject }}</p>
-                        <p class="mt-1 text-xs text-slate-400">
-                          {{ item.sentAt | date: 'MMM d, y, h:mm a' }}
-                        </p>
-                      </div>
-                      <span
-                        class="rounded-full border border-current/30 px-2 py-1 text-[10px] font-black uppercase tracking-[0.14em]"
-                        [class]="emailStatusClass(item.status)"
-                      >
-                        {{ item.status === 'Sent' ? 'Sent' : 'Failed' }}
-                      </span>
-                    </div>
-                  </article>
-                }
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                  <div class="min-w-0 rounded-lg bg-white px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">ID</p>
+                    <p class="text-sm font-semibold text-slate-800 break-all">
+                      {{ userDetail()?.id || details.id || 'N/A' }}
+                    </p>
+                  </div>
+
+                  <div class="min-w-0 rounded-lg bg-white px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                      Username
+                    </p>
+                    <p
+                      class="min-w-0 break-all whitespace-normal text-sm font-semibold text-slate-800"
+                    >
+                      {{ userDetail()?.userName || details.userName || 'N/A' }}
+                    </p>
+                  </div>
+
+                  <div class="rounded-lg bg-white px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                      Email
+                    </p>
+                    <p class="text-sm font-semibold text-slate-800">
+                      {{ userDetail()?.email || details.email || 'N/A' }}
+                    </p>
+                  </div>
+
+                  <div class="rounded-lg bg-white px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                      First Name
+                    </p>
+                    <p class="text-sm font-semibold text-slate-800">
+                      {{ userDetail()?.firstName || details.firstName || 'N/A' }}
+                    </p>
+                  </div>
+
+                  <div class="rounded-lg bg-white px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                      Last Name
+                    </p>
+                    <p class="text-sm font-semibold text-slate-800">
+                      {{ userDetail()?.lastName || details.lastName || 'N/A' }}
+                    </p>
+                  </div>
+
+                  <div class="rounded-lg bg-white px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                      Phone Number
+                    </p>
+                    <p class="text-sm font-semibold text-slate-800">
+                      {{ userDetail()?.phoneNumber || details.phoneNumber || 'N/A' }}
+                    </p>
+                  </div>
+
+                  <div class="rounded-lg bg-white px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                      Gender
+                    </p>
+                    <p class="text-sm font-semibold text-slate-800">
+                      {{ userDetail()?.gender || 'Unknown' }}
+                    </p>
+                  </div>
+
+                  <div class="rounded-lg bg-white px-3 py-2 sm:col-span-2">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                      Profile Picture URL
+                    </p>
+                    <p class="text-sm font-semibold text-slate-800 break-all">
+                      {{ userDetail()?.profilePictureUrl || details.profilePictureUrl || 'N/A' }}
+                    </p>
+                  </div>
+
+                  <div class="rounded-lg bg-white px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                      Current Weight
+                    </p>
+                    <p class="text-sm font-semibold text-slate-800">
+                      {{ userDetail()?.currentWeight ?? 0 }}
+                    </p>
+                  </div>
+
+                  <div class="rounded-lg bg-white px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                      Height
+                    </p>
+                    <p class="text-sm font-semibold text-slate-800">
+                      {{ userDetail()?.height ?? 0 }}
+                    </p>
+                  </div>
+
+                  <div class="rounded-lg bg-white px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                      Target Weight
+                    </p>
+                    <p class="text-sm font-semibold text-slate-800">
+                      {{ userDetail()?.targetWeight ?? 0 }}
+                    </p>
+                  </div>
+
+                  <div class="rounded-lg bg-white px-3 py-2">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">
+                      Activity Level
+                    </p>
+                    <p class="text-sm font-semibold text-slate-800">
+                      {{ userDetail()?.activityLevel || 'Moderately Active' }}
+                    </p>
+                  </div>
+
+                  <div class="rounded-lg bg-white px-3 py-2 sm:col-span-2">
+                    <p class="text-[10px] font-bold uppercase tracking-wide text-slate-500">Bio</p>
+                    <p class="text-sm font-semibold text-slate-800 break-words">
+                      {{ userDetail()?.bio || 'N/A' }}
+                    </p>
+                  </div>
+                </div>
               </div>
             }
           </div>
+        </div>
+
+        <!-- Card 2: Activity Summary -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-4">
+          <h4 class="mb-4 text-base font-bold text-slate-900">Activity Summary</h4>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Workout Sessions</span>
+              <span class="font-semibold text-slate-900">{{ details.sessions }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Weight Entries</span>
+              <span class="font-semibold text-slate-900">{{ details.dailyWeights }}</span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Last Login</span>
+              <span class="font-semibold text-slate-900">
+                {{
+                  userDetail()?.lastLoginDate
+                    ? (userDetail()?.lastLoginDate | date: 'medium')
+                    : 'Never'
+                }}
+              </span>
+            </div>
+          </div>
         </section>
-      }
+
+        <!-- Card 3: Account Risk & Lockout -->
+        <section class="bg-white rounded-xl shadow-sm border border-slate-200 p-5 mb-4">
+          <h4 class="mb-4 text-base font-bold text-slate-900">Account Risk & Lockout</h4>
+          <div class="space-y-3 text-sm">
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Failed Login Attempts</span>
+              <span
+                class="font-semibold"
+                [class]="
+                  (userDetail()?.failedLoginAttempts ?? 0) > 0 ? 'text-rose-600' : 'text-slate-900'
+                "
+              >
+                {{ userDetail()?.failedLoginAttempts ?? 0 }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Lockout Status</span>
+              <span
+                [class]="
+                  isLockedOut() ? 'text-rose-600 bg-rose-50' : 'text-emerald-600 bg-emerald-50'
+                "
+                class="inline-flex items-center rounded-full px-2 py-1 text-xs font-bold"
+              >
+                {{ isLockedOut() ? 'Locked Out' : 'Safe' }}
+              </span>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <span class="text-slate-600">Lockout Expires</span>
+              <span class="font-semibold text-slate-900">
+                {{ userDetail()?.lockoutEnd ? (userDetail()?.lockoutEnd | date: 'medium') : 'N/A' }}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <div class="mb-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+          <h4 class="mb-4 text-base font-bold text-slate-800">Linked Entities</h4>
+          <div class="flex flex-col gap-2">
+            <div
+              class="flex items-center justify-between rounded-lg bg-slate-50 p-2.5 transition-colors hover:bg-slate-100"
+            >
+              <span class="text-sm font-medium text-slate-700">Workout Sessions</span>
+              <button
+                type="button"
+                (click)="navigateToEntity('/admin/workouts')"
+                class="flex items-center gap-1.5 rounded border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-indigo-600"
+              >
+                <lucide-icon name="eye" class="h-3.5 w-3.5"></lucide-icon>
+                View
+              </button>
+            </div>
+            <div
+              class="flex items-center justify-between rounded-lg bg-slate-50 p-2.5 transition-colors hover:bg-slate-100"
+            >
+              <span class="text-sm font-medium text-slate-700">Daily Weights</span>
+              <button
+                type="button"
+                (click)="navigateToEntity('/admin/weights')"
+                class="flex items-center gap-1.5 rounded border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-indigo-600"
+              >
+                <lucide-icon name="trending-up" class="h-3.5 w-3.5"></lucide-icon>
+                Trend
+              </button>
+            </div>
+            <div
+              class="flex items-center justify-between rounded-lg bg-slate-50 p-2.5 transition-colors hover:bg-slate-100"
+            >
+              <span class="text-sm font-medium text-slate-700">Billing &amp; Plans</span>
+              <button
+                type="button"
+                (click)="navigateToEntity('/admin/billing')"
+                class="flex items-center gap-1.5 rounded border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-indigo-600"
+              >
+                <lucide-icon name="credit-card" class="h-3.5 w-3.5"></lucide-icon>
+                Manage
+              </button>
+            </div>
+            <div
+              class="flex items-center justify-between rounded-lg bg-slate-50 p-2.5 transition-colors hover:bg-slate-100"
+            >
+              <span class="text-sm font-medium text-slate-700">Email Logs</span>
+              <button
+                type="button"
+                (click)="navigateToEntity('/admin/communications')"
+                class="flex items-center gap-1.5 rounded border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-600 shadow-sm transition-colors hover:bg-slate-50 hover:text-indigo-600"
+              >
+                <lucide-icon name="mail" class="h-3.5 w-3.5"></lucide-icon>
+                Inspect
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- ─── ADMIN ACTIONS FOOTER ──────────────────────── -->
+    <footer
+      class="sticky bottom-0 mt-auto flex flex-wrap items-center justify-end gap-3 border-t border-slate-200 bg-slate-50 p-5"
+    >
+      <!-- Edit Button -->
+      <button
+        type="button"
+        (click)="onEditClick()"
+        class="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-800"
+      >
+        <lucide-icon name="pencil" class="h-4 w-4"></lucide-icon>
+        Edit Profile
+      </button>
+
+      <!-- Suspend Button -->
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200"
+      >
+        <lucide-icon name="x" class="h-4 w-4"></lucide-icon>
+        Suspend
+      </button>
+
+      <!-- Reset Password Button -->
+      <button
+        type="button"
+        class="inline-flex items-center gap-2 rounded-lg bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-700 transition-colors hover:bg-slate-200"
+      >
+        <lucide-icon name="lock" class="h-4 w-4"></lucide-icon>
+        Reset Password
+      </button>
+
+      <!-- Delete Button -->
+      <button
+        type="button"
+        (click)="onDeleteClick()"
+        class="inline-flex items-center gap-2 rounded-lg bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition-colors hover:bg-red-100"
+      >
+        <lucide-icon name="trash-2" class="h-4 w-4"></lucide-icon>
+        Delete
+      </button>
+    </footer>
   </div>
 }

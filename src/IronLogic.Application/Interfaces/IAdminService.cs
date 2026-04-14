@@ -1,3 +1,5 @@
+using IronLogic.Application.DTOs.User;
+
 namespace IronLogic.Application.Interfaces;
 
 /// <summary>
@@ -19,4 +21,11 @@ public interface IAdminService
     /// <param name="reason">Optional reason for rejection.</param>
     /// <returns>True if the exercise was successfully rejected; otherwise, false.</returns>
     Task<bool> RejectExerciseAsync(Guid exerciseId, string? reason = null);
+
+    /// <summary>
+    /// Retrieves administrative metrics for the user management dashboard.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>User metrics including premium subscribers, active users, sessions, and churn risk.</returns>
+    Task<AdminUserMetricsDto> GetUserMetricsAsync(CancellationToken cancellationToken);
 }

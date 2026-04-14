@@ -119,6 +119,7 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
   private detailSaveUnsubscribe?: () => void;
   private detailCloseUnsubscribe?: () => void;
   private detailDeleteUnsubscribe?: () => void;
+  private detailEditUnsubscribe?: () => void;
 
   constructor(
     public gridDataService: GridDataService,
@@ -466,6 +467,7 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
     this.bindDetailSaveOutput(componentRef.instance, row);
     this.bindDetailCloseOutput(componentRef.instance);
     this.bindDetailDeleteOutput(componentRef.instance, row);
+    this.bindDetailEditOutput(componentRef.instance, row);
     this.cdr.markForCheck();
   }
 
@@ -528,6 +530,11 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
       this.detailDeleteUnsubscribe();
       this.detailDeleteUnsubscribe = undefined;
     }
+
+    if (this.detailEditUnsubscribe) {
+      this.detailEditUnsubscribe();
+      this.detailEditUnsubscribe = undefined;
+    }
   }
 
   private bindDetailDeleteOutput(instance: any, row: any): void {
@@ -546,5 +553,20 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
     });
 
     this.detailDeleteUnsubscribe = () => subscription.unsubscribe();
+  }
+
+  private bindDetailEditOutput(instance: any, row: any): void {
+    const output = instance?.['editRecord'];
+    if (!output || typeof output.subscribe !== 'function') {
+      return;
+    }
+
+    const subscription = output.subscribe((payload: any) => {
+      const resolvedRow = payload ?? row;
+      this.actionTriggered.emit({ type: 'edit', row: resolvedRow });
+      this.closeDetailView();
+    });
+
+    this.detailEditUnsubscribe = () => subscription.unsubscribe();
   }
 }

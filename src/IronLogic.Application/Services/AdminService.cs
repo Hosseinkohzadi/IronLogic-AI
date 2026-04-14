@@ -1,3 +1,4 @@
+using IronLogic.Application.DTOs.User;
 using IronLogic.Application.Interfaces;
 using IronLogic.Domain.Enums;
 using IronLogic.Domain.Interfaces;
@@ -8,7 +9,8 @@ namespace IronLogic.Application.Services;
 /// Implements administrative operations for managing exercises and approvals.
 /// </summary>
 /// <param name="exerciseRepository">The exercise repository.</param>
-public class AdminService(IExerciseRepository exerciseRepository) : IAdminService
+/// <param name="userMetricsRepository">The user metrics repository.</param>
+public class AdminService(IExerciseRepository exerciseRepository, IUserMetricsRepository userMetricsRepository) : IAdminService
 {
     /// <inheritdoc />
     public async Task<bool> ApproveExerciseAsync(Guid exerciseId)
@@ -38,5 +40,23 @@ public class AdminService(IExerciseRepository exerciseRepository) : IAdminServic
         
         exerciseRepository.Update(exercise);
         return await exerciseRepository.SaveChangesAsync();
+    }
+
+    /// <inheritdoc />
+    public async Task<AdminUserMetricsDto> GetUserMetricsAsync(CancellationToken cancellationToken)
+    {
+        var metrics = await userMetricsRepository.GetUserMetricsAsync(cancellationToken);
+
+        return new AdminUserMetricsDto
+        {
+            PremiumSubscribers = metrics.PremiumSubscribers,
+            WeeklyActiveUsers = metrics.WeeklyActiveUsers,
+            TotalSessions = metrics.TotalSessions,
+            ChurnRiskCount = metrics.ChurnRiskCount,
+            PremiumTrend = metrics.PremiumTrend,
+            WauTrend = metrics.WauTrend,
+            SessionsTrend = metrics.SessionsTrend,
+            ChurnTrend = metrics.ChurnTrend
+        };
     }
 }

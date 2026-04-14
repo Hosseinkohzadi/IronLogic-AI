@@ -5,6 +5,7 @@ using IronLogic.Domain.Interfaces;
 using IronLogic.Infrastructure.Data;
 using IronLogic.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 using Xunit;
 
 namespace IronLogic.Tests.Integration;
@@ -27,7 +28,9 @@ public class ExerciseApprovalWorkflowTests : IDisposable
 
         _context = new AppDbContext(options);
         _exerciseRepository = new ExerciseRepository(_context);
-        _adminService = new AdminService(_exerciseRepository);
+        
+        var mockUserMetricsRepository = new Mock<IUserMetricsRepository>();
+        _adminService = new AdminService(_exerciseRepository, mockUserMetricsRepository.Object);
     }
 
     [Fact]

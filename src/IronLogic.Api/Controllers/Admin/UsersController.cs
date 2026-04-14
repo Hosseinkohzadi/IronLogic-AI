@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 namespace IronLogic.Api.Controllers.Admin;
 
 /// <summary>
-/// Administrative controller for managing users
+///     Administrative controller for managing users
 /// </summary>
 [ApiController]
 [Route("api/v1/admin/users")]
@@ -24,7 +24,7 @@ public class UsersController(
     ILogger<UsersController> logger) : ControllerBase
 {
     /// <summary>
-    /// Retrieves administrative metrics for user management dashboard
+    ///     Retrieves administrative metrics for user management dashboard
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>User metrics including premium subscribers, active users, sessions, and churn risk</returns>
@@ -48,7 +48,7 @@ public class UsersController(
     }
 
     /// <summary>
-    /// Retrieves all users with their roles and subscription information
+    ///     Retrieves all users with their roles and subscription information
     /// </summary>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>List of all users</returns>
@@ -62,7 +62,7 @@ public class UsersController(
         var users = userManager.Users
             .Include(u => u.Profile)
             .Include(u => u.UserSubscriptions)
-                .ThenInclude(s => s.Plan)
+            .ThenInclude(s => s.Plan)
             .ToList();
 
         var userList = new List<AdminUserListDto>();
@@ -77,8 +77,8 @@ public class UsersController(
                 .OrderByDescending(s => s.EndDate)
                 .FirstOrDefault();
 
-            string plan = "Basic";
-            string status = "Expired";
+            var plan = "Basic";
+            var status = "Expired";
             DateTimeOffset? subscriptionEndDate = null;
 
             if (subscription != null)
@@ -107,7 +107,7 @@ public class UsersController(
     }
 
     /// <summary>
-    /// Retrieves detailed information about a specific user including claims, roles, and lockout status
+    ///     Retrieves detailed information about a specific user including claims, roles, and lockout status
     /// </summary>
     /// <param name="id">The unique identifier of the user</param>
     /// <param name="cancellationToken">Cancellation token</param>
@@ -124,7 +124,7 @@ public class UsersController(
             .Include(u => u.Sessions)
             .Include(u => u.DailyWeights)
             .Include(u => u.UserSubscriptions)
-                .ThenInclude(s => s.Plan)
+            .ThenInclude(s => s.Plan)
             .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
         if (user == null)
@@ -136,12 +136,9 @@ public class UsersController(
         var roles = await userManager.GetRolesAsync(user);
         var claims = await userManager.GetClaimsAsync(user);
 
-        var isActive = !(user.LockoutEnabled && user.LockoutEnd.HasValue && user.LockoutEnd.Value > DateTimeOffset.UtcNow);
-        
-        var lastSession = user.Sessions
-            .OrderByDescending(s => s.Date)
-            .FirstOrDefault();
-        
+        var isActive = !(user.LockoutEnabled && user.LockoutEnd.HasValue &&
+                         user.LockoutEnd.Value > DateTimeOffset.UtcNow);
+
         var activeSubscription = user.UserSubscriptions
             .Where(s => s.IsActive && s.EndDate >= DateTime.UtcNow)
             .OrderByDescending(s => s.EndDate)
@@ -164,7 +161,7 @@ public class UsersController(
             AccessFailedCount = user.AccessFailedCount,
             Roles = roles.ToList(),
             IsActive = isActive,
-            LastLoginDate = lastSession?.Date,
+            LastLoginDate = user.LastLoginDate,
             TotalSessions = user.Sessions.Count,
             TotalDailyWeights = user.DailyWeights.Count,
             ProfileImageUrl = user.Profile?.ProfilePictureUrl,
@@ -184,13 +181,13 @@ public class UsersController(
             id,
             isActive,
             user.Sessions.Count,
-            lastSession?.Date);
+            user.LastLoginDate);
 
         return Ok(userDetail);
     }
 
     /// <summary>
-    /// Updates user information including email, name, and roles
+    ///     Updates user information including email, name, and roles
     /// </summary>
     /// <param name="id">The unique identifier of the user</param>
     /// <param name="updateDto">The user update data</param>
@@ -208,10 +205,7 @@ public class UsersController(
         [FromBody] UpdateUserDto updateDto,
         CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(new { message = "Invalid user data", errors = ModelState });
-        }
+        if (!ModelState.IsValid) return BadRequest(new { message = "Invalid user data", errors = ModelState });
 
         var user = await userManager.FindByIdAsync(id);
 
@@ -243,12 +237,10 @@ public class UsersController(
             // Also update username to match email
             var setUserNameResult = await userManager.SetUserNameAsync(user, updateDto.Email);
             if (!setUserNameResult.Succeeded)
-            {
                 logger.LogWarning(
                     "Failed to update username for user {UserId}: {Errors}",
                     id,
                     string.Join(", ", setUserNameResult.Errors.Select(e => e.Description)));
-            }
         }
 
         // Update roles if provided
@@ -313,7 +305,7 @@ public class UsersController(
     }
 
     /// <summary>
-    /// Sends a manual custom email message to a specific user.
+    ///     Sends a manual custom email message to a specific user.
     /// </summary>
     /// <param name="userId">The target user identifier.</param>
     /// <param name="request">The email payload.</param>
@@ -329,16 +321,10 @@ public class UsersController(
         [FromBody] SendEmailRequestDto request,
         CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(new { message = "Invalid email payload", errors = ModelState });
-        }
+        if (!ModelState.IsValid) return BadRequest(new { message = "Invalid email payload", errors = ModelState });
 
         var user = await userManager.FindByIdAsync(userId);
-        if (user == null)
-        {
-            return NotFound(new { message = "User not found" });
-        }
+        if (user == null) return NotFound(new { message = "User not found" });
 
         try
         {
@@ -346,7 +332,7 @@ public class UsersController(
                 userId,
                 request.Subject,
                 request.Body,
-                isManual: true,
+                true,
                 cancellationToken);
 
             return Ok(new { message = "Email sent successfully" });

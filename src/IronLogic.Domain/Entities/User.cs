@@ -67,4 +67,9 @@ public class User : IdentityUser
     /// Gets or sets the collection of one-time passwords issued to this user for email verification.
     /// </summary>
     public ICollection<UserOtp> Otps { get; set; } = new List<UserOtp>();
+
+    /// <summary>
+    /// Gets or sets the last login date and time in UTC.
+    /// </summary>
+    public DateTime? LastLoginDate { get; set; }
 }

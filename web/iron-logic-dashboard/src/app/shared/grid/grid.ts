@@ -120,6 +120,12 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
   private detailCloseUnsubscribe?: () => void;
   private detailDeleteUnsubscribe?: () => void;
   private detailEditUnsubscribe?: () => void;
+  readonly detailDrawerWidth = signal(520);
+  private isResizingDetailDrawer = false;
+  private detailResizeStartX = 0;
+  private detailResizeStartWidth = 520;
+  private readonly detailResizeMoveHandler = (event: MouseEvent) => this.onDetailResizeMove(event);
+  private readonly detailResizeUpHandler = () => this.stopDetailResize();
 
   constructor(
     public gridDataService: GridDataService,
@@ -166,7 +172,24 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopDetailResize();
     this.cleanupDetailSaveSubscription();
+  }
+
+  startDetailResize(event: MouseEvent): void {
+    if (!this.isRightDetail) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    this.isResizingDetailDrawer = true;
+    this.detailResizeStartX = event.clientX;
+    this.detailResizeStartWidth = this.detailDrawerWidth();
+
+    window.addEventListener('mousemove', this.detailResizeMoveHandler);
+    window.addEventListener('mouseup', this.detailResizeUpHandler);
   }
 
   export(type: 'excel' | 'pdf') {
@@ -568,5 +591,28 @@ export class GridComponent implements OnInit, OnChanges, OnDestroy {
     });
 
     this.detailEditUnsubscribe = () => subscription.unsubscribe();
+  }
+
+  private onDetailResizeMove(event: MouseEvent): void {
+    if (!this.isResizingDetailDrawer) {
+      return;
+    }
+
+    const delta = this.detailResizeStartX - event.clientX;
+    const viewportWidth = window.innerWidth;
+    const maxWidth = Math.min(920, Math.floor(viewportWidth * 0.92));
+    const nextWidth = Math.max(420, Math.min(maxWidth, this.detailResizeStartWidth + delta));
+    this.detailDrawerWidth.set(nextWidth);
+    this.cdr.markForCheck();
+  }
+
+  private stopDetailResize(): void {
+    if (!this.isResizingDetailDrawer) {
+      return;
+    }
+
+    this.isResizingDetailDrawer = false;
+    window.removeEventListener('mousemove', this.detailResizeMoveHandler);
+    window.removeEventListener('mouseup', this.detailResizeUpHandler);
   }
 }

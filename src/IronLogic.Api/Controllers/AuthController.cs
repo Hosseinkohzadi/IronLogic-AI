@@ -150,6 +150,9 @@ public class AuthController(
             return Unauthorized(new { Message = "Invalid credentials" });
         }
 
+        user.LastLoginDate = DateTime.UtcNow;
+        await userManager.UpdateAsync(user);
+
         var token = await GenerateJwtTokenAsync(user);
         IList<string> roles = await userManager.GetRolesAsync(user);
         var role = roles.FirstOrDefault() ?? "User";
